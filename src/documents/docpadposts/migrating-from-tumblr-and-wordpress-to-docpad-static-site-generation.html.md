@@ -3,7 +3,7 @@ layout: post
 title: Migrating from Tumblr and Wordpress to Docpad - Static Site Generation
 date: 2014-07-08 23:30
 comments: true
-tags: blog, tumblr, wordpress, docpad, static site generation, coffeescript, markdown
+tags: blog, tumblr, wordpress, docpad, static site generation, markdown
 ---
 
 I currently write my blog using [tumblr](http://tumblr.com),
@@ -21,7 +21,7 @@ and I wanted to be able to do all of these things without having to log into
 some website hosted in a far away country,
 and wait for all those bytes to fly across several oceans and back each time.
 
-Flexibility. That was the key.
+Flexibility and control - that is key.
 
 ### Enter Static Site Generators
 

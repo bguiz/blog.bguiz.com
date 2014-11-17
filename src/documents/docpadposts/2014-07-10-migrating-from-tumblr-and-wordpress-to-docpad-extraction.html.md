@@ -1,14 +1,16 @@
 ---
 layout: post
-title: Migrating from Tumblr and Wordpress to Docpad - Part 2
+title: Migrating from Tumblr and Wordpress to Docpad - Extract and Transform
 date: 2014-07-10 21:15
 comments: true
 tags: blog, tumblr, wordpress, docpad, static site generation, coffeescript, markdown, nodejs
 ---
 
-As promised in the previous post,
-let us take a look at how to extract data from a wordpress blog,
-and transform it for docpad.
+
+In the previous post, I made [the case for static site generation](http://blog.bguiz.com/2014/07/08/migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation/).
+Let us take a look at how to extract data from tumblr and wordpress blogs,
+and transform it for [docpad](https://github.com/bevry/docpad),
+a static site generator.
 
 ### Get Your Node On
 
@@ -43,9 +45,9 @@ In order to get our posts, we can follow
 
 With the API documentation in hand, we can now write some code to automate that -
 we certainly do not want to be issuing multiple `wget` or `curl` calls,
-and then copying the results from them into new files.
+and then copying the results from them into new files by hand .
 I would do that for maybe a couple of posts,
-but I am dealing with about 80 posts here,
+but since I am dealing with about 80 posts here,
 and that is certainly going to be too time consuming of an endeavour!
 
     var pos, step, total;
@@ -63,7 +65,7 @@ and that is certainly going to be too time consuming of an endeavour!
     } while (pos < total);
 
 That is the basic run loop.
-Within the run loop, we perform the actual query:
+Within the run loop, we perform the requests to the wordpress API server:
 
         var reqUrl = 'https://public-api.wordpress.com/rest/v1/sites/'+wordpressSite+'/posts/?number='+postsAtATime+'&offset='+postIdx;
         request(reqUrl, function(err, resp, body) {
@@ -156,7 +158,8 @@ Tumblr is a little more involved than Wordpress,
 as in order to query any of their API,
 you will need to have a tumblr account
 (which you probably already have since you are extracting your posts from it),
-and [register a tumblr app] to obtain an API keys.
+and [register a tumblr app](https://www.tumblr.com/oauth/apps)
+to obtain an API keys.
 Copy your "OAuth Consumer Key", and you are good to go.
 
 Once that is done, we simply need to follow
@@ -229,7 +232,7 @@ To work around this, for now, you need to do the following:
     npm install
     docpad run # fails "Error: Cannot find module 'node_modules/docpad-plugin-dateurls/out/dateurls.plugin.js'"
     cd node_modules/docpad-plugin-dateurls
-    cake compile
+    cake compile && cake install
     ls out #you should see dateurls.plugin.js
     cd ../..
     docpad run # success!
@@ -237,7 +240,7 @@ To work around this, for now, you need to do the following:
 For tumblr posts, the default URL path follows the format
 `/post/12345678/slug-for-this-post`,
 and if we migrate posts from the old blog to the new blog,
-any links, especially extrenal ones, to the site will be broken.
+any links, especially external ones, to the site will be broken.
 That will make for a really annoying experience for those visiting your sites,
 so it is best to preserve URLs where possible;
 hence the need to override the default URLs.
@@ -271,7 +274,7 @@ Finally, write the output to file:
 We edit `docpad.coffee`, in the root directory of the docpad project.
 Modify `docpadConfig.collections.posts` to look like this instead.
 
-    @getCollection('documents').findAllLive({relativeDirPath: {'$in' : ['docpadposts', 'tumlrposts', 'wordpressposts']}}, [date: -1])
+    @getCollection('documents').findAllLive({relativeDirPath: {'$in' : ['docpadposts', 'tumblrposts', 'wordpressposts']}}, [date: -1])
 
 All the wordpress posts should be in `src/documents/wordpressposts`,
 tumblr posts in `src/documents/tumblrposts`.

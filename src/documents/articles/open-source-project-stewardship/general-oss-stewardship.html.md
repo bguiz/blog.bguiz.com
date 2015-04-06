@@ -179,14 +179,14 @@ The students are the program that we wrote, and is referred to as the system und
 
 The are two main differences to be aware of.
 
-The first is that the questions (tests) and the answers (assertions/ expectations)
+(1) The first is that the questions (tests) and the answers (assertions/ expectations)
 **are co-located**, often in the same file, often in adjacent lines of code.
 This is because we can programmatically enforce that our program,
 the system under test, does not cheat by peeking at the expected answers,
 which is something that we cannot expect of students,
 should the teacher distribute the answers alongside the questions!
 
-The second difference is something that makes writing tests for software harder,
+(2) The second difference is something that makes writing tests for software harder,
 and thus is something to give some thought to.
 That is - you are both the teacher and the book author at the same time.
 You have written the program - the system under test -
@@ -210,7 +210,121 @@ and is one of the reasons why **writing tests is very hard**!
 
 ## Coverage
 
-//TODO
+Let's continue with the scenario,
+with the teacher administering a test to some students -
+because testing and coverage are very closely linked together.
+
+Now after administering the test,
+and grading each student's submission,
+you notice that some students have done really well in the tests,
+despite not doing well otherwise in class.
+Similarly, you notice that some students have not done well at all,
+despite normally doing well otherwise in the class.
+This raises some interesting possibilities:
+
+- Was the test a fair one?
+- Were there errors in the book that the students were told to study?
+- Were your prior assumptions about the
+  students' affinity with the material simply incorrect?
+
+One objective means to ascertain the answer to any of these questions,
+is to test the test -
+in other words, devise a meta test.
+That is precisely what coverage is about.
+A simple way to do this in this scenario,
+is to simply use a fresh copy of the book,
+and then go through the test yourself.
+As the teacher, you would know the answers to all of the questions,
+and able to answer them correctly,
+and also know which sentences, bullet points, or diagrams
+within the book you would need to have read or committed to memory
+in order to answer that question correctly.
+Use a highlighter to highlight each of these parts of the book
+as you complete each question.
+If a section has been highlighted previously,
+that is OK, just highlight right over it -
+the more layers there are, the darker the shade of the highlight!
+
+After completing the entire test in this fashion,
+you then simply have to flip through the entire book,
+cover to cover,
+and count the ratio of words, sentences, paragraphs, and diagrams
+which have been highlighted, to the total number of those things.
+
+As a teacher, decide what the minimum ratio,
+or **minimum coverage**, of the books from the test should be.
+If this minimum is met, then the test is fine as is,
+and the test can be deemed fair,
+and thus its results an accurate enough
+predictor of knowledge of the book's content.
+On the other hand, however,
+if the coverage is below the minimum threshold,
+then this is not the case.
+Either the test was unfair,
+and the questions need to be tweaked to get a better coverage;
+or the book should be edited to contain the right material;
+or the students should be told that certain material within the book
+is excluded from the test, and need not be studied.
+
+### Software Code Coverage
+
+The other thing that makes writing tests very hard is that it is a lot of work.
+A lot of work, that does not,
+actually add any new features,
+or fix any bugs in the software that you are writing.
+Testing merely serves the purpose of verifying
+whether what we already have written does indeed work.
+Thus, as a developer, who just wants to "make things work",
+quite often de-prioritise, or even ignore all together, writing tests.
+The other catch, is that due to the previously mentioned bias.
+When a developer writes tests for software that he has also written,
+the tendency will be for tests to focus on the parts that work well,
+rather than the parts that do not work well,
+and focus on parts that are used more often,
+rather than parts that are used infrequently.
+
+This means of course, that there is often much room left for improvement
+in writing software tests, and by proxy,
+room left for improvement in the software itself.
+
+Enter code coverage.
+Code coverage is one way in which you can test the tests that test your software.
+The theory here is that when the entire series of tests are run,
+each of the functions, lines of code, and branches are all
+accessed and run.
+
+From the scenario above,
+the "meta-test", where you as the teacher complete the test
+while highlighting the book is equivalent to
+what the code coverage tool does when it instruments the software,
+and runs the test runner.
+Examining and calculating the coverage ratios
+is the report that is output produced by the reporter of the code coverage tool.
+
+A code coverage tool programmatically tracks all of
+code paths executed when the tests are run,
+and then outputs a report that shows you which parts of the code
+have been executed and which parts have not.
+The parts that have not been executed are red flags.
+After running the tests via the code coverage tool,
+a developer should inspect the code coverage report,
+and identify the parts of the code that have not been executed.
+For each one, one of the following three actions are appropriate:
+
+1. This code is valid
+  - Therefore, we should write a test to ensure that this path through the code is executed
+2. This code is not needed
+  - This code path cannot be be executed, and it was an oversight during development that caused it to be there in the first place, so delete this code, or otherwise refactor it
+3. This code is not testable
+  - This code path **is** a valid part of the software,
+    but for technical reasons,
+    it is not possible to write a test for this
+  - The action in this case is thus more complex:
+    - Add an inline hint to the code coverage tool to
+      "ignore" or "skip" this code path,
+      preferably accompanied by an explanation as to why in a comment
+    - In the documentation for the software,
+      add this to a list of things that require manual testing
 
 ## Badges
 
@@ -311,7 +425,8 @@ and it is more professional than it has ever been before.
 It would be a shame now then, that after all this hard work,
 no one knows about it, and no one uses it.
 
-So you should tweet about it, post it on reddit or hacker news, et cetera.
+So you should tweet about it,
+post it on Reddit or Hacker News, et cetera.
 Make sure that someone else knows about it!
 
 The main question is not really about whether you should,
@@ -361,6 +476,10 @@ Even later, you can add the contribution guidelines section to the README,
 and post about your project on social to publicise it.
 
 tl;dr= Break up the effort put in, into smaller chunks.
+
+## Iterate, iterate, iterate!
+
+//TODO
 
 ## Not just for maintainers!
 

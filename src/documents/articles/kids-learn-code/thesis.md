@@ -187,3 +187,13 @@ was not addressed.
 - A lucrative profession to be in when they are adult
 - A means to teach logical thinking skills that can be applied in other areas
 - ... many more!
+
+## References
+
+1. Variables - [Wikipedia](http://en.wikipedia.org/wiki/Variable_%28computer_science%29)
+2. Boolean logic - [Wikipedia](http://en.wikipedia.org/wiki/Boolean_algebra)
+3. Counting - [Wikipedia](http://en.wikipedia.org/wiki/Counting)
+1. Control flow - [Wikipedia](http://en.wikipedia.org/wiki/Control_flow)
+2. Iteration - [Wikipedia](http://en.wikipedia.org/wiki/Iteration#Computing)
+3. Functions - [Wikipedia](http://en.wikipedia.org/wiki/Subroutine)
+4. Events - [Wikipedia](http://en.wikipedia.org/wiki/Event-driven_programming)

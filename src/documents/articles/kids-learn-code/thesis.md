@@ -190,10 +190,23 @@ was not addressed.
 
 ## References
 
-1. Variables - [Wikipedia](http://en.wikipedia.org/wiki/Variable_%28computer_science%29)
-2. Boolean logic - [Wikipedia](http://en.wikipedia.org/wiki/Boolean_algebra)
-3. Counting - [Wikipedia](http://en.wikipedia.org/wiki/Counting)
-1. Control flow - [Wikipedia](http://en.wikipedia.org/wiki/Control_flow)
-2. Iteration - [Wikipedia](http://en.wikipedia.org/wiki/Iteration#Computing)
-3. Functions - [Wikipedia](http://en.wikipedia.org/wiki/Subroutine)
-4. Events - [Wikipedia](http://en.wikipedia.org/wiki/Event-driven_programming)
+1. Variables -
+  [Wikipedia](http://en.wikipedia.org/wiki/Variable_%28computer_science%29)
+2. Boolean logic -
+  [Wikipedia](http://en.wikipedia.org/wiki/Boolean_algebra)
+3. Counting -
+  [Wikipedia](http://en.wikipedia.org/wiki/Counting)
+1. Control flow -
+  [Wikipedia](http://en.wikipedia.org/wiki/Control_flow)
+2. Iteration -
+  [Wikipedia](http://en.wikipedia.org/wiki/Iteration#Computing)
+3. Functions -
+  [Wikipedia](http://en.wikipedia.org/wiki/Subroutine)
+4. Events -
+  [Wikipedia](http://en.wikipedia.org/wiki/Event-driven_programming)
+1. Alice -
+  [Wikipedia](http://en.wikipedia.org/wiki/Alice_%28software%29)
+  [Homepage](http://www.alice.org/index.php)
+2. Scratch -
+  [Wikipedia](http://en.wikipedia.org/wiki/Scratch_%28programming_language%29)
+  [Homepage](https://scratch.mit.edu/s)

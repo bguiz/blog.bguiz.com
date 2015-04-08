@@ -192,21 +192,36 @@ was not addressed.
 
 1. Variables -
   [Wikipedia](http://en.wikipedia.org/wiki/Variable_%28computer_science%29)
+  [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/variables/p/intro-to-variables)
 2. Boolean logic -
   [Wikipedia](http://en.wikipedia.org/wiki/Boolean_algebra)
+  [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/logic-if-statements/p/booleans)
 3. Counting -
   [Wikipedia](http://en.wikipedia.org/wiki/Counting)
+  [Khan Academy](https://www.khanacademy.org/math/early-math/cc-early-math-counting-topic)
 1. Control flow -
   [Wikipedia](http://en.wikipedia.org/wiki/Control_flow)
+  [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/logic-if-statements/p/if-statements)
 2. Iteration -
   [Wikipedia](http://en.wikipedia.org/wiki/Iteration#Computing)
+  [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/looping/p/intro-to-while-loops)
 3. Functions -
   [Wikipedia](http://en.wikipedia.org/wiki/Subroutine)
+  [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/functions/p/functions)
 4. Events -
   [Wikipedia](http://en.wikipedia.org/wiki/Event-driven_programming)
+  [Martin Fowler](http://www.martinfowler.com/eaaDev/EventCollaboration.html)
 1. Alice -
   [Wikipedia](http://en.wikipedia.org/wiki/Alice_%28software%29)
   [Homepage](http://www.alice.org/index.php)
+  1. Alice Lesson Plans -
+  [Carnegie Mellon University](http://www.alice.org/3.1/index.html)
+  [Duke University](http://www.cs.duke.edu/csed/alice/aliceInSchools/lessonPlans/)
+  [Oracle Academy](http://www.curriki.org/xwiki/bin/view/Coll_TheOracleAcademy/GettingStartedWithJavaUsingAlice)
 2. Scratch -
   [Wikipedia](http://en.wikipedia.org/wiki/Scratch_%28programming_language%29)
-  [Homepage](https://scratch.mit.edu/s)
+  [Homepage](https://scratch.mit.edu/)
+  1. Scratch Lesson Plans -
+  [Harvard University](http://scratched.gse.harvard.edu/resources/scratch-lesson-plan)
+  [Learn Scratch](http://learnscratch.org/)
+  [Scratch Ireland](http://scratch.ie/primary/lessonplans)

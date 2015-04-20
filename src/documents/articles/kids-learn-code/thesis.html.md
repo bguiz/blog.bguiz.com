@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Open Source Project Stewardship
+title: Teach Kids Code: Thesis
 date: 2015-04-07 11:58
 comments: true
 draft: true
@@ -68,6 +68,7 @@ Fundamental concepts:
 1. Variables
 2. Boolean logic
 3. Counting &lowast;
+4. Input & Output
 
 Building blocks:
 
@@ -199,6 +200,9 @@ was not addressed.
 3. Counting -
   [Wikipedia](http://en.wikipedia.org/wiki/Counting)
   [Khan Academy](https://www.khanacademy.org/math/early-math/cc-early-math-counting-topic)
+4. Input & Ouput
+  [Wikipedia](http://en.wikipedia.org/wiki/Input/output)
+  [Oracle Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/io/)
 1. Control flow -
   [Wikipedia](http://en.wikipedia.org/wiki/Control_flow)
   [Khan Academy](https://www.khanacademy.org/computing/computer-programming/programming/logic-if-statements/p/if-statements)

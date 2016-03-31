@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "^0.14.8",
     "react-dom": "^0.14.8",
-    "react-router": "^2.0.1",
+    "react-router": "^2.0.1"
   },
   "devDependencies": {
     "front-matter": "^2.0.6",

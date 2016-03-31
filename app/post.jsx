@@ -1,6 +1,7 @@
 'use strict';
 
 const React = require('react');
+const Helmet = require('react-helmet');
 
 const Markdown = require('./markdown.jsx');
 const data = require('../data/data.js');
@@ -10,6 +11,9 @@ let Post = React.createClass({
     let post = this.getPostData();
     return (
       <div>
+        <Helmet
+          title={post.meta.title}>
+        </Helmet>
         <h1>{post.meta.title}</h1>
         <Markdown
           markdown={post.body}

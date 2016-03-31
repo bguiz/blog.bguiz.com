@@ -38,6 +38,7 @@ let options = {
 generateDataForSsgwp(options)
   .then((data) => {
     data.routes.push('/');
+    data.props.title = 'Brendan Graetz';
     fs.writeFileSync(
       path.resolve(__dirname, '../data/data.js'),
       `module.exports = ${JSON.stringify(data, undefined, '  ')};`);

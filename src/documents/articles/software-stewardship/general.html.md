@@ -3,7 +3,7 @@ layout: post
 title: Open Source Project Stewardship
 date: 2015-03-31 20:04
 comments: true
-tags: oss, software, steward, maintainer, lint, test, coverage, nodejs, github, travis, coveralls
+tags: oss, software, steward, maintainer, lint, test, coverage, github, travis, coveralls
 ---
 
 - You have just embarked on your journey as an open source developer
@@ -27,6 +27,8 @@ Git supplanted Subversion as the de facto version control system,
 and branching and merging became so much easier -
 not to mention faster - to do.
 
+![Github, Travis, Coveralls](../github-travis-coveralls.png)
+
 Hot on the tails of git,
 came Github, which made collaborative source code version control
 that much more *accessible* and *user friendly*.
@@ -48,6 +50,8 @@ The examples, however, will be specific to Javascript/ NodeJs.
 
 ### Github
 
+![Github](../github.png)
+
 Github is a service which hosts your Git repositories,
 for free if they are open source,
 and for money if they are closed source.
@@ -63,6 +67,8 @@ including Travis and Coveralls.
 
 ### Travis
 
+![Travis](../travis.png)
+
 Travis is a continuous integration system,
 which is free for all open source projects hosted on Github -
 with paid versions for closed source projects hosted anywhere, of course.
@@ -76,7 +82,62 @@ a failing build continues to fail, and a failing build passes.
 
 It is reliable, and reasonably fast to boot.
 
+#### Setting up Travis
+
+Create account and login - it could not be any easier,
+you simply have to click on the log in with Github button.
+
+##### Ruby (official)
+
+```bash
+# Install Ruby Version Manager
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+curl -sSL https://get.rvm.io | bash
+source ${HOME}/.rvm/scripts/rvm
+
+# Install a version of Ruby
+rvm install ruby-1.9.3-p448-dev
+rvm use --default ruby-1.9.3-p448-dev
+
+# Install Travis gem
+gem install travis
+```
+
+Now get a token from Github to give Travis permissions to write to your repository.
+
+- [Generate new Github access token](https://github.com/settings/tokens/new)
+- Select **only** the second option, `public_repo`
+- Enter a description, such as "For Travis CI", and hit "Generate Token"
+- Copy the value shown on the next page, and enter the next command,
+  replacing `GITHUB_ACCESS_TOKEN` with the value you just copied.
+  (Be sure to have a leading space in front of your command,
+  so that it does not leave a copy in your bash history)
+
+```bash
+# Set up Travis with write access to your Github repository
+  travis encrypt GH_TOKEN=GITHUB_ACCESS_TOKEN --add
+
+# Should see a new value for `env.global.secure` added as a base-64 encoded string
+cat .travis.yml
+```
+
+##### NodeJs (3rd party)
+
+Alternatively, if you prefer to use NodeJs instead of Ruby:
+
+```bash
+npm install --global travis-encrypt
+travis-encrypt -r GITHUB_REPO_SLUG GH_TOKEN=GITHUB_ACCESS_TOKEN
+```
+
+Copy the output from `travis-encrypt` to `.travis.yml` under `env.global`.
+
+From now on, Travis script will have access to an environment variable,
+named `GH_TOKEN`, and can be later used for writing to your Github repositories.
+
 ### Coveralls
+
+![Coveralls](../coveralls.png)
 
 Coveralls is not a continuous integration system,
 but rather should be thought of as a "view"
@@ -479,15 +540,43 @@ tl;dr= Break up the effort put in, into smaller chunks.
 
 ## Iterate, iterate, iterate!
 
-//TODO
+In general, with software development,
+it is a good idea to break up large tasks into
+smaller, achievable chunks of work.
 
-## Not just for maintainers!
+This allows multiple developers to work towards the same goal
+without stepping on each others' toes too much.
+More importantly though, it allows the project to maintain momentum.
 
-Now, all this stuff is not just for maintainers -
+This applies not just to developing new features or fixing bugs in a piece of software,
+but also to all these other tasks -
+linting, testing, coverage, documentation, badges, contribution guidelines, and publicising -
+that one has to do in being a steward of open source software.
+These tasks all take a lot of time,
+and some of them, such as writing tests,
+can be extremely prolonged.
+If there is a long way to go to catch up for a project,
+don't give up, and continue with the status quo.
+
+Instead, simply iterate.
+For example, if your project has no tests at all,
+aim to improve code coverage a few percent at a time, starting from zero.
+Or perhaps even just have a new rule where any new features or bugs fixed,
+from now on should have a new test case to cover the new feature or fix.
+
+## Not just for maintainers
+
+Now, all these things are not just for project maintainers -
 you do not even need to have started your own open source project
 in order to be a good steward for that project!
 
-The open nature of open source means that anyone can contribute to any project,
-so there is nothing stopping you from creating a pull request to add a
-`lint` task to a project, nor a `test` task, nor a `cover` task.
-Just be sure to ask its maintainer if they are amenable to those first!
+The **open nature** of open source means that
+**anyone can contribute** to any project,
+so there is nothing stopping you from creating a pull request to add
+linting, testing, coverage, or documentation to a project.
+Just be sure to ask its maintainer if they are amenable first!
+
+## Platform Specific
+
+- [NodeJs Open Source Stewardship](../nodejs/)
+  - [NodeJs Open Source Stewardship Cheat Sheet](../nodejs-cheatsheet)

@@ -3,10 +3,14 @@ layout: post
 title: NodeJs Open Source Project Stewardship
 date: 2015-03-31 20:05
 comments: true
-tags: oss, software, steward, maintainer, lint, test, coverage, nodejs, github, travis, coveralls
+tags: oss, software, steward, maintainer, lint, test, coverage, nodejs, github, travis, jshint, jasmine, istanbul, yuidoc
 ---
 
+![JsHint, Jasmine, Istanbul, YUIdoc](../jshint-jasmine-istanbul-yuidoc.png)
+
 ## Linting in NodeJs
+
+![JsHint](../jshint.png)
 
 Run the following commands in the terminal to
 install dependencies for JsHint,
@@ -99,6 +103,8 @@ and have linting.
 
 ## Testing in NodeJs
 
+![Jasmine](../jasmine.png)
+
 In the terminal, run the following commands to install the test runner, `jasmine-node`,
 and set up the directory for the tests:
 
@@ -173,6 +179,8 @@ because adding tests is the hardest task in this process.
 The remainder are relatively easy to do.
 
 ## Coverage in NodeJs
+
+![Istanbul](../istanbul.png "Note: The Istanbul project does not have a logo at all, so here is my crappy attempt at creating one using a Turkish carpet")
 
 In the terminal, install `istanbul`,
 which is the code coverage tool that we will be using:
@@ -265,7 +273,7 @@ repo_token: COVERALLS_REPO_TOKEN
 Next, we add a `coveralls` task to the `scripts` section in **package.json**:
 
 ```javascript
-    "coveralls": "npm run cover && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
 ```
 
 Coveralls does not actually do its own builds,
@@ -278,7 +286,7 @@ The `coveralls` command which we just defined runs the `cover` command,
 and then pipes the `lcov` file output by `istanbul` to `coveralls`.
 
 We are now almost ready for Coveralls,
-but first we need to tell Travis to run the `coveralls` command,
+but first we need to tell Travis to run the `cover` and `coveralls` commands,
 instead of `test` as it was doing previously.
 It is not necessary to do both `test` and `coveralls`,
 because that will mean that `test` runs twice!
@@ -295,6 +303,8 @@ node_js:
   - "iojs-v1.0.4"
 script:
   - npm run lint
+  - npm run cover
+after_success:
   - npm run coveralls
 ```
 
@@ -335,6 +345,116 @@ Once the Travis build succeeds,
 the Coveralls build should trigger,
 and you should see a code coverage report.
 
+## Documentation for NodeJs
+
+Documentation is requires the most CI work,
+because it is not just about running a script, in a fire-and-forget style.
+It involves an additional step of collecting the build artifacts -
+the generated documentation - and publishing them too.
+We have already done this previously,
+after generating the code coverage reports,
+we export them to coveralls.io.
+This was fairly easy to do because there was an npm package
+that simply took care of these steps.
+Documentation, however, is more work,
+because we have to write the steps to do this manually.
+
+### Generating documentation
+
+![YUIdoc](../yuidoc.png)
+
+We install YUIdoc and a theme for it:
+
+```bash
+npm install --save-dev yuidocjs yuidoc-lucid-theme
+touch yuidoc.json
+```
+
+Edit **yuidoc.json** to configure it.
+
+```json
+{
+  "options": {
+    "exclude": "coverage,documentation,node_modules,test",
+    "paths": "**/*.js",
+    "tabtospace": 2,
+    "outdir": "documentation",
+    "themedir" : "node_modules/yuidoc-lucid-theme",
+    "helpers" : [ "node_modules/yuidoc-lucid-theme/helpers/helpers.js" ]
+  }
+}
+```
+
+We then add the `document` command to the `scripts` section in `package.json`
+
+```json
+"generatedocs": "node ./node_modules/yuidocjs/lib/cli .",
+```
+
+Now when we run `npm run generatedocs`,
+documentation for the project will be generated,
+and output to the `documentation` directory.
+
+Next, we need to ignore `documentation` folder,
+so add `/documentation` to **.gitignore**, **.npmignore**, and **.jshintignore**.
+
+### Publishing documentation
+
+We can run the `generatedocs` command locally,
+and then access the documentation by opening it in the browser,
+for example, using `firefox documentation/index.html`.
+However, this is not very useful from a **continuous integration perspective**,
+as any build artefacts produced are **discarded** after the build has completed.
+In Travis, the only artefact that is preserved automatically
+are the output logs from the build.
+It would be much better if Travis were to actually copy the documentation
+produced during the build to a a web server which
+users of this project could use as a reference.
+
+We will be publishing our documentation on Github Pages,
+which hosts static files belonging to Github projects for free.
+
+Firstly, set up Travis with permissions to write to your Github repository,
+using instructions from the [general page](../general/).
+You should have `GH_TOKEN` encrypted and stored in `env.global.secure` in `.travis.yml`.
+
+We now add additional build steps to `.travis.yml`
+
+```yaml
+after_success:
+- npm run autodocs
+- npm run coveralls
+env:
+  global:
+  - secure: YOUR_ENCRYPTED_GITHUB_ACCESS_TOKEN
+```
+
+In `env.global`, we define a list of environment variables that should be
+set during builds.
+The first one should have already been set (`secure`),
+and any other configuration settings for autodocs should be set here if required.
+
+By default, `autodocs` will incpect the environment variables set by Travis,
+and determine whether:
+
+- Not a pull request
+- Currently on the `"master"` branch
+- Current job number is the first within the current build
+
+If all of these are true, it will do `npm run generatedocs`,
+and then publish the generated documentation to Github pages.
+
+You can configure it to use a different branch,
+and even to build on releases (when a tag is pushed, instead of a branch).
+Refer to [`autodocs` API documentation](http://autodocs.js.org/api/latest/)
+for the full set of options that may be configured.
+
+We then add the `autodocs` command to the `scripts` section in `package.json`
+
+```json
+"autodocs": "bash ./publish-docs.sh"
+```
+
 ## Badges for NodeJs
 
 Add the following to **README.md**,
@@ -360,108 +480,6 @@ the npm registry.
 
 ## NodeJs cheat sheet
 
-An assembly all the steps above in one spot.
-
-In the terminal:
-
-```bash
-npm install --save-dev jshint jshint-stylish jasmine-node istanbul coveralls
-touch .gitignore .npmignore .jshintrc .jshintignore .travis.yml .coveralls.yml
-mkdir test
-```
-
-**package.json**
-
-```javascript
-{
-  "scripts": {
-    "test": "node ./node_modules/jasmine-node/bin/jasmine-node test",
-    "lint": "./node_modules/jshint/bin/jshint --verbose --reporter ./node_modules/jshint-stylish .",
-    "cover": "node ./node_modules/istanbul/lib/cli cover ./node_modules/jasmine-node/bin/jasmine-node test",
-    "coveralls": "npm run cover && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
-  }
-}
-```
-
-**README.md**
-
-```markdown
-[![NPM](https://nodei.co/npm/MODULE_NAME.png)](https://github.com/GITHUB_NAME/MODULE_NAME/)
-
-[![Build Status](https://travis-ci.org/GITHUB_NAME/MODULE_NAME.svg?branch=master)](https://travis-ci.org/GITHUB_NAME/MODULE_NAME)
-[![Coverage Status](https://coveralls.io/repos/GITHUB_NAME/MODULE_NAME/badge.svg?branch=master)](https://coveralls.io/r/GITHUB_NAME/MODULE_NAME?branch=master)
-
-...
-
-## Contributing
-
-This repository uses the
-[**git flow** ](http://nvie.com/posts/a-successful-git-branching-model/)
-branching strategy.
-If you wish to contribute, please branch from the **develop** branch -
-pull requests will only be requested if they request merging into the develop branch.
-```
-
-**.gitignore**
-
-```text
-/node_modules
-/coverage
-/.coveralls.yml
-```
-
-**.npmignore**
-
-```text
-/node_modules
-/coverage
-/.travis.yml
-/.coveralls.yml
-/test
-```
-
-**.jshintrc**
-
-//TODO
-
-**.jshintignore**
-
-```text
-/node_modules
-/coverage
-/test
-```
-
-**.travis.yml**
-
-```yaml
-language: node_js
-node_js:
-  - "0.10"
-  - "0.11"
-  - "0.12"
-  - "iojs"
-  - "iojs-v1.0.4"
-script:
-  - npm run lint
-  - npm run coveralls
-```
-
-**.coveralls.yml**
-
-```text
-repo_token: COVERALLS_REPO_TOKEN
-```
-
-Then:
-
-- Write the tests in the `tests` folder
-- For each of the commands `lint`, `test`, `cover`:
-   - Run them and inspect the expected output and the exit codes,
-   - For both the pass and fail scenarios
-- Commit and push
-  - Inspect Travis build output
-  - Inspect Coveralls report
-- Publicise!
+[Cheatsheet for NodeJs Open Source Project Stewardship](../nodejs-cheatsheet)
 
 ## Fin

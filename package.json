@@ -1,0 +1,41 @@
+{
+  "name": "blog.bguiz.com",
+  "version": "0.1.0",
+  "description": "Brendan Graetz",
+  "author": "bguiz",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bguiz/blog.bguiz.com"
+  },
+  "license": "GPL-3.0",
+  "dependencies": {
+    "react": "^0.14.8",
+    "react-dom": "^0.14.8",
+    "react-router": "^2.0.1",
+  },
+  "devDependencies": {
+    "front-matter": "^2.0.6",
+    "history": "^2.0.1",
+    "jsx-loader": "^0.13.2",
+    "moment": "~2.5.1",
+    "reactpub": "^0.1.0",
+    "static-site-generator-webpack-plugin": "^2.0.1",
+    "walkdir": "^0.0.11",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1"
+  },
+  "peerDependencies": {
+  },
+  "engines": {
+    "node": "4.3",
+    "npm": "2.15"
+  },
+  "main": "./webpack.conf.js",
+  "scripts": {
+    "regenerate-data": "node ./app/generate-data.js",
+    "build": "webpack --config webpack.conf.js",
+    "build-server": "npm run build && http-server ./dist/ -c-1 -p51111",
+    "dev-server": "webpack-dev-server --config webpack.conf.js --port 51111"
+  }
+}

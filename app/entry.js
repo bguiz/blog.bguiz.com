@@ -10,6 +10,9 @@ let renderServer = reactpubEntry({
   useHelmet: true,
   routes,
   routeMetadata: data,
+  additionalAssets: {
+    appCss: 'app.css',
+  },
 });
 
 module.exports = renderServer;

@@ -6,6 +6,8 @@ const Helmet = require('react-helmet');
 
 const Navbar = require('./navbar.jsx');
 
+require('./index.scss');
+
 let Link = ReactRouter.Link;
 
 let Root = React.createClass({

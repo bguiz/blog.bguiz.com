@@ -1,10 +1,13 @@
 'use strict';
 
 const React = require('react');
+const ReactRouter = require('react-router');
 const Helmet = require('react-helmet');
 
 const Markdown = require('./markdown.jsx');
 const data = require('../data/data.js');
+
+let Link = ReactRouter.Link;
 
 let Post = React.createClass({
   render() {
@@ -18,6 +21,20 @@ let Post = React.createClass({
         <Markdown
           markdown={post.body}
           src={post.meta.src}/>
+        <div>
+          <div>
+            Tagged in:
+          </div>
+          <ul>
+            {post.meta.tags.map((tag) => {
+              return (
+                <li key={tag}>
+                  <Link to={`/tags/${tag}`}>{tag}</Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     );
   },

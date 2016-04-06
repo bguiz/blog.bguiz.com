@@ -12,7 +12,7 @@ let Index = React.createClass({
     return (
       <div>
         <ul>
-        {Object.keys(data.props.routes).map((url) => {
+        {(data.props.pagination[0]).map((url) => {
           return (
             <li key={url}>
               <Link to={url}>{data.props.routes[url].meta.title}</Link>

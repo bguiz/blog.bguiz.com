@@ -9,6 +9,8 @@ let cwd = process.cwd();
 let matchMarkdownPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html\.md$/;
 let matchHtmlPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html$/;
 let tagMap = {};
+let pagination = [];
+let paginationSize = 5;
 let options = {
   dirs: [
     {
@@ -59,8 +61,29 @@ generateDataForSsgwp(options)
       data.routes.push(`/tags/${tag}`);
     });
 
+    // additional pagination paths:
+    let posts = Object.keys(data.props.routes)
+      .map((url) => {
+        return data.props.routes[url];
+      })
+      .sort((postA, postB) => {
+        return (postB.meta.date - postA.meta.date);
+      });
+    //TODO no need for nested loops here, simply use modulo to detect next group
+    for (let postIdx = 0; postIdx < posts.length; postIdx = postIdx + paginationSize) {
+      let maxPostIdx = Math.min(postIdx + paginationSize, posts.length);
+      let paginationGroup = [];
+      for (let copyIdx = postIdx; copyIdx < maxPostIdx; ++copyIdx) {
+        paginationGroup.push(posts[copyIdx].meta.url);
+      }
+      pagination.push(paginationGroup);
+      data.routes.push(`/page/${pagination.length}`);
+    }
+
+
     data.props.title = 'Brendan Graetz';
     data.props.tagMap = tagMap;
+    data.props.pagination = pagination;
     fs.writeFileSync(
       path.resolve(__dirname, '../data/data.js'),
       `module.exports = ${JSON.stringify(data, undefined, '  ')};`);

@@ -52,6 +52,7 @@ generateDataForSsgwp(options)
   .then((data) => {
     // additional hardcoded paths:
     data.routes.push('/');
+    data.routes.push('/404.html');
 
     // additional tag paths:
     Object.keys(tagMap).forEach((tag) => {

@@ -5,7 +5,7 @@ const ReactRouter = require('react-router');
 
 let Link = ReactRouter.Link;
 
-let Post = React.createClass({
+let Navbar = React.createClass({
   render() {
     return (
       <div id="nav" className="nav">
@@ -92,4 +92,4 @@ let links = [
   }
 ];
 
-module.exports = Post;
+module.exports = Navbar;

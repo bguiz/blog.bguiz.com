@@ -5,6 +5,7 @@ const ReactRouter = require('react-router');
 const Helmet = require('react-helmet');
 
 const Navbar = require('./navbar.jsx');
+const Footbar = require('./footbar.jsx');
 
 require('./index.scss');
 
@@ -22,6 +23,7 @@ let Root = React.createClass({
         <div id="content" className="content">
           {this.props.children}
         </div>
+        <Footbar />
       </div>
     );
   },

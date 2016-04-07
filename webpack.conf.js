@@ -10,24 +10,23 @@ let webpackConfig = reactpubWebpack({
   data,
 });
 
+let extractCss = new extractTextPlugin('[name].css', {
+  allChunks: true,
+});
+let noErrors = new webpack.NoErrorsPlugin();
+
 let plugins = webpackConfig.plugins;
 
-let extractSass = new extractTextPlugin('[name].css');
-
-plugins.push(
-  // When compilation fails, do not publish
-  new webpack.NoErrorsPlugin());
-
-plugins.push(
-  extractSass);
+plugins.push(noErrors);
+plugins.push(extractCss);
 
 let loaders = webpackConfig.module.loaders;
 
-loaders.push(
-  {
-    test: /\.scss$/,
-    loader: extractSass.extract(['css', 'sass']),
-  });
+loaders.push({
+  test: /\.css$/,
+  loader: extractTextPlugin.extract(
+    'css?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]'),
+});
 
 console.log(webpackConfig);
 

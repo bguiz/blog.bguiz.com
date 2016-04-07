@@ -7,20 +7,21 @@ const Helmet = require('react-helmet');
 const Navbar = require('./layout/navbar.jsx');
 const Footbar = require('./layout/footbar.jsx');
 
-require('./index.scss');
+require('reset-css/reset.css');
+require('./root.css');
 
 let Link = ReactRouter.Link;
 
 let Root = React.createClass({
   render() {
     return (
-      <div id="root" className="root">
+      <div id="root-page" className="root-page">
         <Helmet
           title="Brendan Graetz"
           titleTemplate="%s - Brendan Graetz">
         </Helmet>
         <Navbar />
-        <div id="content" className="content">
+        <div id="root-content" className="root-content">
           {this.props.children}
         </div>
         <Footbar />

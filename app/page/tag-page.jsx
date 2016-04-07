@@ -12,20 +12,23 @@ let TagPage = React.createClass({
   render() {
     let tag = this.getTagData();
     return (
-      <div>
+      <div id="page-tag" className="page page-tag">
         <Helmet
           title={`Tagged "${tag.id}"`}>
         </Helmet>
-        <h1>Tagged <em>{tag.id}</em></h1>
-        <ul>
-        {tag.urls.map((url) => {
-          return (
-            <li key={url}>
-              <Link to={url}>{data.props.routes[url].meta.title}</Link>
-            </li>
-          );
-        })}
-        </ul>
+        <h1 id="page-title" className="page-title">Tagged <em>{tag.id}</em></h1>
+        <div id="page-body" className="page-body">
+          <ul className="tag-list">
+          {tag.urls.map((url) => {
+            return (
+              <li className="tag-item"
+                key={url}>
+                <Link to={url}>{data.props.routes[url].meta.title}</Link>
+              </li>
+            );
+          })}
+          </ul>
+        </div>
       </div>
     );
   },

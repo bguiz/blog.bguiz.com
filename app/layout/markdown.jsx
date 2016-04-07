@@ -2,8 +2,10 @@
 
 const React = require('react');
 const marked = require('marked');
+const reactCssModules = require('react-css-modules');
 
 const data = require('../../data/data.js');
+const markdownCss = require('./markdown.css');
 
 let Markdown = React.createClass({
   getInitialState() {
@@ -18,7 +20,9 @@ let Markdown = React.createClass({
   render() {
     let markup = this.getMarkup(this.props.markdown);
     return (
-      <span dangerouslySetInnerHTML={markup} />
+      <span
+        styleName="markdown-render"
+        dangerouslySetInnerHTML={markup} />
     );
   },
 
@@ -53,4 +57,4 @@ let Markdown = React.createClass({
 
 });
 
-module.exports = Markdown;
+module.exports = reactCssModules(Markdown, markdownCss);

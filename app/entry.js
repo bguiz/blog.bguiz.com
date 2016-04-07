@@ -12,6 +12,8 @@ let renderServer = reactpubEntry({
   routeMetadata: data,
   additionalAssets: {
     appCss: 'app.css',
+    vendorFontAwesomeCss:
+      'http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css',
   },
 });
 

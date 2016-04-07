@@ -3,9 +3,11 @@
 const React = require('react');
 const Helmet = require('react-helmet');
 const ReactRouter = require('react-router');
+const reactCssModules = require('react-css-modules');
 
 const Markdown = require('../layout/markdown.jsx');
 const PostTags = require('../layout/post-tags.jsx');
+const paginationPageCss = require('./pagination-page.css');
 const data = require('../../data/data.js');
 
 const SUMMARY_TRUNCATE_LENGTH = 350;
@@ -16,36 +18,43 @@ let PaginationPage = React.createClass({
     let pagination = this.getPaginationData();
     let prevNextComponent = this._renderPreviousNext(pagination);
     return (
-      <div>
+      <div id="page-pagination" className="page page-pagination">
         <Helmet
           title={`Page ${pagination.id}`}>
         </Helmet>
-        <h1>Page <em>{pagination.id}</em></h1>
-        <ul>
-        {pagination.pages.map((page, index) => {
-          let url = page.meta.url;
-          let summary = pagination.summaries[index];
-          return (
-            <li key={url}>
-              <Link to={url}>
-                <h2>{page.meta.title}</h2>
-              </Link>
-              <div>
-                <Markdown
-                  markdown={`${summary}&nbsp;&hellip;`} />
-                <Link to={url}>
-                  <span>continue reading &raquo;</span>
-                </Link>
-              </div>
-              <div>
-                <span>Tagged with:</span>
-                <PostTags
-                  post={page} />
-              </div>
-            </li>
-          );
-        })}
-        </ul>
+        <h1 id="page-title" className="page-title">
+          Page <em>{pagination.id}</em>
+        </h1>
+        <div id="page-body" className="page-body">
+          <ul className="pagination-list">
+          {pagination.pages.map((page, index) => {
+            let url = page.meta.url;
+            let summary = pagination.summaries[index];
+            return (
+              <li className="pagination-item"
+                key={url}>
+                <div className="pagination-item-header">
+                  <Link to={url}>
+                    <h2>{page.meta.title}</h2>
+                  </Link>
+                </div>
+                <div className="pagination-item-body">
+                  <Markdown
+                    markdown={`${summary}&nbsp;&hellip;`} />
+                  <Link to={url}>
+                    <span>continue reading &raquo;</span>
+                  </Link>
+                </div>
+                <div styleName="pagination-item-footer">
+                  <span>Tagged in:</span>
+                  <PostTags
+                    post={page} />
+                </div>
+              </li>
+            );
+          })}
+          </ul>
+        </div>
         {prevNextComponent}
       </div>
     );
@@ -111,4 +120,4 @@ let PaginationPage = React.createClass({
 
 });
 
-module.exports = PaginationPage;
+module.exports = reactCssModules(PaginationPage, paginationPageCss);

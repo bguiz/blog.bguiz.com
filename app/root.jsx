@@ -4,8 +4,8 @@ const React = require('react');
 const ReactRouter = require('react-router');
 const Helmet = require('react-helmet');
 
-const Navbar = require('./navbar.jsx');
-const Footbar = require('./footbar.jsx');
+const Navbar = require('./layout/navbar.jsx');
+const Footbar = require('./layout/footbar.jsx');
 
 require('./index.scss');
 

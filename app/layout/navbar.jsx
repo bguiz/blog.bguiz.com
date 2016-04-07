@@ -44,7 +44,7 @@ let links = [
   },
   {
     "id": "archives",
-    "href": "http://blog.bguiz.com/archives",
+    "href": "/archives",
     "text": "Archives",
     "desc": "Archives"
   },

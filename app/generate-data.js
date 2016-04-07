@@ -54,6 +54,7 @@ generateDataForSsgwp(options)
   .then((data) => {
     // additional hardcoded paths:
     data.routes.push('/');
+    data.routes.push('/archives');
     data.routes.push('/404.html');
 
     // additional tag paths:

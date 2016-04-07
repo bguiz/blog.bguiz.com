@@ -4,21 +4,21 @@ const React = require('react');
 const Helmet = require('react-helmet');
 const ReactRouter = require('react-router');
 
-const data = require('../data/data.js');
+const data = require('../../data/data.js');
 
 let Link = ReactRouter.Link;
 
-let PaginationPage = React.createClass({
+let TagPage = React.createClass({
   render() {
-    let pagination = this.getPaginationData();
+    let tag = this.getTagData();
     return (
       <div>
         <Helmet
-          title={`Page ${pagination.id}`}>
+          title={`Tagged "${tag.id}"`}>
         </Helmet>
-        <h1>Page <em>{pagination.id}</em></h1>
+        <h1>Tagged <em>{tag.id}</em></h1>
         <ul>
-        {pagination.urls.map((url) => {
+        {tag.urls.map((url) => {
           return (
             <li key={url}>
               <Link to={url}>{data.props.routes[url].meta.title}</Link>
@@ -30,10 +30,10 @@ let PaginationPage = React.createClass({
     );
   },
 
-  getPaginationData() {
-    let id = this.props.routeParams.pageId;
-    let paginationGroup = data.props.pagination[id - 1];
-    let urls = paginationGroup
+  getTagData() {
+    let id = this.props.routeParams.tagId;
+    let tagMap = data.props.tagMap;
+    let urls = tagMap[id]
       .map((url) => {
         return url.replace(/\/$/, '');
       })
@@ -48,4 +48,4 @@ let PaginationPage = React.createClass({
 
 });
 
-module.exports = PaginationPage;
+module.exports = TagPage;

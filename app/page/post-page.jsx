@@ -4,8 +4,9 @@ const React = require('react');
 const ReactRouter = require('react-router');
 const Helmet = require('react-helmet');
 
-const Markdown = require('./markdown.jsx');
-const data = require('../data/data.js');
+const Markdown = require('../layout/markdown.jsx');
+const PostTags = require('../layout/post-tags.jsx');
+const data = require('../../data/data.js');
 
 let Link = ReactRouter.Link;
 
@@ -25,15 +26,7 @@ let Post = React.createClass({
           <div>
             Tagged in:
           </div>
-          <ul>
-            {post.meta.tags.map((tag) => {
-              return (
-                <li key={tag}>
-                  <Link to={`/tags/${tag}`}>{tag}</Link>
-                </li>
-              );
-            })}
-          </ul>
+          <PostTags post={post} />
         </div>
       </div>
     );

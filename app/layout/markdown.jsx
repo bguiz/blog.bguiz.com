@@ -3,7 +3,7 @@
 const React = require('react');
 const marked = require('marked');
 
-const data = require('../data/data.js');
+const data = require('../../data/data.js');
 
 let Markdown = React.createClass({
   getInitialState() {

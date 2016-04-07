@@ -4,7 +4,7 @@ const React = require('react');
 const Helmet = require('react-helmet');
 const ReactRouter = require('react-router');
 
-const data = require('../data/data.js');
+const data = require('../../data/data.js');
 
 let Link = ReactRouter.Link;
 

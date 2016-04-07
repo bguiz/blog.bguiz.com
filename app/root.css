@@ -1,0 +1,48 @@
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  margin-right: 0;
+  margin-left: 0;
+  font-family: 'Open Sans',sans-serif;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+a {
+  text-decoration: none;
+  color: #428bca;
+}
+
+pre {
+  display: block;
+  white-space: pre;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding: 10.5px;
+  margin: 20px 0;
+  font-size: 15px;
+  line-height: 1.42857143;
+  color: #333;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: inherit;
+  font-family: Monaco,Menlo,Consolas,"Courier New",monospace;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+:global .page {
+  margin-top: 3em;
+  margin-right: 20px;
+  margin-bottom: 3em;
+  margin-left: 20px;
+}
+
+:global .page-footer {
+  margin-top: 1em;
+}

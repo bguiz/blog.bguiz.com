@@ -3,6 +3,7 @@
 const React = require('react');
 const marked = require('marked');
 const reactCssModules = require('react-css-modules');
+// const highlightJs = require('highlight.js');
 
 const data = require('../../data/data.js');
 const markdownCss = require('./markdown.css');
@@ -47,7 +48,14 @@ let Markdown = React.createClass({
     let markup = marked(
       // '### sub3 heading\n\nThis is **bold** and *italic*.',
       markdown,
-      { sanitize: true }
+      {
+        sanitize: false,
+        smartypants: true,
+        smartLists: true,
+        // highlight: function (code) {
+        //   return highlightJs.highlightAuto(code).value;
+        // }
+      }
     );
     markup = {
       __html: markup,

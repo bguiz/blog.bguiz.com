@@ -1,19 +1,40 @@
 'use strict';
 
 const React = require('react');
+const ReactRouter = require('react-router');
+const Helmet = require('react-helmet');
+
+const data = require('../../data/data.js');
+
+let Link = ReactRouter.Link;
 
 let AliasPost = React.createClass({
   render() {
+    let post = this.getPostData();
     return (
       <div id="page-alias" className="page page-alias">
-        <h1 id="page-title" className="page-title">AliasPost</h1>
+        <Helmet
+          meta={[{
+            "http-equiv": 'refresh',
+            "content": `0; url=${post.meta.url}`,
+          }]}
+        />
+        <h1 id="page-title" className="page-title">{post.meta.title}</h1>
         <div id="page-body" className="page-body">
-          <pre>
-            {JSON.stringify(this.props, undefined, '  ')}
-          </pre>
+          <Link
+            to={post.meta.url}>
+            This post has moved&hellip;
+          </Link>
         </div>
       </div>
     );
+  },
+
+  getPostData() {
+    let path = this.props.location.pathname.replace(/\/$/, '');
+    path = data.props.aliases[path] || path;
+    let post = data.props.routes[path] || {};
+    return post;
   },
 });
 

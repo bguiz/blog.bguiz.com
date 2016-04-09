@@ -8,6 +8,7 @@ const moment = require('moment');
 
 const Markdown = require('../layout/markdown.jsx');
 const PostTags = require('../layout/post-tags.jsx');
+const DisqusComments = require('../layout/disqus-comments.jsx');
 const data = require('../../data/data.js');
 const postPageCss = require('./post-page.css');
 
@@ -29,8 +30,14 @@ let PostPage = React.createClass({
             src={post.meta.src}/>
         </div>
         <div id="page-footer" className="page-footer">
-          <span>Tagged in:</span>
-          <PostTags post={post} />
+          <div>
+            <span>Tagged in:</span>
+            <PostTags post={post} />
+          </div>
+          <div>
+            <DisqusComments
+              post={post} />
+          </div>
         </div>
       </div>
     );

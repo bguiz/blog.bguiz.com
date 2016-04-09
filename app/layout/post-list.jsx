@@ -14,20 +14,16 @@ let Link = ReactRouter.Link;
 
 let PostList = React.createClass({
   render() {
+    let posts = this.getPosts();
     return (
       <ul styleName="post-list">
-        {this.props.urls.map((url) => {
-          let post = data.props.routes[url];
+        {posts.map((post) => {
           return (
             <li styleName="post-list-item"
-              key={url}>
-              <div styleName="post-list-date">{
-                moment(post.meta.date)
-                  .zone('+08:00')
-                  .format('YYYY/MM/DD')
-              }</div>
+              key={post.meta.url}>
+              <div styleName="post-list-date">{post.meta.displayDate}</div>
               <div styleName="post-list-title">
-                <Link to={url}>{post.meta.title}</Link>
+                <Link to={post.meta.url}>{post.meta.title}</Link>
               </div>
               <div styleName="post-list-tags">
                 <span>Tagged in:</span>
@@ -38,6 +34,20 @@ let PostList = React.createClass({
         })}
       </ul>
     );
+  },
+
+  getPosts() {
+    let posts = this.props.urls.map((url) => {
+      let post = data.props.routes[url];
+      post.meta.displayDate =
+        moment(post.meta.date)
+          .zone('+08:00')
+          .format('YYYY/MM/DD');
+      return post;
+    }).sort((postA, postB) => {
+      return postB.meta.date - postA.meta.date;
+    });
+    return posts;
   },
 });
 

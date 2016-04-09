@@ -67,7 +67,7 @@ let PaginationPage = React.createClass({
         <Link
           to={`/page/${pagination.id-1}`}
           styleName="pagination-newer">
-          <span class="icon icon-arrow-left-2"></span>
+          <span className="icon icon-arrow-left-2"></span>
           <span>Newer</span>
         </Link>);
     }
@@ -77,7 +77,7 @@ let PaginationPage = React.createClass({
           to={`/page/${pagination.id+1}`}
           styleName="pagination-older">
           <span>Older</span>
-          <span class="icon icon-arrow-right-2"></span>
+          <span className="icon icon-arrow-right-2"></span>
         </Link>);
     }
     return (

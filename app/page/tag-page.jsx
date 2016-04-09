@@ -4,6 +4,7 @@ const React = require('react');
 const Helmet = require('react-helmet');
 const ReactRouter = require('react-router');
 
+const PostList = require('../layout/post-list.jsx');
 const data = require('../../data/data.js');
 
 let Link = ReactRouter.Link;
@@ -19,14 +20,7 @@ let TagPage = React.createClass({
         <h1 id="page-title" className="page-title">Tagged <em>{tag.id}</em></h1>
         <div id="page-body" className="page-body">
           <ul className="tag-list">
-          {tag.urls.map((url) => {
-            return (
-              <li className="tag-item"
-                key={url}>
-                <Link to={url}>{data.props.routes[url].meta.title}</Link>
-              </li>
-            );
-          })}
+          <PostList urls={tag.urls} />
           </ul>
         </div>
       </div>

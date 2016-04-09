@@ -7,6 +7,7 @@ const Helmet = require('react-helmet');
 const Navbar = require('./layout/navbar.jsx');
 const FootProfile = require('./layout/foot-profile.jsx');
 const Footbar = require('./layout/footbar.jsx');
+const GoogleAnalytics = require('./layout/google-analytics.jsx');
 
 require('reset-css/reset.css');
 require('./root.css');
@@ -51,6 +52,7 @@ let Root = React.createClass({
           titleTemplate="%s - Brendan Graetz"
           defaultTitle="Home">
         </Helmet>
+        <GoogleAnalytics />
         <Navbar />
         <div id="root-content" className="root-content">
           {this.props.children}

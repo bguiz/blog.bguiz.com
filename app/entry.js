@@ -1,13 +1,14 @@
 'use strict';
 
 const reactpubEntry = require('reactpub/entry');
+const reactHelmet = require('react-helmet');
 
 const routes = require('./routes.jsx');
 const data = require('../data/data.js');
 
 let renderServer = reactpubEntry({
   reactOnClient: true,
-  useHelmet: true,
+  reactHelmet,
   routes,
   routeMetadata: data,
   additionalAssets: {

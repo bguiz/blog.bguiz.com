@@ -1,0 +1,22 @@
+.post-list {}
+
+.post-list-item {
+  position: relative;
+  padding: 20px 0;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.post-list-date {
+  font-size: 1.2em;
+  line-height: 1.1em;
+  color: #999999;
+}
+
+.post-list-title {
+  font-size: 1.4em;
+  line-height: 1.2em;
+  color: #555555;
+}
+
+.post-list-tags {}

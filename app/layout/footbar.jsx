@@ -11,7 +11,9 @@ let Footbar = React.createClass({
   render() {
     return (
       <div id="footbar" styleName="footbar">
-        Copyright &copy; 2008-present Brendan Graetz
+        <p styleName="footbar-text">
+          Copyright &copy; 2008-present Brendan Graetz
+        </p>
       </div>
     );
   },

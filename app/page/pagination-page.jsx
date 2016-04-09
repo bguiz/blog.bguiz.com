@@ -23,7 +23,7 @@ let PaginationPage = React.createClass({
           title={`Page ${pagination.id}`}>
         </Helmet>
         <h1 id="page-title" className="page-title">
-          Page <em>{pagination.id}</em>
+          Brendan Graetz
         </h1>
         <div id="page-body" className="page-body">
           <ul className="pagination-list">
@@ -66,22 +66,30 @@ let PaginationPage = React.createClass({
       prevComponent = (
         <Link
           to={`/page/${pagination.id-1}`}
-          className="pagination-prev">
-          <span>Previous</span>
+          styleName="pagination-newer">
+          <span className="icon icon-arrow-left-2"></span>
+          <span>Newer</span>
         </Link>);
     }
     if (pagination.hasNext) {
       nextComponent = (
         <Link
           to={`/page/${pagination.id+1}`}
-          className="pagination-next">
-          <span>Next</span>
+          styleName="pagination-older">
+          <span>Older</span>
+          <span className="icon icon-arrow-right-2"></span>
         </Link>);
     }
     return (
-      <div className="pagination-prevnext">
+      <div styleName="pagination-nav">
         {prevComponent}
         {nextComponent}
+        <Link
+          to={`/archives`}
+          styleName="pagination-archives">
+          - Archives -
+        </Link>
+        <div styleName="pagination-clear" />
       </div>);
   },
 

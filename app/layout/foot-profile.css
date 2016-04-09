@@ -1,0 +1,39 @@
+.footprofile {
+  background-color: #eee;
+  padding: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  min-height: 200px;
+  border-radius: 24px;
+  border: 5px solid #ddd;
+}
+
+.footprofile-logo {
+  float: right;
+  padding: 8px;
+  margin-right: 40px;
+  background: #fff;
+  border-radius: 50%;
+  /*behavior: url(PIE.htc);*/
+  border: 5px solid #ddd;
+}
+
+.footprofile-blurb {
+  font-style: oblique;
+  font-size: 1.2em;
+}
+
+.footer-links {}
+
+.footer-link {
+  margin: 0.3em 0.6em 0.3em 0.6em;
+}
+
+.footer-link-icon {}
+
+.footer-link-text {
+  padding: 0 0.5em 0 .5em;
+  font-weight: bold;
+}

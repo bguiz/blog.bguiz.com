@@ -67,8 +67,7 @@ let PaginationPage = React.createClass({
         <Link
           to={`/page/${pagination.id-1}`}
           styleName="pagination-newer">
-          <span className="icon icon-arrow-left-2"></span>
-          <span>Newer</span>
+          <span>&laquo; Newer</span>
         </Link>);
     }
     if (pagination.hasNext) {
@@ -76,8 +75,7 @@ let PaginationPage = React.createClass({
         <Link
           to={`/page/${pagination.id+1}`}
           styleName="pagination-older">
-          <span>Older</span>
-          <span className="icon icon-arrow-right-2"></span>
+          <span>Older &raquo;</span>
         </Link>);
     }
     return (

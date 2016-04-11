@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Teach Kids Code: List of Activities
+title: "Teach Kids Code: List of Activities"
 date: 2015-04-09 22:21
 comments: true
 draft: true

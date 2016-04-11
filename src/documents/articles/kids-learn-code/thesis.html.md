@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Teach Kids Code: Thesis
+title: "Teach Kids Code: Thesis"
 date: 2015-04-07 11:58
 comments: true
 draft: true

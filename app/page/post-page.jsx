@@ -48,6 +48,11 @@ let PostPage = React.createClass({
     path = data.props.aliases[path] || path;
     let post = data.props.routes[path] || {};
     // augment with display date
+    if (!post.meta) {
+      console.error('post without meta', post);
+      // throw `Post is missing meta`;
+      return undefined;
+    }
     post.meta.displayDate =
       moment(post.meta.date)
         .zone('+08:00')

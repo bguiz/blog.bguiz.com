@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Teach Kids Code: Activity Design
+title: "Teach Kids Code: Activity Design"
 date: 2015-04-19 08:16
 comments: true
 draft: true

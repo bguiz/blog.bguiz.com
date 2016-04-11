@@ -7,6 +7,7 @@ const generateDataForSsgwp = require('find-posts/generate-data-for-ssgwp');
 
 let cwd = process.cwd();
 let matchMarkdownPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html\.md$/;
+let matchMarkdownArticleRegex = /^(.+)\.html\.md$/;
 let matchHtmlPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html$/;
 let tagMap = {};
 let pagination = [];
@@ -24,17 +25,29 @@ let options = {
     {
       path: path.resolve(cwd, './src/documents/wordpressposts/'),
       regexes: [ matchHtmlPostRegex ],
+    },
+    {
+      path: path.resolve(cwd, './src/documents/articles/'),
+      regexes: [ matchMarkdownArticleRegex ],
     }
   ],
   postToRouteMapper(post) {
     let urlAlias = post.header['dateurls-override'];
+    post.meta = post.meta || {};
     if (typeof urlAlias === 'string' &&
-      post.file.fullpath.indexOf('tumblrposts') >= 0) {
-      post.meta = {
-        urlAliases: [urlAlias],
-      };
+      post.file.fullpath.indexOf('src/documents/tumblrposts') >= 0) {
+      post.meta.urlAliases= [urlAlias];
     }
-    let url = (`/${post.file.year}/${post.file.month}/${post.file.day}/${post.file.slug}`);
+    let url;
+    if (post.file.fullpath.indexOf('src/documents/articles') >= 0) {
+      url = '/articles/'+post.file.fullpath.slice(cwd.length + 24, -8);
+      post.file.slug = post.file.fullpath.match(matchMarkdownArticleRegex)[1];
+      console.log('article', url);
+    } else {
+      url = (`/${post.file.year}/${post.file.month}/${post.file.day}/${post.file.slug}`);
+    }
+    post.header.url = url;
+
     // We create a side effect by means of closure in order to maintain
     // a mapping of tag to list of post urls
     let tags = post.header.__tags || [];

@@ -11,6 +11,7 @@ const TagPage = require('./page/tag-page.jsx');
 const PaginationPage = require('./page/pagination-page.jsx');
 const ArchivePage = require('./page/archive-page.jsx');
 const Four04Page = require('./page/404-page.jsx');
+const ArticlePage = require('./page/article-page.jsx');
 
 let Route = ReactRouter.Route;
 let IndexRoute = ReactRouter.IndexRoute;
@@ -18,11 +19,12 @@ let IndexRoute = ReactRouter.IndexRoute;
 let Routes = (
   <Route path="/" component={Root}>
     <IndexRoute component={IndexPage} />
+    <Route path="page/:pageId" component={PaginationPage} />
     <Route path=":year/:month/:day/:slug" component={PostPage} />
     <Route path="post/:tumblrId/:slug" component={AliasPostPage} />
     <Route path="tags/:tagId" component={TagPage} />
-    <Route path="page/:pageId" component={PaginationPage} />
     <Route path="archives" component={ArchivePage} />
+    <Route path="articles/*" component={ArticlePage} />
     <Route path="404.html" component={Four04Page} />
   </Route>
 );

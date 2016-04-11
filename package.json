@@ -20,6 +20,7 @@
     "reset-css": "^2.0.2011012603"
   },
   "devDependencies": {
+    "autodocs": "^0.7.1",
     "big.js": "^3.1.3",
     "copy-webpack-plugin": "^1.1.1",
     "css-loader": "^0.23.1",
@@ -45,7 +46,9 @@
   },
   "main": "./webpack.conf.js",
   "scripts": {
-    "regenerate-data": "node ./app/generate-data.js",
+    "generatedocs": "webpack version && npm run generate-data && npm run build",
+    "autodocs": "node ./node_modules/autodocs",
+    "generate-data": "node ./app/generate-data.js",
     "build": "webpack --config webpack.conf.js",
     "build-server": "npm run build && http-server ./dist/ -c-1 -p51111",
     "dev-server": "webpack-dev-server --config webpack.conf.js --port 51111"

@@ -50,12 +50,29 @@ let copyWebpack = new copyWebpackPlugin([
     { glob: '**/*.html', dot: true }
   ],
 });
+let copyWebpack2 = new copyWebpackPlugin([
+  {
+    from: 'src/documents/presentations',
+    to: 'presentations',
+    force: true,
+  },
+  {
+    from: 'src/files/revealjs',
+    to: 'revealjs',
+    force: true,
+  }
+], {
+  ignore: [
+    { glob: '**/*.eco', dot: true }
+  ],
+});
 
 let plugins = webpackConfig.plugins;
 
 plugins.push(noErrors);
 plugins.push(extractCss);
 plugins.push(copyWebpack);
+plugins.push(copyWebpack2);
 
 let loaders = webpackConfig.module.loaders;
 

@@ -33,13 +33,13 @@ let copyWebpack = new copyWebpackPlugin([
     force: true,
   },
   {
-    from: 'src/CNAME',
+    from: 'src/files/CNAME',
     to: 'CNAME',
     toType: 'file',
     force: true,
   },
   {
-    from: 'src/robots.txt',
+    from: 'src/files/robots.txt',
     to: 'robots.txt',
     toType: 'file',
     force: true,

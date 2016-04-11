@@ -4,11 +4,10 @@ go:
 install:
 - npm i
 script:
-- npm run setupci
 - npm run autodocs
 env:
   global:
-  - secure: eNxgUWwksPraPZK8Wo1C3ryvtTR9xiN+r1YyvvuTaoD2BZ0yl7+0R1141h8m8q1ikZMrisObpH96dSYWau7okUpJpwlxEPlPTnH2KWuvX0RfxfE5+f8bN0JeQDCDFd6g1CYVGXsSvxqC+wuXY9a9hoWZrAR1LnPUEleboXPF8vXgoxSAzCgotb93tCXHE+1DtgyRJ62z+P1OVh2YpvMsGm/kQO/RzlDQNS3tsFgvRXAc8rHQ5kw7PT/S+Sy+8Th5/sAF+60rvvYzFClJmyInGxKJ2cr53QoQAWeDEpiCeGftpNprL/RqZOTF0khyql9A1zfMIhBW4neAWB2jwYYLUMS3Tp9UAgSQwdFhyIoRRFzvfFe2C4SA1iwtS9Kza6iRCYW2XCFGFFa/CFk4amKWWy5nCapHF2Dur92fS7Bui0JOCNNVFPVoWzk+r5P7Pz+ZGCBM+ED4jDiweCWIfwlW/I7uago+bZoIgErw4yr2mb4D27GDw9wQms8872ueJ9JTIal5HE3wo14t6QIF9GBxuMzsr28sO79LIw5hg8EIQKUMhrPEOEecEq2/Mnljwf3wQtYTiijWThFMnJbdufJmfZZjNqv/OqPqz/sidkLV5uykpqlsLQXLUIv0eNMZg4zOD8vKK20VlIq98wvzmGzL/tT4C+cGCxpvfoqL2ztpD88=
+  - secure: E1YVjzlHTRHxMchIAmRB1gZVvFq68D44qjG37KQVxGnpRALeS64SYWsjt1K93l6Hk4hRKJ/z+r0opDzGuXYjiaaPdHYPFCBQ9A8kC8ncIlj6t4ik6hX0fk3eeloaV3W9EBe9FCvEvKC0xYj0o6iocFCrDD8rJn/YVqJfTllO+bM=
   - DOCUMENT_BRANCH: 'develop'
   - DOCUMENT_GENERATED_FOLDER: 'dist'
   - FLAG_PUBLISH_IN_ROOT: 'true'

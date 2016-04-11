@@ -1,6 +1,6 @@
 language: node_js
-go:
-- '4.3'
+node_js:
+- '4'
 install:
 - npm i
 script:

@@ -7,7 +7,7 @@ script:
 - npm run autodocs
 env:
   global:
-  - secure: E1YVjzlHTRHxMchIAmRB1gZVvFq68D44qjG37KQVxGnpRALeS64SYWsjt1K93l6Hk4hRKJ/z+r0opDzGuXYjiaaPdHYPFCBQ9A8kC8ncIlj6t4ik6hX0fk3eeloaV3W9EBe9FCvEvKC0xYj0o6iocFCrDD8rJn/YVqJfTllO+bM=
+  - secure: EzwhVGxvEIOkgdXfA2qmHnsM1P+oURVJQr0PtwQw6n62qP9m/1PXOyUVFKrHXIDSW5WX7gJdNG8Byc3rCnIg2XWT1t5o9HOLN44H6r+SAIKi1OYEGZKQ23vqNd/wF5y68koIF4yEmMB1WSxoLWweJDdWz8o5go0XNeJmzWh5D+w=
   - DOCUMENT_BRANCH: 'develop'
   - DOCUMENT_GENERATED_FOLDER: 'dist'
   - FLAG_PUBLISH_IN_ROOT: 'true'

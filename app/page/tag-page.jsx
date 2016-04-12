@@ -15,7 +15,9 @@ let TagPage = React.createClass({
     return (
       <div id="page-tag" className="page page-tag">
         <Helmet
-          title={`Tagged "${tag.id}"`}>
+          meta={tag.helmet.meta}
+          link={tag.helmet.link}
+          title={tag.helmet.title}>
         </Helmet>
         <h1 id="page-title" className="page-title">Tagged <em>{tag.id}</em></h1>
         <div id="page-body" className="page-body">
@@ -37,9 +39,33 @@ let TagPage = React.createClass({
       .filter((url) => {
         return !!data.props.routes[url];
       });
+    let helmet = {
+      meta: [
+        {
+          name: 'og:title',
+          content: `Tagged "${id}" - Brendan Graetz`,
+        },
+        {
+          name: 'og:url',
+          content: 'http://blog.bguiz.com'+`/tags/${id}`,
+        },
+        {
+          name: 'og:image',
+          content: 'http://blog.bguiz.com/images/logo-400px.png',
+        }
+      ],
+      link: [
+        {
+          rel: 'canonical',
+          href: 'http://bguiz.com/'+`/tags/${id}`,
+        }
+      ],
+      title: `Tagged "${id}" - Brendan Graetz`,
+    };
     return {
       id,
       urls,
+      helmet,
     };
   }
 

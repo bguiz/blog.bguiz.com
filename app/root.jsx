@@ -57,7 +57,7 @@ const meta = [
   },
   {
     name: 'og:type',
-    content: 'article',
+    content: 'site',
   }
 ];
 

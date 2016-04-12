@@ -62,6 +62,10 @@ let ArticlePage = React.createClass({
         {
           name: 'og:image',
           content: article.meta.image || 'http://blog.bguiz.com/images/logo-400px.png',
+        },
+        {
+          name: 'og:type',
+          content: 'article',
         }
       ],
       link: [

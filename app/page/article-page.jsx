@@ -19,6 +19,8 @@ let ArticlePage = React.createClass({
     return (
       <div id="page-article" className="page page-article">
         <Helmet
+          meta={article.helmet.meta}
+          link={article.helmet.link}
           title={article.meta.title}>
         </Helmet>
         <h1 id="page-title" styleName="page-title">{article.meta.title}</h1>
@@ -45,6 +47,30 @@ let ArticlePage = React.createClass({
   getArticleData() {
     let path = this.props.location.pathname.replace(/\/$/, '');
     let article = data.props.routes[path] || {};
+    article.helmet = article.helmet || {
+      meta: [
+        {
+          name: 'og:title',
+          content:
+            ((article.meta.title && `${article.meta.title} - Brendan Graetz`) ||
+              'Brendan Graetz'),
+        },
+        {
+          name: 'og:url',
+          content: 'http://blog.bguiz.com'+article.meta.url,
+        },
+        {
+          name: 'og:image',
+          content: article.meta.image || 'http://blog.bguiz.com/images/logo-400px.png',
+        }
+      ],
+      link: [
+        {
+          rel: 'canonical',
+          href: 'http://bguiz.com/'+article.meta.url,
+        }
+      ],
+    };
     return article;
   },
 });

@@ -42,7 +42,6 @@ let options = {
     if (post.file.fullpath.indexOf('src/documents/articles') >= 0) {
       url = '/articles/'+post.file.fullpath.slice(cwd.length + 24, -8);
       post.file.slug = post.file.fullpath.match(matchMarkdownArticleRegex)[1];
-      console.log('article', url);
     } else {
       url = (`/${post.file.year}/${post.file.month}/${post.file.day}/${post.file.slug}`);
     }
@@ -69,6 +68,46 @@ generateDataForSsgwp(options)
     data.routes.push('/');
     data.routes.push('/archives');
     data.routes.push('/404.html');
+    data.routes.push('/presentations');
+    data.routes.push('/books');
+
+    // presentation data:
+    //TODO presently hardcoded, should detect from file system instead
+    data.props.presentations = [
+      {
+        meta: {
+          url: '/presentations/haxe-for-javascripters/',
+          title: 'Haxe for Javascripters',
+          subtitle: 'Have you tried Haxe yet?',
+        },
+      },
+      {
+        meta: {
+          url: '/presentations/software-stewardship/',
+          title: 'Software Stewardship',
+          subtitle: 'How to be a good "maintainer" of your software project',
+        },
+      },
+      {
+        meta: {
+          url: '/presentations/chrome-dev-tools/',
+          title: 'Chrome Dev Tools',
+          subtitle: 'How to use your browser effectively for web development',
+        },
+      }
+    ];
+
+    // book data:
+    //TODO presently hardcoded, should detect from file system instead
+    data.props.books = [
+      {
+        meta: {
+          url: 'http://angularjs-emberjs-compare.bguiz.com/',
+          title: 'AngularJs vs EmberJs',
+          subtitle: 'A guide to choosing a single-page application framework',
+        },
+      }
+    ];
 
     // additional tag paths:
     Object.keys(tagMap).forEach((tag) => {

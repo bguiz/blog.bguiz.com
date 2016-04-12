@@ -1,0 +1,13 @@
+.presentation-item {
+  margin-top: 0.5em;
+}
+
+.presentation-item-title {
+  font-size: 1.8em;
+  line-height: 1.2em;
+}
+
+.presentation-item-subtitle {
+  font-size: 1.2em;
+  line-height: 1.2em;
+}

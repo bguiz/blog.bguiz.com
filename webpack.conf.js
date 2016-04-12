@@ -57,8 +57,28 @@ let copyWebpack2 = new copyWebpackPlugin([
     force: true,
   },
   {
-    from: 'src/files/revealjs',
-    to: 'revealjs',
+    from: 'node_modules/reveal.js/js',
+    to: 'revealjs/js',
+    force: true,
+  },
+  {
+    from: 'node_modules/reveal.js/css',
+    to: 'revealjs/css',
+    force: true,
+  },
+  {
+    from: 'node_modules/reveal.js/img',
+    to: 'revealjs/img',
+    force: true,
+  },
+  {
+    from: 'node_modules/reveal.js/lib',
+    to: 'revealjs/lib',
+    force: true,
+  },
+  {
+    from: 'node_modules/reveal.js/plugin',
+    to: 'revealjs/plugin',
     force: true,
   }
 ], {

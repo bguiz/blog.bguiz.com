@@ -10,6 +10,8 @@ const AliasPostPage = require('./page/alias-post-page.jsx');
 const TagPage = require('./page/tag-page.jsx');
 const PaginationPage = require('./page/pagination-page.jsx');
 const ArchivePage = require('./page/archive-page.jsx');
+const PresentationsPage = require('./page/presentations-page.jsx');
+const BooksPage = require('./page/books-page.jsx');
 const Four04Page = require('./page/404-page.jsx');
 const ArticlePage = require('./page/article-page.jsx');
 
@@ -24,6 +26,8 @@ let Routes = (
     <Route path="post/:tumblrId/:slug" component={AliasPostPage} />
     <Route path="tags/:tagId" component={TagPage} />
     <Route path="archives" component={ArchivePage} />
+    <Route path="presentations" component={PresentationsPage} />
+    <Route path="books" component={BooksPage} />
     <Route path="articles/*" component={ArticlePage} />
     <Route path="404.html" component={Four04Page} />
   </Route>

@@ -1,0 +1,13 @@
+.book-item {
+  margin-top: 0.5em;
+}
+
+.book-item-title {
+  font-size: 1.8em;
+  line-height: 1.2em;
+}
+
+.book-item-subtitle {
+  font-size: 1.2em;
+  line-height: 1.2em;
+}

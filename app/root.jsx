@@ -26,18 +26,50 @@ const meta = [
   {
     "property": "og:type",
     "content": "article",
+  },
+  {
+    name: 'og:ttl',
+    content: '600',
+  },
+  {
+    name: 'og:site_name',
+    content: 'Brendan Graetz',
+  },
+  {
+    name: 'og:title',
+    content: 'Brendan Graetz',
+  },
+  {
+    name: 'og:url',
+    content: 'http://blog.bguiz.com/',
+  },
+  {
+    name: 'og:image',
+    content: 'http://blog.bguiz.com/images/logo-400px.png',
+  },
+  {
+    name: 'og:description',
+    content: 'The blog that Brendan writes',
+  },
+  {
+    name: 'og:locale',
+    content: 'en_GB',
+  },
+  {
+    name: 'og:type',
+    content: 'article',
   }
 ];
 
 const htmlAttributes = {
-  "lang": "en-GB",
+  lang: 'en-GB',
 };
 
 const link = [
   {
-    "rel": "canonical",
-    "href": "http://bguiz.com/",
-  },
+    rel: 'canonical',
+    href: 'http://bguiz.com/',
+  }
 ];
 
 let Root = React.createClass({

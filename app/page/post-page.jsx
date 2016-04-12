@@ -20,6 +20,8 @@ let PostPage = React.createClass({
     return (
       <div id="page-post" className="page page-post">
         <Helmet
+          meta={post.helmet.meta}
+          link={post.helmet.link}
           title={post.meta.title}>
         </Helmet>
         <h1 id="page-title" styleName="page-title">{post.meta.title}</h1>
@@ -57,6 +59,30 @@ let PostPage = React.createClass({
       moment(post.meta.date)
         .zone('+08:00')
         .format('YYYY/MM/DD');
+    post.helmet = post.helmet || {
+      meta: [
+        {
+          name: 'og:title',
+          content:
+            ((post.meta.title && `${post.meta.title} - Brendan Graetz`) ||
+              'Brendan Graetz'),
+        },
+        {
+          name: 'og:url',
+          content: 'http://blog.bguiz.com'+post.meta.url,
+        },
+        {
+          name: 'og:image',
+          content: post.meta.image || 'http://blog.bguiz.com/images/logo-400px.png',
+        }
+      ],
+      link: [
+        {
+          rel: 'canonical',
+          href: 'http://bguiz.com/'+post.meta.url,
+        }
+      ],
+    };
     return post;
   }
 

@@ -13,6 +13,8 @@ let PresentationsPage = React.createClass({
     return (
       <div id="page-pagination" className="page page-pagination">
         <Helmet
+          meta={helmet.meta}
+          link={helmet.link}
           title={`Presentations`}>
         </Helmet>
         <h1 id="page-title" className="page-title">
@@ -48,6 +50,29 @@ let PresentationsPage = React.createClass({
     return data.props.presentations;
   },
 });
+
+const helmet = {
+  meta: [
+    {
+      name: 'og:title',
+      content: 'Presentations by Brendan Graetz',
+    },
+    {
+      name: 'og:url',
+      content: 'http://blog.bguiz.com/presentations',
+    },
+    {
+      name: 'og:image',
+      content: 'http://blog.bguiz.com/images/logo-400px.png',
+    }
+  ],
+  link: [
+    {
+      rel: 'canonical',
+      href: 'http://bguiz.com/presentations/',
+    }
+  ],
+};
 
 module.exports = reactCssModules(PresentationsPage, presentationsPageCss);
 

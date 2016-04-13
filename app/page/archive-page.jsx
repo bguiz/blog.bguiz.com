@@ -6,8 +6,11 @@ const Helmet = require('react-helmet');
 
 const PostList = require('../layout/post-list.jsx');
 const data = require('../../data/data.js');
+const config = require('../config.js');
 
 let Link = ReactRouter.Link;
+
+const title = 'Archives';
 
 let ArchivePage = React.createClass({
   render() {
@@ -19,7 +22,7 @@ let ArchivePage = React.createClass({
           link={header.link}
           title={header.title}>
         </Helmet>
-        <h1 id="page-title" className="page-title">Blog Archives</h1>
+        <h1 id="page-title" className="page-title">{title}</h1>
         <div id="page-content" className="page-content">
           <PostList urls={Object.keys(data.props.routes)} />
         </div>
@@ -32,24 +35,23 @@ let ArchivePage = React.createClass({
       meta: [
         {
           name: 'og:title',
-          content: `Blog Archives - Brendan Graetz`,
+          content: `${title} - ${config.siteName}`,
         },
         {
           name: 'og:url',
-          content: 'http://blog.bguiz.com'+this.props.location.pathname,
+          content: `${config.baseUrl}${this.props.location.pathname}/`,
         },
         {
           name: 'og:image',
-          content: 'http://blog.bguiz.com/images/logo-400px.png',
+          content: `${config.baseUrl}${config.defaultUrl}`,
         }
       ],
       link: [
         {
           rel: 'canonical',
-          href: 'http://bguiz.com'+this.props.location.pathname,
+          href: `${config.baseUrl}${this.props.location.pathname}/`,
         }
       ],
-      title: `Blog Archives - Brendan Graetz`,
     };
   },
 });

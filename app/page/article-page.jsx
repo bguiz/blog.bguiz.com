@@ -11,6 +11,7 @@ const Markdown = require('../layout/markdown.jsx');
 const PostTags = require('../layout/post-tags.jsx');
 const DisqusComments = require('../layout/disqus-comments.jsx');
 const data = require('../../data/data.js');
+const config = require('../config.js');
 const articlePageCss = require('./article-page.css');
 
 let ArticlePage = React.createClass({
@@ -21,7 +22,7 @@ let ArticlePage = React.createClass({
         <Helmet
           meta={article.header.meta}
           link={article.header.link}
-          title={article.meta.title}>
+          title={article.header.title}>
         </Helmet>
         <h1 id="page-title" styleName="page-title">{article.meta.title}</h1>
         <div id="page-body" className="page-body">
@@ -48,21 +49,23 @@ let ArticlePage = React.createClass({
   getArticleData() {
     let path = this.props.location.pathname.replace(/\/$/, '');
     let article = data.props.routes[path] || {};
+    let title =
+      ((article.meta.title && `${article.meta.title} - ${config.siteName}`) ||
+        config.siteName);
     article.header = article.header || {
+      title,
       meta: [
         {
           name: 'og:title',
-          content:
-            ((article.meta.title && `${article.meta.title} - Brendan Graetz`) ||
-              'Brendan Graetz'),
+          content: title,
         },
         {
           name: 'og:url',
-          content: 'http://blog.bguiz.com'+this.props.location.pathname,
+          content: `${config.baseUrl}${this.props.location.pathname}/`,
         },
         {
           name: 'og:image',
-          content: article.meta.image || 'http://blog.bguiz.com/images/logo-400px.png',
+          content: `${config.baseUrl}${(article.meta.image || config.defaultImage)}`,
         },
         {
           name: 'og:type',
@@ -72,7 +75,7 @@ let ArticlePage = React.createClass({
       link: [
         {
           rel: 'canonical',
-          href: 'http://bguiz.com/'+this.props.location.pathname,
+          content: `${config.baseUrl}${this.props.location.pathname}/`,
         }
       ],
     };

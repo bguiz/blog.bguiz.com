@@ -8,6 +8,7 @@ const Navbar = require('./layout/navbar.jsx');
 const FootProfile = require('./layout/foot-profile.jsx');
 const Footbar = require('./layout/footbar.jsx');
 const GoogleAnalytics = require('./layout/google-analytics.jsx');
+const config = require('./config.js');
 
 require('reset-css/reset.css');
 require('./root.css');
@@ -16,16 +17,8 @@ let Link = ReactRouter.Link;
 
 const meta = [
   {
-    "name": "viewport",
-    "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0",
-  },
-  {
-    "name": "description",
-    "content": "Brendan Graetz",
-  },
-  {
-    "property": "og:type",
-    "content": "article",
+    name: 'viewport',
+    content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0',
   },
   {
     name: 'og:ttl',
@@ -33,27 +26,27 @@ const meta = [
   },
   {
     name: 'og:site_name',
-    content: 'Brendan Graetz',
+    content: config.siteName,
   },
   {
     name: 'og:title',
-    content: 'Brendan Graetz',
+    content: config.siteName,
   },
   {
     name: 'og:url',
-    content: 'http://blog.bguiz.com/',
+    content: `${config.baseUrl}/`,
   },
   {
     name: 'og:image',
-    content: 'http://blog.bguiz.com/images/logo-400px.png',
+    content: `${config.baseUrl}${config.defaultImage}`,
   },
   {
     name: 'og:description',
-    content: 'The blog that Brendan writes',
+    content: config.siteDescription,
   },
   {
     name: 'og:locale',
-    content: 'en_GB',
+    content: config.siteLocale,
   },
   {
     name: 'og:type',
@@ -62,7 +55,7 @@ const meta = [
 ];
 
 const htmlAttributes = {
-  lang: 'en-GB',
+  lang: config.siteLocale,
 };
 
 const link = [
@@ -80,9 +73,7 @@ let Root = React.createClass({
           htmlAttributes={htmlAttributes}
           meta={meta}
           link={link}
-          title="Brendan Graetz"
-          titleTemplate="%s - Brendan Graetz"
-          defaultTitle="Home">
+          title={config.siteName}>
         </Helmet>
         <GoogleAnalytics />
         <Navbar />

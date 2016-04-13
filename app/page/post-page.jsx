@@ -10,6 +10,7 @@ const Markdown = require('../layout/markdown.jsx');
 const PostTags = require('../layout/post-tags.jsx');
 const DisqusComments = require('../layout/disqus-comments.jsx');
 const data = require('../../data/data.js');
+const config = require('../config.js');
 const postPageCss = require('./post-page.css');
 
 let Link = ReactRouter.Link;
@@ -20,9 +21,9 @@ let PostPage = React.createClass({
     return (
       <div id="page-post" className="page page-post">
         <Helmet
-          meta={post.helmet.meta}
-          link={post.helmet.link}
-          title={post.meta.title}>
+          meta={post.header.meta}
+          link={post.header.link}
+          title={post.header.title}>
         </Helmet>
         <h1 id="page-title" styleName="page-title">{post.meta.title}</h1>
         <div id="page-body" className="page-body">
@@ -60,21 +61,23 @@ let PostPage = React.createClass({
       moment(post.meta.date)
         .zone('+08:00')
         .format('YYYY/MM/DD');
-    post.helmet = post.helmet || {
+    let title =
+      ((post.meta.title && `${post.meta.title} - ${config.siteName}`) ||
+        config.siteName);
+    post.header = post.header || {
+      title,
       meta: [
         {
           name: 'og:title',
-          content:
-            ((post.meta.title && `${post.meta.title} - Brendan Graetz`) ||
-              'Brendan Graetz'),
+          content: title,
         },
         {
           name: 'og:url',
-          content: 'http://blog.bguiz.com'+post.meta.url,
+          content: `${config.baseUrl}${this.props.location.pathname}/`,
         },
         {
           name: 'og:image',
-          content: post.meta.image || 'http://blog.bguiz.com/images/logo-400px.png',
+          content: `${config.baseUrl}${(post.meta.image || config.defaultImage)}`,
         },
         {
           name: 'og:type',
@@ -84,7 +87,7 @@ let PostPage = React.createClass({
       link: [
         {
           rel: 'canonical',
-          href: 'http://bguiz.com/'+post.meta.url,
+          content: `${config.baseUrl}${this.props.location.pathname}/`,
         }
       ],
     };

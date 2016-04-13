@@ -11,12 +11,13 @@ let Link = ReactRouter.Link;
 
 let ArchivePage = React.createClass({
   render() {
+    let header = this.getHeader();
     return (
       <div id="page-archive" className="page page-archive">
         <Helmet
-          meta={helmet.meta}
-          link={helmet.link}
-          title={helmet.title}>
+          meta={header.meta}
+          link={header.link}
+          title={header.title}>
         </Helmet>
         <h1 id="page-title" className="page-title">Blog Archives</h1>
         <div id="page-content" className="page-content">
@@ -25,30 +26,34 @@ let ArchivePage = React.createClass({
       </div>
     );
   },
+
+  getHeader() {
+    return {
+      meta: [
+        {
+          name: 'og:title',
+          content: `Blog Archives - Brendan Graetz`,
+        },
+        {
+          name: 'og:url',
+          content: 'http://blog.bguiz.com'+this.props.location.pathname,
+        },
+        {
+          name: 'og:image',
+          content: 'http://blog.bguiz.com/images/logo-400px.png',
+        }
+      ],
+      link: [
+        {
+          rel: 'canonical',
+          href: 'http://bguiz.com'+this.props.location.pathname,
+        }
+      ],
+      title: `Blog Archives - Brendan Graetz`,
+    };
+  },
 });
 
-const helmet = {
-  meta: [
-    {
-      name: 'og:title',
-      content: `Blog Archives - Brendan Graetz`,
-    },
-    {
-      name: 'og:url',
-      content: 'http://blog.bguiz.com'+`/archives`,
-    },
-    {
-      name: 'og:image',
-      content: 'http://blog.bguiz.com/images/logo-400px.png',
-    }
-  ],
-  link: [
-    {
-      rel: 'canonical',
-      href: 'http://bguiz.com'+`/archives`,
-    }
-  ],
-  title: `Blog Archives - Brendan Graetz`,
-};
+
 
 module.exports = ArchivePage;

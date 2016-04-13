@@ -9,7 +9,7 @@ let DisqusComments = React.createClass({
   render() {
     let scriptContent =
 `var disqus_shortname = '${DISQUS_ID}';
-var disqus_url = '${BASE_URL}${this.props.post.meta.url}';
+var disqus_url = '${BASE_URL}${this.props.post.meta.url}/';
 var disqus_identifier = disqus_url;
 var disqus_title = "${this.props.post.meta.title.replace(/\"/g, '\'')}";
 (function() {

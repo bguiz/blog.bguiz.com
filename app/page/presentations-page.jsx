@@ -59,7 +59,7 @@ const helmet = {
     },
     {
       name: 'og:url',
-      content: 'http://blog.bguiz.com/presentations',
+      content: 'http://blog.bguiz.com'+this.props.location.pathname,
     },
     {
       name: 'og:image',
@@ -69,7 +69,7 @@ const helmet = {
   link: [
     {
       rel: 'canonical',
-      href: 'http://bguiz.com/presentations/',
+      href: 'http://bguiz.com'+this.props.location.pathname,
     }
   ],
 };

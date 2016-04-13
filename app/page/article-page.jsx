@@ -19,8 +19,8 @@ let ArticlePage = React.createClass({
     return (
       <div id="page-article" className="page page-article">
         <Helmet
-          meta={article.helmet.meta}
-          link={article.helmet.link}
+          meta={article.header.meta}
+          link={article.header.link}
           title={article.meta.title}>
         </Helmet>
         <h1 id="page-title" styleName="page-title">{article.meta.title}</h1>
@@ -57,7 +57,7 @@ let ArticlePage = React.createClass({
         },
         {
           name: 'og:url',
-          content: 'http://blog.bguiz.com'+article.meta.url,
+          content: 'http://blog.bguiz.com'+this.props.location.pathname,
         },
         {
           name: 'og:image',
@@ -71,7 +71,7 @@ let ArticlePage = React.createClass({
       link: [
         {
           rel: 'canonical',
-          href: 'http://bguiz.com/'+article.meta.url,
+          href: 'http://bguiz.com/'+this.props.location.pathname,
         }
       ],
     };

@@ -38,6 +38,7 @@ let PostPage = React.createClass({
           </div>
           <div>
             <DisqusComments
+              location={this.props.location}
               post={post} />
           </div>
         </div>

@@ -37,6 +37,7 @@ let ArticlePage = React.createClass({
           </div>
           <div>
             <DisqusComments
+              location={this.props.location}
               post={article} />
           </div>
         </div>

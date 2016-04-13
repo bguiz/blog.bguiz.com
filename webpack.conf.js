@@ -58,27 +58,37 @@ let copyWebpack2 = new copyWebpackPlugin([
   },
   {
     from: 'node_modules/reveal.js/js',
-    to: 'revealjs/js',
+    to: '3rd-party/revealjs/js',
     force: true,
   },
   {
     from: 'node_modules/reveal.js/css',
-    to: 'revealjs/css',
+    to: '3rd-party/revealjs/css',
     force: true,
   },
   {
     from: 'node_modules/reveal.js/img',
-    to: 'revealjs/img',
+    to: '3rd-party/revealjs/img',
     force: true,
   },
   {
     from: 'node_modules/reveal.js/lib',
-    to: 'revealjs/lib',
+    to: '3rd-party/revealjs/lib',
     force: true,
   },
   {
     from: 'node_modules/reveal.js/plugin',
-    to: 'revealjs/plugin',
+    to: '3rd-party/revealjs/plugin',
+    force: true,
+  },
+  {
+    from: 'node_modules/font-awesome/fonts',
+    to: '3rd-party/font-awesome/fonts',
+    force: true,
+  },
+  {
+    from: 'node_modules/font-awesome/css',
+    to: '3rd-party/font-awesome/css',
     force: true,
   }
 ], {

@@ -47,7 +47,7 @@ let ArticlePage = React.createClass({
   getArticleData() {
     let path = this.props.location.pathname.replace(/\/$/, '');
     let article = data.props.routes[path] || {};
-    article.helmet = article.helmet || {
+    article.header = article.header || {
       meta: [
         {
           name: 'og:title',

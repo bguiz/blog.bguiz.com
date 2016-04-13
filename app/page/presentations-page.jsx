@@ -10,11 +10,12 @@ const data = require('../../data/data.js');
 let PresentationsPage = React.createClass({
   render() {
     let presentations = this.getPresentations();
+    let header = this.getHeader();
     return (
       <div id="page-pagination" className="page page-pagination">
         <Helmet
-          meta={helmet.meta}
-          link={helmet.link}
+          meta={header.meta}
+          link={header.link}
           title={`Presentations`}>
         </Helmet>
         <h1 id="page-title" className="page-title">
@@ -49,30 +50,32 @@ let PresentationsPage = React.createClass({
   getPresentations() {
     return data.props.presentations;
   },
-});
 
-const helmet = {
-  meta: [
-    {
-      name: 'og:title',
-      content: 'Presentations by Brendan Graetz',
-    },
-    {
-      name: 'og:url',
-      content: 'http://blog.bguiz.com'+this.props.location.pathname,
-    },
-    {
-      name: 'og:image',
-      content: 'http://blog.bguiz.com/images/logo-400px.png',
-    }
-  ],
-  link: [
-    {
-      rel: 'canonical',
-      href: 'http://bguiz.com'+this.props.location.pathname,
-    }
-  ],
-};
+  getHeader() {
+    return {
+      meta: [
+        {
+          name: 'og:title',
+          content: 'Presentations by Brendan Graetz',
+        },
+        {
+          name: 'og:url',
+          content: 'http://blog.bguiz.com'+this.props.location.pathname,
+        },
+        {
+          name: 'og:image',
+          content: 'http://blog.bguiz.com/images/logo-400px.png',
+        }
+      ],
+      link: [
+        {
+          rel: 'canonical',
+          href: 'http://bguiz.com'+this.props.location.pathname,
+        }
+      ],
+    };
+  },
+});
 
 module.exports = reactCssModules(PresentationsPage, presentationsPageCss);
 

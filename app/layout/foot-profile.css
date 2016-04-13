@@ -11,18 +11,21 @@
 }
 
 .footprofile-logo {
-  float: right;
   padding: 8px;
-  margin-right: 40px;
-  background: #fff;
-  border-radius: 50%;
-  /*behavior: url(PIE.htc);*/
-  border: 5px solid #ddd;
+  margin: 0 auto;
+  width: 100px;
 }
 
-.footprofile-blurb {
-  font-style: oblique;
-  font-size: 1.2em;
+.footprofile-logo img {
+  background: #fff;
+  border-radius: 50%;
+  border: 5px solid #ddd;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.footprofile-links {
+  float: left;
 }
 
 .footer-links {}
@@ -40,4 +43,8 @@
 .footer-link-text {
   padding: 0 0.5em 0 .5em;
   font-weight: bold;
+}
+
+.clear {
+  clear: both;
 }

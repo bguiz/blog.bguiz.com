@@ -57,10 +57,10 @@ let TagPage = React.createClass({
       link: [
         {
           rel: 'canonical',
-          href: 'http://bguiz.com/'+`/tags/${id}`,
+          href: 'http://bguiz.com'+`/tags/${id}`,
         }
       ],
-      title: `Tagged "${id}" - Brendan Graetz`,
+      title: `Tagged "${id}"`,
     };
     return {
       id,

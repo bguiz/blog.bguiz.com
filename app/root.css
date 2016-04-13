@@ -40,8 +40,12 @@ p {
   margin-top: 1em;
 }
 
+:global .root-content {
+  margin-top: 8em;
+}
+
 :global .page {
-  margin-top: 4em;
+  margin-top: 8em;
   margin-right: 20px;
   margin-bottom: 3em;
   margin-left: 20px;

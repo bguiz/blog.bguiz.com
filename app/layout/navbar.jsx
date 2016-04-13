@@ -20,14 +20,14 @@ let Navbar = React.createClass({
                 <a
                   href={link.href}
                   className={link.class}
-                  alt={link.desc}>
+                  title={link.desc}>
                 </a>
               ) :
               (
                 <Link
                   to={link.href}
                   className={link.class}
-                  alt={link.desc}
+                  title={link.desc}
                   >
                 </Link>
               );

@@ -14,7 +14,7 @@ let renderServer = reactpubEntry({
   additionalAssets: {
     appCss: 'app.css',
     vendorFontAwesomeCss:
-      'http://maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css',
+      '3rd-party/font-awesome/css/font-awesome.min.css',
   },
 });
 

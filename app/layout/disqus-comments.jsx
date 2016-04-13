@@ -11,7 +11,7 @@ let DisqusComments = React.createClass({
 `var disqus_shortname = '${DISQUS_ID}';
 var disqus_url = '${BASE_URL}${this.props.post.meta.url}';
 var disqus_identifier = disqus_url;
-var disqus_title = '${this.props.post.meta.title}';
+var disqus_title = "${this.props.post.meta.title.replace(/\"/g, '\'')}";
 (function() {
 var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
 dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';

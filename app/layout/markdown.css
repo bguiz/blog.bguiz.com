@@ -1,1 +1,9 @@
 .markdown-render {}
+
+.markdown-render ul {
+  list-style: disc;
+}
+
+.markdown-render ul {
+  margin-left: 1em;
+}

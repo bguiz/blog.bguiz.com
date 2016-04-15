@@ -7,7 +7,6 @@ const Helmet = require('react-helmet');
 const Navbar = require('./layout/navbar.jsx');
 const FootProfile = require('./layout/foot-profile.jsx');
 const Footbar = require('./layout/footbar.jsx');
-const GoogleAnalytics = require('./layout/google-analytics.jsx');
 const config = require('./config.js');
 
 require('reset-css/reset.css');
@@ -61,7 +60,7 @@ const htmlAttributes = {
 const link = [
   {
     rel: 'canonical',
-    href: 'http://bguiz.com/',
+    href: config.baseUrl,
   }
 ];
 
@@ -75,7 +74,6 @@ let Root = React.createClass({
           link={link}
           title={config.siteName}>
         </Helmet>
-        <GoogleAnalytics />
         <Navbar />
         <div id="root-content" className="root-content">
           {this.props.children}

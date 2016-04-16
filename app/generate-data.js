@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const generateDataForSsgwp = require('find-posts/generate-data-for-ssgwp');
+const generateData = require('reactpub/generate-data');
 
 let cwd = process.cwd();
 let matchMarkdownPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html\.md$/;
@@ -64,7 +64,7 @@ let options = {
   },
 };
 
-generateDataForSsgwp(options)
+generateData(options)
   .then((data) => {
     // additional hardcoded paths:
     data.routes.push('/');

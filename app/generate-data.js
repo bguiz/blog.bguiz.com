@@ -41,9 +41,11 @@ let options = {
     let url;
     if (post.file.fullpath.indexOf('src/documents/articles') >= 0) {
       url = '/articles/'+post.file.fullpath.slice(cwd.length + 24, -8);
-      post.file.slug = post.file.fullpath.match(matchMarkdownArticleRegex)[1];
-    } else {
-      url = (`/${post.file.year}/${post.file.month}/${post.file.day}/${post.file.slug}`);
+      post.file.slug = post.file.matches[1];
+    }
+    else {
+      url = (`/${post.file.matches[1]}/${post.file.matches[2]}` +
+        `/${post.file.matches[3]}/${post.file.matches[4]}`);
     }
     post.header.url = url;
 

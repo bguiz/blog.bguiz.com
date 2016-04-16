@@ -20,10 +20,10 @@ let PaginationPage = React.createClass({
     return (
       <div id="page-pagination" className="page page-pagination">
         <Helmet
-          title={`Page ${pagination.id}`}>
+          title={pagination.title}>
         </Helmet>
         <h1 id="page-title" className="page-title">
-          Brendan Graetz
+          {pagination.title}
         </h1>
         <div id="page-body" className="page-body">
           <ul className="pagination-list">
@@ -113,7 +113,10 @@ let PaginationPage = React.createClass({
         Math.min(page.body.length, SUMMARY_TRUNCATE_LENGTH));
     });
     let hasPrevious = (id - 1 > 0);
-    let hasNext = (id < data.props.pagination.length)
+    let hasNext = (id < data.props.pagination.length);
+    let title = (id < 2) ?
+      'Brendan Graetz' :
+      `Page ${id} - Brendan Graetz`;
     return {
       id,
       urls,
@@ -121,9 +124,9 @@ let PaginationPage = React.createClass({
       summaries,
       hasPrevious,
       hasNext,
+      title,
     };
   },
-
 });
 
 module.exports = reactCssModules(PaginationPage, paginationPageCss);

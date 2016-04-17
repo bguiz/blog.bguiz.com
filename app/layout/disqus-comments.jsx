@@ -20,5 +20,3 @@ let DisqusComments = React.createClass({
 });
 
 module.exports = DisqusComments;
-
-

@@ -10,6 +10,7 @@ const moment = require('moment');
 const Markdown = require('../layout/markdown.jsx');
 const PostTags = require('../layout/post-tags.jsx');
 const DisqusComments = require('../layout/disqus-comments.jsx');
+const ShareButtons = require('../layout/share-buttons.jsx');
 const data = require('../../data/data.js');
 const config = require('../config.js');
 const articlePageCss = require('./article-page.css');
@@ -32,6 +33,9 @@ let ArticlePage = React.createClass({
             src={article.meta.src}/>
         </div>
         <div id="page-footer" className="page-footer">
+          <ShareButtons
+            url={`${config.baseUrl}${this.props.location.pathname}`}
+            title={article.header.title} />
           <div>
             <span>Tagged in:</span>
             <PostTags post={article} />

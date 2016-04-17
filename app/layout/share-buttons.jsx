@@ -123,8 +123,9 @@ let ShareButtons = React.createClass({
   },
 
   emailHref() {
-    let escaped = encodeURIComponent(`subject=${this.props.title}&body=${this.props.url}`);
-    return `mailto:?${escaped}`;
+    let subject = this.props.title;
+    let body = this.props.url;
+    return `mailto:?subject=${subject}&amp;body=${body}`;
   },
 
   shareCountDisplay(count) {

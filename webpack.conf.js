@@ -115,7 +115,7 @@ let loaders = webpackConfig.module.loaders;
 loaders.push({
   test: /\.css$/,
   loader: extractTextPlugin.extract(
-    'css?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]'),
+    'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]'),
 });
 
 console.log(webpackConfig);

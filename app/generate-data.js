@@ -3,9 +3,12 @@
 const path = require('path');
 const fs = require('fs');
 
+const moment = require('moment');
+
 const generateData = require('reactpub/generate-data');
 
 let cwd = process.cwd();
+let matchMarkdownPostAltRegex = /^(\d\d\d\d)-(\d\d)-(.*)\.md$/;
 let matchMarkdownPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html\.md$/;
 let matchMarkdownArticleRegex = /^(.+)\.html\.md$/;
 let matchHtmlPostRegex = /^(\d\d\d\d)-(\d\d)-(\d\d)-(.*)\.html$/;
@@ -14,6 +17,10 @@ let pagination = [];
 let paginationSize = 5;
 let options = {
   dirs: [
+    {
+      path: path.resolve(cwd, './src/documents/reactpubposts/'),
+      regexes: [ matchMarkdownPostAltRegex ],
+    },
     {
       path: path.resolve(cwd, './src/documents/docpadposts/'),
       regexes: [ matchMarkdownPostRegex ],
@@ -32,14 +39,20 @@ let options = {
     }
   ],
   postToRouteMapper(post) {
-    let urlAlias = post.header['dateurls-override'];
     post.meta = post.meta || {};
     if (typeof urlAlias === 'string' &&
+      let urlAlias = post.header['dateurls-override'];
       post.file.fullpath.indexOf('src/documents/tumblrposts') >= 0) {
       post.meta.urlAliases= [urlAlias];
     }
     let url;
-    if (post.file.fullpath.indexOf('src/documents/articles') >= 0) {
+    if (post.file.fullpath.indexOf('src/documents/reactpubposts') >= 0) {
+      var date = moment(post.header.__date_utc)
+        .zone('+08:00')
+        .format('YYYY');
+      url = (`/${date}/${post.file.matches[3]}`);
+    }
+    else if (post.file.fullpath.indexOf('src/documents/articles') >= 0) {
       url = '/articles/'+post.file.fullpath.slice(cwd.length + 24, -8);
       post.file.slug = post.file.matches[1];
     }

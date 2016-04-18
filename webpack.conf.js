@@ -18,7 +18,6 @@ let webpackConfig = reactpubWebpack({
 let extractCss = new extractTextPlugin('[name].css', {
   allChunks: true,
 });
-let noErrors = new webpack.NoErrorsPlugin();
 let toPath = path.resolve(cwd, './articles');
 console.log('toPath', toPath);
 let copyWebpack = new copyWebpackPlugin([
@@ -99,7 +98,14 @@ let copyWebpack2 = new copyWebpackPlugin([
 
 let plugins = webpackConfig.plugins;
 
-plugins.push(noErrors);
+if (!('CI' in process.env)) {
+  // Only use the no errors plugin when not running on a
+  // continuous integration environment
+  // The CI environment (e.g. TravisCI) is expected to set the
+  // "CI" environment variable
+  let noErrors = new webpack.NoErrorsPlugin();
+  plugins.push(noErrors);
+}
 plugins.push(extractCss);
 plugins.push(copyWebpack);
 plugins.push(copyWebpack2);

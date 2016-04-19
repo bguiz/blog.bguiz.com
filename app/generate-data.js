@@ -41,8 +41,8 @@ let options = {
   postToRouteMapper(post) {
     post.meta = post.meta || {};
     if (typeof urlAlias === 'string' &&
-      let urlAlias = post.header['dateurls-override'];
       post.file.fullpath.indexOf('src/documents/tumblrposts') >= 0) {
+      let urlAlias = post.header['dateurls-override'];
       post.meta.urlAliases= [urlAlias];
     }
     let url;

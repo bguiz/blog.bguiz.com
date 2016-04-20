@@ -2,6 +2,7 @@
 title: Publish websites using ReactJs
 date: 2016-04-18 21:07
 tags: reactjs, static site generation, javascript, nodejs, webpack
+image: /presentations/publish-websites-reactjs/img/publish-websites-reactjs-orly-book-cover.png
 ---
 
 tl;dr= Use ReactJs to publish static + isomorphic websites

@@ -39,7 +39,7 @@ let options = {
     }
   ],
   postToRouteMapper(post) {
-    post.meta = post.meta || {};
+    post.meta = Object.assign({}, post.header, post.meta);
     let urlAlias = post.header['dateurls-override'];
     if (typeof urlAlias === 'string' &&
       post.file.fullpath.indexOf('src/documents/tumblrposts') >= 0) {
@@ -73,6 +73,7 @@ let options = {
       }
       tagPostUrls.push(url);
     });
+
     return post;
   },
 };

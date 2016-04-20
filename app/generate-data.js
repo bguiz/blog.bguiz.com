@@ -43,7 +43,7 @@ let options = {
     let urlAlias = post.header['dateurls-override'];
     if (typeof urlAlias === 'string' &&
       post.file.fullpath.indexOf('src/documents/tumblrposts') >= 0) {
-      post.meta.urlAliases= [urlAlias];
+      post.header.urlAliases= [urlAlias];
     }
     let url;
     if (post.file.fullpath.indexOf('src/documents/reactpubposts') >= 0) {

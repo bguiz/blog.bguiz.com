@@ -132,8 +132,257 @@ I found that they were actually frameworks themselves.
 
 =SPEAKERNOTES=
 
-Then I found this webpack plugin,
-by @markdalgleish
+Then I came across this webpack plugin,
+by @markdalgleish, which was the moment of truth for me.
+When I looked into its code,
+I instantly knew that I could build something
+that wrapped around this webpack plugin and ReactJs...
+and do nothing else.
+
+=SLIDE=
+
+![Screenshot of "nothing else" in reactpub](img/screenshot-of-reactpub-nothing-else.png)
+
+=SPEAKERNOTES=
+
+... in fact that's exactly what I did in reactpub
+
+=SLIDE=
+
+My blog story
+
+![Blogger, Wordpress, Tumblr, Docpad](img/blogger-wordpress-tumblr-docpad.png)
+
+=SPEAKERNOTES=
+
+I've been blogging for over ten years now,
+and in that time I have switched from
+Blogger to Wordpess to Tumblr.
+Then I cottoned on to static site generation,
+and I exported all my posts to as HTML files with YAML front matter,
+republished them using Docpad,
+and started writing new posts in markdown.
+
+=SLIDE=
+
+![Y so slow?](img/speed-limit.png)
+
+=SPEAKERNOTES=
+
+... but I had one problem: speed.
+
+Static site generation, as it turns out was slow.
+It took me several minutes each time I wanted to update my blog.
+
+(Which I guess is fine,
+given that I only write a new post about once a month.)
+
+But I still wanted a faster solution.
+
+I experimented with a few more static site generators before
+deciding to tke the plunge and create reactpub.
+
+=SLIDE=
+
+Continuous Integration
+
+Continuous Deployment
+
+=SPEAKERNOTES=
+
+Apart from speed, the other requirement that was unmet,
+was continuous integration and continuous deployment.
+
+I wanted the ability to do a git push
+and then have something pick up on that,
+build the site,
+test the site,
+and finally deploy (publish) the site.
+
+=SLIDE=
+
+![git push -> travis CI -> webpack -> reactjs -> github  pages](img/git-travis-webpack-react-github.png)
+
+=SPEAKERNOTES=
+
+With reactpub, I have been able to set up CI & CD,
+such that when I do a git push on my repo,
+Travis picks up on that,
+and invokes autodocs,
+another one of my NodeJs modules,
+which executes the build and test steps,
+and finally publishes to Github pages.w
+
+=SLIDE=
+
+Code
+
+=SPEAKERNOTES=
+
+So let's take a look at some code,
+very briefly!=SLIDE=
+
+=SLIDE=
+
+Setting up your website
+
+=SPEAKERNOTES=
+
+=SLIDE=
+
+- webpack
+- entry
+
+=SPEAKERNOTES=
+
+Reactpub works at its core with two different files,
+that follow two separate paths.
+
+The first is your webpack config,
+and the second is the entry file,
+which is evetually what gets compiled into your bundled javascript.
+
+=SLIDE=
+
+- your-website/webpack
+- theme/webpack
+- reactpub/webpack
+
+=SPEAKERNOTES=
+
+In your website's repo,
+define a webpack config that points to a theme's webpack config,
+which in turn will point to reactpub's webpack config
+
+=SLIDE=
+
+- your-website/entry
+- theme/entry
+- reactpub/entry
+
+=SPEAKERNOTES=
+
+In your website's repo, similarly,
+define an entry file that points to the theme's entry file,
+which in turn will point to reactpub's entry file
+
+=SLIDE=
+
+```javascript
+const themeWebpack = require('reactpub-blog-basic-theme/webpack');
+let webpackConfig = themeWebpack({
+  data: require('./data.js');,
+});
+// additional loaders & plugins
+module.exports = webpackConfig;
+```
+
+=SPEAKERNOTES=
+
+This is what a webpack config in your website might look like.
+You are free to modify the webpack config that is returned, of course,
+to do any extra things your website might want to do.
+
+=SLIDE=
+
+```javascript
+const theme = require('reactpub-blog-basic-theme');
+theme.settings.set({
+  data: require('./data.js'),
+  config: require('./config.js'),
+});
+module.exports = theme.render();
+```
+
+=SPEAKERNOTES=
+
+This is what the entry file in your websites might look like.
+
+=SLIDE=
+
+```javascript
+"scripts": {
+  "generatedocs": "webpack version && npm run generate-data && npm run build",
+  "autodocs": "node ./node_modules/autodocs",
+  "got-or-not": "node ./app/got-or-not.js",
+  "generate-data": "node ./app/generate-data.js",
+  "build": "webpack --config webpack.conf.js",
+  "build-server": "npm run build && http-server ./dist/ -c-1 -p51111",
+  "dev-server": "webpack-dev-server --config webpack.conf.js --port 51111"
+}
+```
+
+=SPEAKERNOTES=
+
+Finally set up a few scripts in your package.json
+do some npm installs, etc ... the usual stuff
+
+=SLIDE=
+
+`reactpub` internals
+
+=SPEAKERNOTES=
+
+So the idea is that your website's repo only needs to be a repo
+containing markdown files for your content,
+plus some glue code tie tie in together with reactpub.
+
+But let's take a look at the internals too!
+
+=SLIDE=
+
+```javascript
+const reactpubEntry = require('reactpub/entry');
+const routes = require('./routes.jsx');
+const data = require('./theme.js').settings.get('data');
+reactpubEntry({
+  reactOnClient: true,
+  routes,
+  routeMetadata: data,
+});
+```
+
+=SPEAKERNOTES=
+
+The theme's entry invokes the reactpub entry,
+with a set of routes defined by the theme,
+and data passed in from your website,
+which we saw happening earlier.
+
+The reactOnClient here is crucial.
+If you want static site generation only,
+then it should be false.
+
+If you want to generate static pages,
+which, once displayed in the browser,
+then make ReactJs "take over",
+turning it into a single-page app,
+then set thsi to true.
+
+=SLIDE=
+
+```javascript
+function renderClient() {
+  let history = // ... (redacted for brevity)
+  var outlet = document.getElementById('outlet');
+  ReactDom.render(
+    <Router
+      history={history}
+      routes={routes}
+      onUpdate={routerOnUpdate} />,
+    outlet);
+  console.log('ReactJs has taken over page rendering.');
+}
+```
+
+=SPEAKERNOTES=
+
+The reactOnClient flag that we saw earlier,
+well that decides whether or not to invoke this function in reactpub.
+
+This, for me at least, was a mind blowing moment,
+in how simple and elegant it is to use ReactJs
+to render on client and server.
 
 =SLIDE=
 

@@ -271,7 +271,7 @@ which in turn will point to reactpub's entry file
 ```javascript
 const themeWebpack = require('reactpub-blog-basic-theme/webpack');
 let webpackConfig = themeWebpack({
-  data: require('./data.js');,
+  data: require('./data.js'),
 });
 // additional loaders & plugins
 module.exports = webpackConfig;
@@ -383,6 +383,125 @@ well that decides whether or not to invoke this function in reactpub.
 This, for me at least, was a mind blowing moment,
 in how simple and elegant it is to use ReactJs
 to render on client and server.
+
+This technique is employed here with statically generated pages;
+when the same technique, when used on a dynamically served page,
+is called isomorphic Javascript,
+also known as universal Javascript
+... terms that I have read many articles about before,
+but never actually did.
+Feels awesome when you actually pull it off!
+
+=SLIDE=
+
+```javascript
+ReactRouter.match({
+  routes,
+  location,
+}, (err, redirectLocation, renderProps) => {
+  ... // redacted for brevity
+  let rendered = ReactDomServer.renderToStaticMarkup(
+    <RouterContext {...renderProps} />);
+  return template(rendered);
+});
+```
+
+=SPEAKERNOTES=
+
+The entry file is invoked by static-site-generation-webpack-plugin,
+once per route that you have defined in your data for your website.
+
+This is the function that it ultimately calls,
+where we render a RouterContext (from react-router),
+which then renders the appropriate ReactJs component hierarchy
+for that particular route.
+
+After this point,
+there's nothing special that reactpub, or the theme, or your webistes does.
+It's just pure ReactJs.
+
+=SLIDE=
+
+- [nfl/react-helmet](https://github.com/nfl/react-helmet)
+- [bguiz/find-posts](https://github.com/bguiz/find-posts)
+- [bguiz/autodocs](https://github.com/bguiz/autodocs)
+
+=SPEAKERNOTES=
+
+Here are a few other modules that are
+not necessary for reactpub to work;
+but most likely you are going to want to use
+because you don't want to be doing grunt work by hand.
+
+=SLIDE=
+
+`<head>...</head>`
+
+![React Helmet](img/react-helmet.png)
+
+=SPEAKERNOTES=
+
+For anything that comes between the head tags,
+such as title or meta tags,
+you aren't going to be able to render this within a
+react-router driven rendering mechanism.
+
+Remember that ReactJs needs to render to an
+element that is ideally a child of the body tag.
+
+React-helmet provides a nice way to
+do this, and so reactpub supports it out of the box.
+You'll just need to pass in an instance of it.
+
+=SLIDE=
+
+Post data:
+
+[bguiz/find-posts](https://github.com/bguiz/find-posts)
+
+=SPEAKERNOTES=
+
+Reactpub needs you to pass it a data file containing posts.
+You can author this file by hand, if you wish,
+but chances are you'll want to simply write from a folder of markdown files.
+
+My find-posts module does exactly that:
+it takes an input array of folder paths,
+and an input array of regular expressions,
+and outputs posts with their content and parsed metadata.
+
+Inline with my frameworks vs libraries philosophy
+mentioned at the beginning of this talk,
+I chose not to make find-posts part of reactpub,
+but rather a module in its own right.
+
+Indeed, if you wanted to, you could - in theory -
+create your own find posts that generates posts data
+from Word .docx files,
+or by calling APIs -
+whatever you want really!
+
+=SLIDE=
+
+CI & CD
+
+[bguiz/autodocs](https://github.com/bguiz/autodocs)
+
+=SPEAKERNOTES=
+
+Also mentioned at the beginning of this talk,
+was that one of my end-goals was to be able to
+have continuous integration and continuous deployment set up.
+
+In the context of publishing a website,
+the way I do for my blog:
+This means having Travis CI
+listen for pushes to your git repo,
+then building and testing the site,
+and then publishing to github pages.
+
+Autodocs is the glue task
+that makes sure all of these things get done properly.
 
 =SLIDE=
 

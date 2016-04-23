@@ -10,11 +10,11 @@ function getWebpackConfig() {
 
   const data = require('../data/data.js');
 
-  let cwd = process.cwd();
-
   let webpackConfig = themeWebpack({
     data,
   });
+
+  let cwd = process.cwd();
 
   let copyWebpack = new copyWebpackPlugin([
     {

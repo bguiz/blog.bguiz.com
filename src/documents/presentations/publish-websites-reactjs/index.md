@@ -29,10 +29,26 @@ Brendan Graetz
 I came across an O'Rly "definitive guide" parody book cover generator,
 and I couldn't resist making one for this presentation.
 
-But this is in no way the defintiev guide to anything,
+But this is in no way the definitive guide to anything,
 so just ignore this really
 
 This talk is pretty much a quick overview
+
+=SLIDE=
+
+# Software Philosophy <!-- .element: id="philosophy" -->
+
+=SPEAKERNOTES=
+
+Is the act of writing code an art or a science?
+
+Who knows?
+
+The question I have been pondering, however,
+is much more specific,
+and I kept coming back to it over and over
+when creating reactpub,
+and it is...
 
 =SLIDE=
 
@@ -66,7 +82,7 @@ This is like using a library.
 
 =SLIDE=
 
-![Ikea bookshelf that became a shoerack](ikea-bookshelf-that-became-a-shoerack.png)
+![Ikea bookshelf that became a shoerack](img/ikea-bookshelf-that-became-a-shoerack.png)
 
 =SPEAKERNOTES=
 
@@ -105,7 +121,7 @@ ReactJs is a library, whereas EmberJs and AngularJs are frameworks.
 
 =SLIDE=
 
-![Software Engineering Philosphy](img/philosophy.png)
+![Software Engineering Philosophy](img/philosophy.png)
 
 =SPEAKERNOTES=
 
@@ -157,7 +173,7 @@ My blog story
 
 I've been blogging for over ten years now,
 and in that time I have switched from
-Blogger to Wordpess to Tumblr.
+Blogger to Wordpress to Tumblr.
 Then I cottoned on to static site generation,
 and I exported all my posts to as HTML files with YAML front matter,
 republished them using Docpad,
@@ -180,7 +196,7 @@ given that I only write a new post about once a month.)
 But I still wanted a faster solution.
 
 I experimented with a few more static site generators before
-deciding to tke the plunge and create reactpub.
+deciding to take the plunge and create reactpub.
 
 =SLIDE=
 
@@ -215,16 +231,16 @@ and finally publishes to Github pages.w
 
 =SLIDE=
 
-Code
+# Code <!-- .element: id="code" -->
 
 =SPEAKERNOTES=
 
 So let's take a look at some code,
-very briefly!=SLIDE=
+very briefly!
 
 =SLIDE=
 
-Setting up your website
+# Setting up your website <!-- .element: id="site-setup" -->
 
 =SPEAKERNOTES=
 
@@ -240,9 +256,11 @@ that follow two separate paths.
 
 The first is your webpack config,
 and the second is the entry file,
-which is evetually what gets compiled into your bundled javascript.
+which is eventually what gets compiled into your bundled JS.
 
 =SLIDE=
+
+## Chain of webpacks <!-- .element: id="chain-webpack" -->
 
 - your-website/webpack
 - theme/webpack
@@ -256,6 +274,8 @@ which in turn will point to reactpub's webpack config
 
 =SLIDE=
 
+## Chain of entries <!-- .element: id="chain-entry" -->
+
 - your-website/entry
 - theme/entry
 - reactpub/entry
@@ -267,6 +287,8 @@ define an entry file that points to the theme's entry file,
 which in turn will point to reactpub's entry file
 
 =SLIDE=
+
+## Webpack Config <!-- .element: id="site-webpack" -->
 
 ```javascript
 const themeWebpack = require('reactpub-blog-basic-theme/webpack');
@@ -285,6 +307,8 @@ to do any extra things your website might want to do.
 
 =SLIDE=
 
+## Entry <!-- .element: id="site-entry" -->
+
 ```javascript
 const theme = require('reactpub-blog-basic-theme');
 theme.settings.set({
@@ -299,6 +323,8 @@ module.exports = theme.render();
 This is what the entry file in your websites might look like.
 
 =SLIDE=
+
+## npm scripts <!-- .element: id="npm-scripts" -->
 
 ```javascript
 "scripts": {
@@ -319,7 +345,7 @@ do some npm installs, etc ... the usual stuff
 
 =SLIDE=
 
-`reactpub` internals
+# `reactpub` internals <!-- .element: id="internals" -->
 
 =SPEAKERNOTES=
 
@@ -330,6 +356,8 @@ plus some glue code tie tie in together with reactpub.
 But let's take a look at the internals too!
 
 =SLIDE=
+
+## Theme Webpack <!-- .element: id="theme-webpack" -->
 
 ```javascript
 const reactpubEntry = require('reactpub/entry');
@@ -357,9 +385,11 @@ If you want to generate static pages,
 which, once displayed in the browser,
 then make ReactJs "take over",
 turning it into a single-page app,
-then set thsi to true.
+then set this to true.
 
 =SLIDE=
+
+## Client Render <!-- .element: id="client-render" -->
 
 ```javascript
 function renderClient() {
@@ -394,6 +424,8 @@ Feels awesome when you actually pull it off!
 
 =SLIDE=
 
+## Server Render <!-- .element: id="render-server" -->
+
 ```javascript
 ReactRouter.match({
   routes,
@@ -417,10 +449,13 @@ which then renders the appropriate ReactJs component hierarchy
 for that particular route.
 
 After this point,
-there's nothing special that reactpub, or the theme, or your webistes does.
+there's nothing special that reactpub, or the theme,
+or your website needs to do.
 It's just pure ReactJs.
 
 =SLIDE=
+
+# More modules <!-- .element: id="more-modules" -->
 
 - [nfl/react-helmet](https://github.com/nfl/react-helmet)
 - [bguiz/find-posts](https://github.com/bguiz/find-posts)
@@ -434,6 +469,8 @@ but most likely you are going to want to use
 because you don't want to be doing grunt work by hand.
 
 =SLIDE=
+
+## Header <!-- .element: id="header" -->
 
 `<head>...</head>`
 
@@ -455,7 +492,7 @@ You'll just need to pass in an instance of it.
 
 =SLIDE=
 
-Post data:
+## Post data <!-- .element: id="post-data" -->
 
 [bguiz/find-posts](https://github.com/bguiz/find-posts)
 
@@ -470,7 +507,7 @@ it takes an input array of folder paths,
 and an input array of regular expressions,
 and outputs posts with their content and parsed metadata.
 
-Inline with my frameworks vs libraries philosophy
+In line with my frameworks vs libraries philosophy
 mentioned at the beginning of this talk,
 I chose not to make find-posts part of reactpub,
 but rather a module in its own right.
@@ -483,7 +520,7 @@ whatever you want really!
 
 =SLIDE=
 
-CI & CD
+## CI & CD <!-- .element: id="ci-cd" -->
 
 [bguiz/autodocs](https://github.com/bguiz/autodocs)
 
@@ -515,6 +552,25 @@ that makes sure all of these things get done properly.
 =SLIDE=
 
 # DEMO <!-- .element: id="demo" -->
+
+=SLIDE=
+
+# Planned <!-- .element: id="planned" -->
+
+- Speed up dev-server
+- XHR post content
+
+=SPEAKERNOTES=
+
+=SLIDE=
+
+# Learned <!-- .element: id="learned" -->
+
+- Isomorphic w/ ReactJs rocks
+- Libraries over frameworks
+- CI & CD: painful but rewarding
+
+=SPEAKERNOTES=
 
 =SLIDE=
 

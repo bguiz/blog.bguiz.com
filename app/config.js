@@ -8,6 +8,7 @@ let config = {
   defaultImage: '/images/logo-400px.png',
   googleAnalyticsId: 'UA-37884921-1',
   disqusId: 'bguiz',
+  sourceLinkPrefix: 'https://github.com/bguiz/blog.bguiz.com/blob/develop/',
 };
 
 module.exports = config;

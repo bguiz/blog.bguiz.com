@@ -5,7 +5,6 @@ install:
 - npm i
 script:
 - npm run autodocs
-- npm run got-or-not
 env:
   global:
   - secure: EzwhVGxvEIOkgdXfA2qmHnsM1P+oURVJQr0PtwQw6n62qP9m/1PXOyUVFKrHXIDSW5WX7gJdNG8Byc3rCnIg2XWT1t5o9HOLN44H6r+SAIKi1OYEGZKQ23vqNd/wF5y68koIF4yEmMB1WSxoLWweJDdWz8o5go0XNeJmzWh5D+w=

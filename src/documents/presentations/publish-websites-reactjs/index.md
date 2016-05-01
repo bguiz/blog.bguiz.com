@@ -1,6 +1,6 @@
 # Publish Websites with ReactJs <!-- .element: id="first" -->
 
-![Reactpub Tech](img/reactpub-tech.png)
+![Reactpub Tech](img/reactpub-tech.jpeg)
 
 `git push -> webpack -> reactjs -> travis -> gh-pages`
 
@@ -14,7 +14,7 @@ Brendan Graetz
 
 [bguiz.com](http://bguiz.com)
 
-![QR code for this 'Publish Websites with ReactJs' presentation](img/qrcode-url-presentation-publish-websites-reactjs.svg)
+![QR code for this 'Publish Websites with ReactJs' presentation](img/qrcode-url-presentation-publish-websites-reactjs.png)
 
 [*speaker notes*](index.md)
 
@@ -54,7 +54,7 @@ and it is...
 
 Frameworks vs Libraries
 
-![Frameworks vs Libraries furniture analogy](img/frameworks-vs-libraries.png)
+![Frameworks vs Libraries furniture analogy](img/frameworks-vs-libraries.jpeg)
 
 =SPEAKERNOTES=
 
@@ -82,7 +82,7 @@ This is like using a library.
 
 =SLIDE=
 
-![Ikea bookshelf that became a shoerack](img/ikea-bookshelf-that-became-a-shoerack.png)
+![Ikea bookshelf that became a shoerack](img/ikea-bookshelf-that-became-a-shoerack.jpeg)
 
 =SPEAKERNOTES=
 
@@ -110,7 +110,7 @@ who calls who.
 
 =SLIDE=
 
-![ReactJs EmberJs AngularJs](img/reactjs-emberjs-angularjs.png)
+![ReactJs EmberJs AngularJs](img/reactjs-emberjs-angularjs.jpeg)
 
 =SPEAKERNOTES=
 
@@ -121,7 +121,7 @@ ReactJs is a library, whereas EmberJs and AngularJs are frameworks.
 
 =SLIDE=
 
-![Software Engineering Philosophy](img/philosophy.png)
+![Software Engineering Philosophy](img/philosophy.jpeg)
 
 =SPEAKERNOTES=
 
@@ -131,7 +131,7 @@ you might be thinking?
 
 =SLIDE=
 
-![Screenshots of other ReactJs static site generators](img/screenshots-of-other-reactjs-static)
+![Screenshots of other ReactJs static site generators](img/screenshots-of-other-reactjs-static.jpeg)
 
 =SPEAKERNOTES=
 
@@ -144,7 +144,7 @@ I found that they were actually frameworks themselves.
 
 =SLIDE=
 
-![Screenshot of static-site-generator-webpack-plugin](img/screenshot-of-static-site-generator-webpack-plugin.png)
+![Screenshot of static-site-generator-webpack-plugin](img/screenshot-of-static-site-generator-webpack-plugin.jpeg)
 
 =SPEAKERNOTES=
 
@@ -167,7 +167,7 @@ and do nothing else.
 
 My blog story
 
-![Blogger, Wordpress, Tumblr, Docpad](img/blogger-wordpress-tumblr-docpad.png)
+![Blogger, Wordpress, Tumblr, Docpad, Reactpub](img/blogger-wordpress-tumblr-docpad-reactpub.jpeg)
 
 =SPEAKERNOTES=
 
@@ -217,7 +217,7 @@ and finally deploy (publish) the site.
 
 =SLIDE=
 
-![git push -> travis CI -> webpack -> reactjs -> github  pages](img/git-travis-webpack-react-github.png)
+![git push -> travis CI -> webpack -> reactjs -> github  pages](img/reactpub-tech.jpeg)
 
 =SPEAKERNOTES=
 

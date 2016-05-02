@@ -57,6 +57,14 @@ I'll be giving a talk about this at the next ReactJs meetup, covering:
 
 ----
 
+## Update
+
+Gave a talk on this at a ReactJs meetup,
+and as promised, here are
+[the slides for "Publish Websites with ReactJs"](/presentations/publish-websites-reactjs/).
+
+----
+
 ## Footnotes
 
 &lowast;1 Also known as *universal* Javascript

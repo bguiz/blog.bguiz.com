@@ -61,7 +61,10 @@ I'll be giving a talk about this at the next ReactJs meetup, covering:
 
 Gave a talk on this at a ReactJs meetup,
 and as promised, here are
-[the slides for "Publish Websites with ReactJs"](/presentations/publish-websites-reactjs/).
+[the slides for "Publish Websites with ReactJs"](/presentations/publish-websites-reactjs/ "Slides for Publish Websites with ReactJs").
+
+You can find that, along with slides for other talks by me,
+at the all new [presentations page](/presentations/ "Presentations by Brendan Graetz").
 
 ----
 

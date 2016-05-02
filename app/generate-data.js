@@ -92,6 +92,13 @@ generateData(options)
     data.props.presentations = [
       {
         meta: {
+          url: '/presentations/publish-websites-reactjs/',
+          title: 'Publish Websites with ReactJs',
+          subtitle: 'git push -> webpack -> reactjs -> travis -> gh-pages',
+        },
+      },
+      {
+        meta: {
           url: '/presentations/haxe-for-javascripters/',
           title: 'Haxe for Javascripters',
           subtitle: 'Have you tried Haxe yet?',

@@ -2,10 +2,7 @@
 
 ![Reactpub Tech](img/reactpub-tech.jpeg)
 
-`git push -> webpack -> reactjs -> travis -> gh-pages`
-
-Brendan Graetz
-
+**Brendan Graetz**
 =SLIDE=
 
 # Brendan Graetz <!-- .element: id="author" -->
@@ -17,6 +14,25 @@ Brendan Graetz
 ![QR code for this 'Publish Websites with ReactJs' presentation](img/qrcode-url-presentation-publish-websites-reactjs.png)
 
 [*speaker notes*](index.md)
+
+=SLIDE=
+
+# Sequence
+
+![Reactpub Tech](img/reactpub-tech.jpeg)
+
+`git push -> travis -> webpack -> reactjs -> gh-pages`
+
+=SPEAKERNOTES=
+
+This is the big idea, the sequence that we want to achieve.
+
+You do a git push,
+travis CI detects the commit,
+webpack build starts,
+react and react-router used to render each page,
+the folder of files that are generated get pushed to github pages
+(or any other static host).
 
 =SLIDE=
 
@@ -33,6 +49,21 @@ But this is in no way the definitive guide to anything,
 so just ignore this really
 
 This talk is pretty much a quick overview
+
+=SLIDE=
+
+Software Philosophy
+
+`+`
+
+Show and Tell
+
+=SPEAKERNOTES=
+
+This is going to be a rather brief talk.
+
+It's going to be one part software engineering philosophy,
+and one part show and tell.
 
 =SLIDE=
 
@@ -110,6 +141,14 @@ who calls who.
 
 =SLIDE=
 
+![Frameworks vs Libraries furniture analogy](img/frameworks-vs-libraries.jpeg)
+
+=SPEAKERNOTES=
+
+=SLIDE=
+
+# Single-page apps
+
 ![ReactJs EmberJs AngularJs](img/reactjs-emberjs-angularjs.jpeg)
 
 =SPEAKERNOTES=
@@ -120,6 +159,8 @@ such as AngularJs and EmberJs:
 ReactJs is a library, whereas EmberJs and AngularJs are frameworks.
 
 =SLIDE=
+
+# M + ***V*** + C + R
 
 ![Software Engineering Philosophy](img/philosophy.jpeg)
 
@@ -181,7 +222,7 @@ and started writing new posts in markdown.
 
 =SLIDE=
 
-![Y so slow?](img/speed-limit.png)
+![Y so slow?](img/speed-limit.jpeg)
 
 =SPEAKERNOTES=
 
@@ -200,7 +241,19 @@ deciding to take the plunge and create reactpub.
 
 =SLIDE=
 
+![Frameworks vs Libraries furniture analogy](img/frameworks-vs-libraries.jpeg)
+
+=SPEAKERNOTES=
+
+If I do not want the folding bits at the side of the table,
+then I simply do not want to spend time working out how to make them.
+I just want the main table.
+
+=SLIDE=
+
 Continuous Integration
+
+`+`
 
 Continuous Deployment
 
@@ -328,9 +381,9 @@ This is what the entry file in your websites might look like.
 
 ```javascript
 "scripts": {
-  "generatedocs": "webpack version && npm run generate-data && npm run build",
+  "generatedocs": "npm run generate-data && npm run build",
+  "testdocs": "node ./app/got-or-not.js",
   "autodocs": "node ./node_modules/autodocs",
-  "got-or-not": "node ./app/got-or-not.js",
   "generate-data": "node ./app/generate-data.js",
   "build": "webpack --config webpack.conf.js",
   "build-server": "npm run build && http-server ./dist/ -c-1 -p51111",

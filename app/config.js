@@ -1,6 +1,7 @@
 'use strict';
 
 let config = {
+  reactOnClient: true,
   baseUrl: 'http://blog.bguiz.com',
   siteName: 'Brendan Graetz',
   siteDescription: 'The blog that Brendan writes',

@@ -23,6 +23,8 @@ it can also be used to generate static sites.
 This is perfect for hosting on Github Pages,
 or similar hosts.
 
+<!-- more -->
+
 I have switched from using
 [docpad](https://github.com/docpad/docpad)
 to this Webpack + ReactJs solution for

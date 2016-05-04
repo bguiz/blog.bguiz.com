@@ -48,7 +48,7 @@ let options = {
     let url;
     if (post.file.fullpath.indexOf('src/documents/reactpubposts') >= 0) {
       var date = moment(post.header.__date_utc)
-        .zone('+08:00')
+        .utcOffset('+08:00')
         .format('YYYY');
       url = (`/${date}/${post.file.matches[3]}`);
     }

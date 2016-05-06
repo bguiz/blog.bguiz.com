@@ -7,7 +7,7 @@ image: /presentations/publish-websites-reactjs/img/publish-websites-reactjs-orly
 
 tl;dr= Use ReactJs to publish static + isomorphic websites
 
-`git push -> webpack -> reactjs -> travis -> gh-pages`
+`git push -> travis -> webpack -> reactjs -> gh-pages`
 
 ## `reactpub`
 

@@ -6,7 +6,7 @@ comments: true
 tags: test, unit, integration, automation, javascript, frontend
 ---
 
-tl;dr= Reference and starter project can be found at
+tl;dr= Reference/starter project can be found at
 [github.com/bguiz/front-end-js-testing](https://github.com/bguiz/front-end-js-testing "Front-end Javascript Testing starter/ reference project")
 
 ## Testing NodeJs vs Testing Front-end

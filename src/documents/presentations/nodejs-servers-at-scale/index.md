@@ -1,10 +1,14 @@
-# Top 7 Things Learnt Deploying NodeJs Servers at Scale
+![](img/qr-code-nodejs-servers-at-scale-presentation.png)
+
+=SLIDE=
+
+# Deploying NodeJs Servers at Scale
+
+## Top 7 Things Learnt
 
 Brendan Graetz
 
 @bguiz
-
-![](img/qr-code-nodejs-servers-at-scale-presentation.png)
 
 =SLIDE=
 
@@ -35,9 +39,8 @@ Brendan Graetz
 
 # NodeJs Excels at async IO
 
-- That's probably why `iojs` was chosen as a name when it was forked
 - Leverage this by being as quick as possible
-  - Make everything non-blocking, and also non-slow
+  - Make everything non-blocking -> non-slow
 - Understand Javascript's event loop
   - Find the shortest path to move stuff back into the event loop
 - Fail fast
@@ -67,7 +70,7 @@ Brendan Graetz
 
 ## Why 3?
 
-- Each async action has at minimum fail and pass states
+- Each async action has at minimum 1 fail and 1 pass state
 - 1 callback -> 2 states
 - 2 callbacks -> 4 states
 - 3 callbacks -> 8 states
@@ -76,10 +79,9 @@ Brendan Graetz
 
 ## Koa philosophy
 
-- Used Koa on other projects, but express on this one
-- Stole some ideas from route handlers and middleware in Koa
-- Applied them to express
+- Stole some ideas from Koa routes and middleware
 - Generator functions as the primary async mechanism
+- Applied them to express
 - *But*, without `co`, without `Promise`
 
 =SLIDE=
@@ -188,4 +190,4 @@ righto.iterate(function* (reject) {
 
 # Questions?
 
-![](img/qr-code-oss-stewardship.png)
+![](img/qr-code-nodejs-servers-at-scale-presentation.png)

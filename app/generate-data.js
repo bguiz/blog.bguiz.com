@@ -92,6 +92,13 @@ generateData(options)
     data.props.presentations = [
       {
         meta: {
+          url: '/presentations/nodejs-servers-at-scale/',
+          title: 'Top 7 Things Learnt Deploying NodeJs Servers at Scale',
+          subtitle: 'Serving lots of users with very little resources',
+        },
+      },
+      {
+        meta: {
           url: '/presentations/publish-websites-reactjs/',
           title: 'Publish Websites with ReactJs',
           subtitle: 'git push -> webpack -> reactjs -> travis -> gh-pages',

@@ -49,14 +49,6 @@ Brendan Graetz
 - Low loads: Promises & callbacks had same performance
 - High loads: Callbacks outperformed promises
   - Small but perceptible difference
-- Rule of 3
-  - No more than 3 nested functions
-    1. Main function (route handler)
-    2. Callbacks
-    3. Nested callbacks
-  - Any more than this:
-    - Function is too complex, refactor/ rewrite, OR
-    - `yield` callbacks
 
 =SLIDE=
 
@@ -88,7 +80,7 @@ Brendan Graetz
 - Stole some ideas from route handlers and middleware in Koa
 - Applied them to express
 - Generator functions as the primary async mechanism
-- *But*, without `co`
+- *But*, without `co`, without `Promise`
 
 =SLIDE=
 
@@ -121,7 +113,7 @@ righto.iterate(function* (reject) {
 # **Hot** code
 
 - Identify it from biz rules
-- Confirm & update from live monitoring in production
+- Live monitoring in production
 - Optimise it heavily
 
 =SLIDE=
@@ -160,8 +152,8 @@ righto.iterate(function* (reject) {
 
 ## Optimisations summary
 
-> The fastest API request/ response time that you will get
-> are the ones that you never need to make
+> The fastest API request/ response times that you will ever get
+> are the ones which you never need to make
 
 =SLIDE=
 
@@ -189,7 +181,7 @@ righto.iterate(function* (reject) {
 
 # Fin
 
-- Very little super fancy things
+- Very few fancy things
 - A lot of getting the basic stuff right
 
 =SLIDE=

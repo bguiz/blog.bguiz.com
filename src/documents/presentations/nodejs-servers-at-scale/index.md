@@ -18,15 +18,27 @@
 
 # 2016 Olympics
 
+
+![Rio 2016 Olympics Logo](img/rio2016-olympics-logo.svg)
+
+- 5.x million users (60 min interval)
 - 3.x million users (5 min interval)
 - 1.x million users (1 min interval)
-- 2 to 8 AWS micro instances for API requests
 
 =SLIDE=
 
-Massive audience
+## AWS resources
 
-![Rio 2016 Olympics Logo](img/rio2016-olympics-logo.svg)
+- c4.large: 2X instances for API requests
+- t2.medium: 2X instances for HTML pages
+- t2.small: 3-5X instances for the rest
+- 47% CPU usage peak
+
+=SLIDE=
+
+[... which works out to super cheap](https://aws.amazon.com/ec2/pricing/)
+
+![AWS EC2 cost estimate](img/aws-cost-estimation.png)
 
 =SLIDE=
 
@@ -34,15 +46,15 @@ Massive audience
 
 - Always up vs reboot at will
 - Always up servers push all resource intensive tasks to reboot at will servers
-- Pushing of tasks goes through queues
+- Pushing tasks through queues (SQS + SNS)
 
 =SLIDE=
 
 ## Delegate intensive tasks
 
-- EC2 -> SQS -> SNS -> EC2
+- Always up server delegates intensive tasks to reboot at will servers
 
-![Always up server delegates intensive tasks to reboot at will servers](img/server-delegate-intensive-tasks.svg)
+![EC2 -> SQS -> SNS -> EC2](img/server-delegate-intensive-tasks.svg)
 
 =SLIDE=
 
@@ -75,13 +87,30 @@ Massive audience
 
 ## Rule of 3
 
-- No more than 3 nested functions
+- Function nest count `<= 3`
   1. Main function (route handler)
-  2. Callbacks
-  3. Nested callbacks
-- Any more than this:
-  - Function is too complex, refactor/ rewrite, OR
-  - `yield` callbacks
+  2. Callback
+  3. Nested callback
+
+=SLIDE=
+
+## Rule of 3
+
+```javascript
+function getFooRoute(req, res) {
+  doAsyncThing1(req.params.id, (err, result) => {
+    if (err) {
+      return res.status(401).send();
+    }
+    doAsyncThing2(result, (err2, result2) => {
+      if (err2) {
+        return res.status(404).send();
+      }
+      return res.json(result2);
+    });
+  });
+}
+```
 
 =SLIDE=
 
@@ -89,22 +118,31 @@ Massive audience
 
 - Each async action has at minimum 1 fail and 1 pass state
 - **How hard** is it to reason about states?
-- 1 callback -> 2 states -> *trivial*
-- 2 callbacks -> 4 states -> *trivial*
-- 3 callbacks -> 8 states -> **hard**
+  - 1 callback -> 2 states -> *trivial*
+  - 2 callbacks -> 4 states -> *trivial*
+  - 3 callbacks -> 8 states -> **hard**
+
+=SLIDE=
+
+## More than 3
+
+- Function is too complex, refactor/ rewrite, OR
+- `yield` callbacks
 
 =SLIDE=
 
 ## Koa philosophy
 
-- Stole some ideas from Koa routes and middleware
+- Stole some ideas from `koa` routes and middleware
 - Generator functions as the primary async mechanism
-- Applied them to express
+- Applied them to `express`
 - *But*, without `co` & without `Promise`
 
 =SLIDE=
 
-## `yield`ing promises
+## promises
+
+- `co` lets you `yield` `Promise`s
 
 ```javascript
 co(function* () {
@@ -118,7 +156,9 @@ co(function* () {
 
 =SLIDE=
 
-## `yield`ing callbacks
+## callbacks
+
+- `righto` lets you `yield` callbacks
 
 ```javascript
 righto.iterate(function* (reject) {

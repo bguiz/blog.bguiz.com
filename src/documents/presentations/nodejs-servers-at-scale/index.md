@@ -29,9 +29,9 @@
 
 ## AWS resources
 
-- c4.large: 2X instances for API requests
-- t2.medium: 2X instances for HTML pages
-- t2.small: 3-5X instances for the rest
+- `c4.large`: 2X instances for API requests
+- `t2.medium`: 2X instances for HTML pages
+- `t2.small`: 3-5X instances for the rest
 - 47% CPU usage peak
 
 =SLIDE=
@@ -45,14 +45,13 @@
 # 1. Server Lifetime
 
 - Always up vs reboot at will
-- Always up servers push all resource intensive tasks to reboot at will servers
-- Pushing tasks through queues (SQS + SNS)
+- Push tasks using queues (SQS + SNS)
 
 =SLIDE=
 
 ## Delegate intensive tasks
 
-- Always up server delegates intensive tasks to reboot at will servers
+- Always up server delegates resource intensive tasks to reboot at will servers
 
 ![EC2 -> SQS -> SNS -> EC2](img/server-delegate-intensive-tasks.svg)
 
@@ -97,12 +96,12 @@
 ## Rule of 3
 
 ```javascript
-function getFooRoute(req, res) {
-  doAsyncThing1(req.params.id, (err, result) => {
+function getFooRoute(req, res) { // <1>
+  async1(req.params.id, (err, result) => { //<2>
     if (err) {
       return res.status(401).send();
     }
-    doAsyncThing2(result, (err2, result2) => {
+    async2(result, (err2, result2) => { // <3>
       if (err2) {
         return res.status(404).send();
       }
@@ -126,15 +125,15 @@ function getFooRoute(req, res) {
 
 ## More than 3
 
-- Function is too complex, refactor/ rewrite, OR
-- `yield` callbacks
+- Function is too complex -> refactor/ rewrite
+- OR: `yield` callbacks
 
 =SLIDE=
 
 ## Koa philosophy
 
 - Stole some ideas from `koa` routes and middleware
-- Generator functions as the primary async mechanism
+- *Generator functions* as the primary async mechanism
 - Applied them to `express`
 - *But*, without `co` & without `Promise`
 
@@ -172,7 +171,7 @@ righto.iterate(function* (reject) {
 
 hot code
 
-![gif flame](https://media.giphy.com/media/Rpe1iBiNUfiEw/giphy.gif)
+![gif hot code metal gear](https://media.tenor.co/images/aefc9a1cbf67abdf96d097b56f6a64d2/raw)
 
 =SLIDE=
 
@@ -181,6 +180,8 @@ hot code
 - Identify it from biz rules
 - Live monitoring in production
 - Optimise it heavily
+
+![gif hot code it crowd](https://media.tenor.co/images/995e9f80403ce34aceb110f2cf95816e/raw)
 
 =SLIDE=
 
@@ -193,7 +194,7 @@ hot code
 
 stretch!
 
-![gif elastic](http://greatist.com/sites/default/files/styles/half_content/public/LyingPullover.gif?itok\u003d7IjfMmO2)
+![gif stretch](https://media.tenor.co/images/2f894421d53fcd0e477ef4ab626c6469/raw)
 
 =SLIDE=
 

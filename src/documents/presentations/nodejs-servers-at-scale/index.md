@@ -1,14 +1,18 @@
 ![](img/qr-code-nodejs-servers-at-scale-presentation.png)
 
+[Brendan Graetz](http://bguiz.com)
+
+[@bguiz](https://twitter.com/bguiz)
+
 =SLIDE=
 
 # Deploying NodeJs Servers at Scale
 
 ## Top 7 Things Learnt
 
-Brendan Graetz
+[Brendan Graetz](http://bguiz.com)
 
-@bguiz
+[@bguiz](https://twitter.com/bguiz)
 
 =SLIDE=
 
@@ -20,34 +24,48 @@ Brendan Graetz
 
 =SLIDE=
 
-# Server Lifetime
+Massive audience
+
+![Rio 2016 Olympics Logo](img/rio2016-olympics-logo.svg)
+
+=SLIDE=
+
+# 1. Server Lifetime
 
 - Always up vs reboot at will
 - Always up servers push all resource intensive tasks to reboot at will servers
 - Pushing of tasks goes through queues
-  - EC2 (au) -> SQS -> SNS -> EC2 (r@w)
 
 =SLIDE=
 
-# 3rd party APIs
+## Delegate intensive tasks
+
+- EC2 -> SQS -> SNS -> EC2
+
+![Always up server delegates intensive tasks to reboot at will servers](img/server-delegate-intensive-tasks.svg)
+
+=SLIDE=
+
+# 2. 3rd party APIs
 
 - Always plan for them to fail
 - Set up notification alerts for these
-  - Learning point for us during the environment
+  - Just logging to files is insufficient
+  - Learning point for us during the event
 
 =SLIDE=
 
-# NodeJs Excels at async IO
+# 3. Excel at async IO
 
-- Leverage this by being as quick as possible
-  - Make everything non-blocking -> non-slow
-- Understand Javascript's event loop
-  - Find the shortest path to move stuff back into the event loop
 - Fail fast
+- Leverage this by being as quick as possible
+  - Non-blocking -> non-slow
+- Understand Javascript's event loop
+  - Move stuff back into the event loop ASAP
 
 =SLIDE=
 
-# Asynchronous Javascript
+# 4. Asynchronous Javascript
 
 - Low loads: Promises & callbacks had same performance
 - High loads: Callbacks outperformed promises
@@ -57,23 +75,23 @@ Brendan Graetz
 
 ## Rule of 3
 
-- Rule of 3
-  - No more than 3 nested functions
-    1. Main function (route handler)
-    2. Callbacks
-    3. Nested callbacks
-  - Any more than this:
-    - Function is too complex, refactor/ rewrite, OR
-    - `yield` callbacks
+- No more than 3 nested functions
+  1. Main function (route handler)
+  2. Callbacks
+  3. Nested callbacks
+- Any more than this:
+  - Function is too complex, refactor/ rewrite, OR
+  - `yield` callbacks
 
 =SLIDE=
 
 ## Why 3?
 
 - Each async action has at minimum 1 fail and 1 pass state
-- 1 callback -> 2 states
-- 2 callbacks -> 4 states
-- 3 callbacks -> 8 states
+- **How hard** is it to reason about states?
+- 1 callback -> 2 states -> *trivial*
+- 2 callbacks -> 4 states -> *trivial*
+- 3 callbacks -> 8 states -> **hard**
 
 =SLIDE=
 
@@ -82,7 +100,7 @@ Brendan Graetz
 - Stole some ideas from Koa routes and middleware
 - Generator functions as the primary async mechanism
 - Applied them to express
-- *But*, without `co`, without `Promise`
+- *But*, without `co` & without `Promise`
 
 =SLIDE=
 
@@ -112,7 +130,13 @@ righto.iterate(function* (reject) {
 
 =SLIDE=
 
-# **Hot** code
+hot code
+
+![gif flame](https://media.giphy.com/media/Rpe1iBiNUfiEw/giphy.gif)
+
+=SLIDE=
+
+# 5. **Hot** code
 
 - Identify it from biz rules
 - Live monitoring in production
@@ -127,6 +151,12 @@ righto.iterate(function* (reject) {
 
 =SLIDE=
 
+stretch!
+
+![gif elastic](http://greatist.com/sites/default/files/styles/half_content/public/LyingPullover.gif?itok\u003d7IjfMmO2)
+
+=SLIDE=
+
 ## Elastic Deflect (TM)
 
 - For things that run very frequently
@@ -135,6 +165,12 @@ righto.iterate(function* (reject) {
 - Serve the same number of users with less resources
 - When the volume goes back to normal,
   the interval goes back to normal too
+
+=SLIDE=
+
+caching
+
+![gif cache](http://www.androidcentral.com/sites/androidcentral.com/files/article_images/2015/07/clear-app-cache.gif)
 
 =SLIDE=
 
@@ -152,6 +188,20 @@ righto.iterate(function* (reject) {
 
 =SLIDE=
 
+## Multiple levels of caching
+
+- Browser, then CDN, then server
+
+![Multiple levels of caching](img/multiple-levels-of-caching.svg)
+
+=SLIDE=
+
+optimisations
+
+![gif optimisations](https://addyosmani.com/assets/zR2f1.gif)
+
+=SLIDE=
+
 ## Optimisations summary
 
 > The fastest API request/ response times that you will ever get
@@ -159,7 +209,13 @@ righto.iterate(function* (reject) {
 
 =SLIDE=
 
-# Blue-green deployments
+devops
+
+![gif devops](http://static1.squarespace.com/static/51814c87e4b0c1fda9c1fc50/t/55c8c5e3e4b0e661da87945a/1439221298725/)
+
+=SLIDE=
+
+# 6. Blue-green deployments
 
 - Always have two production servers running
 - DNS level switch (Route53)
@@ -170,14 +226,27 @@ righto.iterate(function* (reject) {
 
 =SLIDE=
 
-# Testing
+testing
+
+![gif testing](https://i.github-camo.com/7ac46edb25fe71df6af76b73bdefb39c15119f91/68747470733a2f2f7261772e6769746875622e636f6d2f5461624469676974616c2f61746f6d2d6d6f6368612d746573742d72756e6e65722f6d61737465722f64656d6f2e676966)
+
+=SLIDE=
+
+# 7. Testing
 
 - 93% code coverage
-- Really gives you confidence in deploying
-  - Confidence is necessary if deploying after going live
-- When something breaks, narrow down fault definitively
+- Really gives you **confidence** in deploying
+  - Confidence is necessary if deploying after **going live**
+- When something breaks, **narrow down fault** definitively
   - Useful when 3rd party vendors are problematic
-- Smoke test -> Unit test + integration test
+
+=SLIDE=
+
+## Test and deploy flow
+
+- Smoke test -> Unit & integration test -> Deploy
+
+![Test and deploy flow](img/test-deploy-flow.svg)
 
 =SLIDE=
 
@@ -191,3 +260,7 @@ righto.iterate(function* (reject) {
 # Questions?
 
 ![](img/qr-code-nodejs-servers-at-scale-presentation.png)
+
+[Brendan Graetz](http://bguiz.com)
+
+[@bguiz](https://twitter.com/bguiz)

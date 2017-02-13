@@ -101,14 +101,15 @@ Wrong, because *I am devloper*. This fella knows what I'm talking about:
 [![https://pbs.twimg.com/profile_images/477397164453527552/uh2w1u1o.jpeg](https://pbs.twimg.com/profile_images/477397164453527552/uh2w1u1o.jpeg)](https://twitter.com/iamdevloper)
 
 Instead, I wrote a script that converts Trello's exported JSON
-into a an Excel spreadsheet:
+into an Excel spreadsheet:
 
 [trello2charts](https://github.com/bguiz/trello2charts)
 
 It is heavily customised to the particular way in which I like to use Trello,
 which is to use the following entities to achieve a three-level hierarchy:
 Lists -> Cards -> Checklist Items
-Feel free to use it yourselves if this approach is compatible with yours.
+
+Feel free to use it too, if this approach is compatible with yours.
 
 This script enabled me to use a much better tool for the job,
 and export to the required format whenever necessary.

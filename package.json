@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "font-awesome": "^4.5.0",
-    "highlight.js": "^9.3.0",
+    "highlight.js": "^9.10.0",
     "marked": "^0.3.5",
     "moment": "~2.13.0",
     "react": "^0.14.8",
@@ -23,7 +23,7 @@
     "react-router": "^2.0.1",
     "react-share": "^1.5.0",
     "reactpub": "^0.8.1",
-    "reactpub-blog-basic-theme": "^0.4.5",
+    "reactpub-blog-basic-theme": "^0.5.0",
     "reset-css": "^2.0.2011012603",
     "reveal.js": "^3.2.0"
   },

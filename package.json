@@ -23,7 +23,7 @@
     "react-router": "^2.0.1",
     "react-share": "^1.5.0",
     "reactpub": "^0.8.1",
-    "reactpub-blog-basic-theme": "^0.4.4",
+    "reactpub-blog-basic-theme": "^0.4.5",
     "reset-css": "^2.0.2011012603",
     "reveal.js": "^3.2.0"
   },

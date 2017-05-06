@@ -10,7 +10,7 @@ image: /images/posts/caffeinated-jester.jpeg
 Having previously tested a NodeJs API server using `mocha` + `chai` + `sinon`,
 I have migrated a very large numbers of tests over to Jest recently.
 There were several hard-won lessons along the way,
-which requires onde to change the way one approaches writing tests,
+which requires one to change the way one approaches writing tests,
 and even thinking about tests.
 
 Jest is the new kid on the block,

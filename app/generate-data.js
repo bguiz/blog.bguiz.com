@@ -92,6 +92,13 @@ generateData(options)
     data.props.presentations = [
       {
         meta: {
+          url: '/presentations/caffeinated-jester/',
+          title: 'The Caffeinated Jester',
+          subtitle: 'Migrating from Mocha to Jest',
+        },
+      },
+      {
+        meta: {
           url: '/presentations/nodejs-servers-at-scale/',
           title: 'Top 7 Things Learnt Deploying NodeJs Servers at Scale',
           subtitle: 'Serving lots of users with very little resources',

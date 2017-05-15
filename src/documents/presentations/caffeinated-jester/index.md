@@ -16,11 +16,7 @@
 
 =SLIDE=
 
-![](img/caffeinated-jester.png)
-
-[Brendan Graetz](http://bguiz.com)
-
-[@bguiz](https://twitter.com/bguiz)
+[![](/images/posts/caffeinated-jester.jpeg)](http://blog.bguiz.com/2017/caffeinated-jester/)
 
 =SLIDE=
 
@@ -41,6 +37,13 @@
 
 # Library vs framework
 
+- Mocha: Library
+  - Import `chai` for assertions
+  - Import `sinon` & `lolex` for mocks, and time manipulation
+  - Import `istanbul` for code coverage
+- Jest: Framework
+  - "Batteries included"
+
 =SLIDE=
 
 # Automated tools
@@ -56,6 +59,9 @@
 yarn global add jest-codemods
 ```
 
+- Converts the test runner parts only
+  - Jest uses Jasmine under the hood
+
 =SLIDE=
 
 ## Semi-automated
@@ -68,39 +74,59 @@ yarn global add jest-codemods
 
 # Gotchas
 
+- Serial vs parallel
 - File level sandbox
 - `done(err)`
 - `stdout`/ `stderr` truncation
+- `null` or `undefined` assertions
 
 =SLIDE=
 
 ## Serial vs parallel
 
-- Mocha: Serial by default
-- Jest: Parallel by default
+- Mocha default: Serial
+- Jest default : Parallel
 
 =SLIDE=
 
 ## File level sandbox
 
 - In mocha, side effects from one test can run over into another
-- In Jest, all in-memory effects are undone
-  - Any persisted effects (e.g. DB) should be reversed
+- In Jest, there is a file-level sandbox
+  - All in-memory effects are undone
+  - But not any persisted effects (e.g. DB)
 
 =SLIDE=
 
 ## `done(err)`
 
-- In Mocha, if the first parameter is set on `done()`, test fails
-- In Jest, this does not matter
+- If the 1st parameter is set on the `done()` callback,
+  - Mocha: Test fails
+  - Jest: Test passes (same as Jasmine)
 
 =SLIDE=
 
 ## `stdout`/ `stderr` truncation
 
-- All test output and application output are proxied by Jest
-- However, the output from Jest is truncated by length per test
+- Jest proxies all
+  - test output and
+  - application output
+- H/W, the per-test output from Jest is *truncated* by string length
 - Minimise output!
+
+=SLIDE=
+
+## `null` or `undefined` assertions
+
+- How to assert that something is `null` or `undefined`?
+- The `chai` way:
+  - ```
+    expect(result).not.to.exist();
+    ```
+- Jest has no obvious equivalent, closest option is:
+  - ```
+    expect(result).not.toEqual(expect.anything());
+    ```
 
 =SLIDE=
 
@@ -109,6 +135,7 @@ yarn global add jest-codemods
 - Basic mocks
 - Mocking Chained APIs
 - Spies
+- Module level mocks
 
 =SLIDE=
 
@@ -118,6 +145,8 @@ yarn global add jest-codemods
 myModule.foo = jest.fn().mockImplementation(myTestImpl);
 ```
 
+- Defining a mock function
+
 =SLIDE=
 
 ## Basic mocks (2)
@@ -126,11 +155,16 @@ myModule.foo = jest.fn().mockImplementation(myTestImpl);
 expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 ```
 
+- Asserting invocation of a mock function
+
 =SLIDE=
 
 ## Mocking Chained APIs
 
-- E.g. `express` response: `res.status(200).json({ foo: 'bar' });`
+- E.g. `express` response
+- ```
+  res.status(200).json({ foo: 'bar' });
+  ```
 - Achieve this by splitting `jest.fn()` from `.mockImplementation(myTestImpl)`
 - [Detailed explainer](http://blog.bguiz.com/2017/mocking-chained-apis-jest)
 
@@ -138,8 +172,30 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 ## Spies
 
-- Jest spies are limited: Cannot access `.mock.calls` array as you can with mocks
+- Jest spies are limited
+  - Cannot access `.mock.calls` array as you can with mocks
 - Use mocks instead of spies, for the moment
+
+=SLIDE=
+
+## Module level mocks (1)
+
+- Jest allows you to mock entire modules
+  - Not limited to individual functions
+- In practice, this does not work so well
+
+=SLIDE=
+
+## Module level mocks (2)
+
+- Easier option: Manually create a module level mock
+- In a `beforeAll()`, `require()` the original
+- ```
+  mockMyModule = Object.assign({}, originalMyModule, {
+    myFunc: jest.fn().mockImplementation(() => {}),
+  });
+  ```
+- Works because Jest *hoists* mocks prior to first `require()`
 
 =SLIDE=
 
@@ -147,16 +203,17 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 - Time manipulation basics
 - `Date`
-- Macro tasks & micro tasks
+- Macro & micro tasks
 
 =SLIDE=
 
 ## Time manipulation basics
 
-- When the application under test uses the system time as input
-  - (Quite common)
-- Need to fake the time in order to get repeatable tests
-- In JS, also involves the event loop stack
+- Application uses the system time as input
+  - This is a rather common occurrence in tests
+  - ∴ tests need to *fake* the time in order to get *repeatable* tests
+- In JS, also involves the event loop queue
+  - This complicates things
 
 =SLIDE=
 
@@ -164,26 +221,39 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 - Jest does *not* provide a means to mock `Date`
 - In mocha, the default approach would be to use `lolex` from `sinon`
-- H/w `lolex` doesn't play well with Jest
-- Used `mockdate` instead
+- H/W `lolex` doesn't play well with Jest
+  - Use `mockdate` instead
 
 =SLIDE=
 
-## Macro tasks & micro tasks
+## Macro & micro tasks (1)
 
 - Set up:
-  - `jest.useFakeTimers();`
-- Macro tasks: `setImmediate()`, `setTimeout()`, `setInterval()`, etc.
-  - `jest.runTimersToTime(ms)```
-- Micro tasks: `new Promise()`, `process.nextTick()`
-  - `jest.runAllTicks();`
+  - Use `jest.useFakeTimers();`
+- Macro tasks:
+  - `setImmediate()`, `setTimeout()`, `setInterval()`
+  - Use `jest.runTimersToTime(ms)`
+- Micro tasks:
+  - `new Promise()`, `process.nextTick()`
+  - Use `jest.runAllTicks();`
+
+=SLIDE=
+
+## Macro & micro tasks (2)
+
+- In `lolex`, when you do `clock.tick(ms);`
+  - `Date` gets advanced
+  - Micro tasks get executed
+  - Macro tasks (up to that `ms`) get executed
+- In Jest
+  - Control exactly which ones you wish to execute
 
 =SLIDE=
 
 # Watch
 
 - Filter to changes in `git diff`
-- Filter to a pattern
+- Filter to a regex
 - With coverage
 
 =SLIDE=
@@ -196,7 +266,7 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 =SLIDE=
 
-## Filter to a pattern
+## Filter to a regex
 
 - While in `--watch` mode, hit `p` (for pattern)
 - Type a regular expression to match a test file name
@@ -222,7 +292,8 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 ## CLI config
 
 - Use CLI flags such as `--watch`
-- Once you figure out the right flags, put them in `package.json`
+- Once you figure out the right flags,
+  put them in `package.json` as a run script
 
 =SLIDE=
 
@@ -230,7 +301,9 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 - Use the `--config` CLI flag
 - Create a JSON file within the project
-- Can be quite powerful for running tests in different environments
+- Can be quite powerful for running:
+  - Tests in different environments
+  - Different sub-sets of tests
 
 =SLIDE=
 
@@ -248,13 +321,18 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 - A mechanism in which the test runner creates expectations automatically
 - Achieved via a serialiser
 - Collections of these generated mechanisms are saved to disk
+
+=SLIDE=
+
+## Basic snapshots (2)
+
 - When a test is run for which a snapshot already exists:
   - When update flagged, overwrite expectations with actual
   - Otherwise, diff actual against expectations
 
 =SLIDE=
 
-## Basic snapshots (2)
+## Basic snapshots (3)
 
 - `expect(result).toMatchSnapshot();`
 - When running `foo.test.js`
@@ -266,10 +344,10 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 ## Robust Snapshots
 
-- Don't use a result object directly in a snapshot
-- Instead transform the result object with a filtered set of properties
+- Don't use a result object *directly* in a snapshot
+- Instead transform the result object with a *filtered* set of properties
 - Also, add any additional meta-data to the result object
-- Think: "What would I want to `console.log()` here when debugging?"
+  - "What would I want to `console.log()` here when debugging?"
 
 =SLIDE=
 
@@ -277,10 +355,18 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 - General software engineering principle: DRY
 - "Don't repeat yourself" is valid in application code
-- H/w in test code, DAMP is considered best practice
-  - Test cases should be fully descriptive of themselves
+- H/W in test code, DAMP is considered best practice
+  - Test cases: Fully self-descriptive
 - Snapshots provide a means to remove some of the repetition in test cases
   - DRY -> DAMP -> DRY!!
+
+=SLIDE=
+
+## Pitfall
+
+- Can be liberating not to have to write assertions by hand
+- ∵ you are not writing them, it is easy to ignore
+- Need to take extra care to *inspect* the snapshots by hand
 
 =SLIDE=
 
@@ -318,8 +404,9 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 
 # Fin
 
-- Very few fancy things
-- A lot of getting the basic stuff right
+- Migrating from Mocha to Jest is pretty *difficult*
+- Jest's "batteries included" approach saves a lot of time
+- Snapshots combine with `--watch` are a killer combo
 
 =SLIDE=
 
@@ -330,3 +417,7 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 [Brendan Graetz](http://bguiz.com)
 
 [@bguiz](https://twitter.com/bguiz)
+
+=SLIDE=
+
+[![](/images/posts/caffeinated-jester.jpeg)](http://blog.bguiz.com/2017/caffeinated-jester/)

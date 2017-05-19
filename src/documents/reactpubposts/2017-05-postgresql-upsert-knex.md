@@ -2,7 +2,7 @@
 title: Upsert in PostgreSql using Knex
 date: 2017-05-17 23:06
 tags: postgres, sql, knex
-image: /images/posts/postgresql-upsert-knex.jpeg
+image: /images/posts/postgresql-upsert-knex.png
 ---
 
 What is an upsert, anyway?

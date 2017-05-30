@@ -89,7 +89,7 @@ yarn global add jest-codemods
 
 =SLIDE=
 
-## File level sandbox
+## File level sandbox (1)
 
 - In mocha, side effects from one test can run over into another
 - In Jest, there is a file-level sandbox
@@ -98,9 +98,58 @@ yarn global add jest-codemods
 
 =SLIDE=
 
+## File level sandbox (2)
+
+- Can also be problematic
+- Extra steps to ensure that unwanted stuff is cleared
+- After *each file*
+- e.g. Drain database connection pool
+
+=SLIDE=
+
+## File level sandbox (3)
+
+```javascript
+afterAll((done) => {
+	require('./path/to/server.js')._testTearDown((err) => {
+		if (err) {
+			console.error('tearDownApis fail', err);
+		}
+		// done(); //NOTE normally would be `done()` here
+	});
+	done();
+});
+```
+
+- *not* necessary for it to *complete* prior to advancing to the next test file
+- `done()` *before* the teardown is complete: ↓ the total run time of suite
+
+=SLIDE=
+
+## File level sandbox (4)
+
+- Jest configuration per test *file*
+- `beforeAll()` & `afterAll()` will execute
+- ∴ define a test-specific teardown if necessary
+
+```javascript
+if (typeof process.env.TEST_TYPE === 'string') {
+  server._testTearDown = () => { /* test-specific tear down */ }
+}
+server.on('exit', () => { /* regular tear down */ });
+```
+
+```
+{
+  "setupTestFrameworkScriptFile": "./jest-per-file.js"
+}
+```
+
+=SLIDE=
+
 ## `done(err)`
 
-- If the 1st parameter is set on the `done()` callback,
+- 1st parameter is set on the `done()` callback ⇒
   - Mocha: Test fails
   - Jest: Test passes (same as Jasmine)
 
@@ -108,9 +157,7 @@ yarn global add jest-codemods
 
 ## `stdout`/ `stderr` truncation
 
-- Jest proxies all
-  - test output and
-  - application output
+- Jest proxies all *test* output and *application* output
 - H/W, the per-test output from Jest is *truncated* by string length
 - Minimise output!
 
@@ -120,11 +167,11 @@ yarn global add jest-codemods
 
 - How to assert that something is `null` or `undefined`?
 - The `chai` way:
-  - ```
+  - ```javascript
     expect(result).not.to.exist();
     ```
 - Jest has no obvious equivalent, closest option is:
-  - ```
+  - ```javascript
     expect(result).not.toEqual(expect.anything());
     ```
 
@@ -165,7 +212,8 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 - ```
   res.status(200).json({ foo: 'bar' });
   ```
-- Achieve this by splitting `jest.fn()` from `.mockImplementation(myTestImpl)`
+- *Not* the same as the "builder pattern"
+- Achieve this by splitting `.fn()` from `.mockImplementation(myTestImpl)`
 - [Detailed explainer](http://blog.bguiz.com/2017/mocking-chained-apis-jest)
 
 =SLIDE=
@@ -313,14 +361,17 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
 - Robust Snapshots
 - DRY vs DAMP
 - Write your own snapshot serialiser
+- Test driven Development
+- Pitfall
 
 =SLIDE=
 
 ## Basic snapshots (1)
 
-- A mechanism in which the test runner creates expectations automatically
-- Achieved via a serialiser
-- Collections of these generated mechanisms are saved to disk
+- Mechanism in which the test runner
+  - creates expectations from results
+  - serialises them
+  - assembles into collection + save to disk
 
 =SLIDE=
 
@@ -380,6 +431,45 @@ expect(myModule.foo.calls[0]).toEqual(['bar', 123]);
   "jest-object/serialise-js-object.js"
 ]
 ```
+
+=SLIDE=
+
+## TDD (1)
+
+- Use `expect(result).toMatchSnapshot()`
+- Use `--watch` CLI flag
+- 1st run: Generate incorrect snapshots
+- 2nd and subsequent runs:
+	- Either: Hand edit the snapshots to the *real* expected result
+	- Or: Change impl. such that *actual* matches *expected*, then hit `u`
+
+=SLIDE=
+
+## TDD (2)
+
+- This is not "pure" test-driven development
+- But it is pretty close
+- Also: Closest I have ever gotten to it myself!
+
+=SLIDE=
+
+## TDD (3)
+
+- Snapshots are especially useful in *parametric* tests
+- e.g. Hitting the same API endpoint repeatedly
+  - Vary the input each iteration
+	- Vary the (fake) time each iteration
+- 1st: Write the test with a loop, but only one iteration
+- Next: Make more iterations
+
+=SLIDE=
+
+## TDD (4)
+
+Re-emphasis:
+
+- Inspect generated snapshots with a fine-toothed comb
+- Consider writing (parts of) snapshots by hand
 
 =SLIDE=
 

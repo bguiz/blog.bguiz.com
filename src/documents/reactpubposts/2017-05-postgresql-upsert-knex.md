@@ -28,20 +28,20 @@ or if they do support it, the query syntax for it can vary significantly
 If you wish to perform an "insert or update" in a scenario
 that is similar to the one described above, *but*
 the database that you are using does not support it,
-with some difficulty, you can achieve the same thing,
+with some difficulty, you can achieve the same thing.
 
 If, based on your application domain,
 inserts are *more common* than updates:
 
 1. Perform an insert
-2. If the insert failed, perform an update
+2. If the insert failed because primary key already exists, perform an update
 3. Wrap the above in a transaction, so that the operation remains atomic
 
 Otherwise,
 if updates are *more common* than inserts:
 
 1. Perform an update
-2. If the update failed, perform an insert
+2. If the update failed because primary key does not exist, perform an insert
 3. Wrap the above in a transaction, so that the operation remains atomic
 
 Both of the above are the same,
@@ -51,7 +51,7 @@ except for the order in which the insert and update operations are attempted.
 
 Postgres landed support for upsert in `9.5`,
 so thankfully one does not need to deal with the above.
-They do not call it upsert though,
+They do not name it upsert though,
 instead it is done via an
 [`insert`](https://www.postgresql.org/docs/devel/static/sql-insert.html) statement that uses
 an [`on conflict`](https://www.postgresql.org/docs/devel/static/sql-insert.html#sql-on-conflict) clause.
@@ -81,7 +81,7 @@ including PostgreSql.
 Therefore when using its query builder,
 it only supports the commands that all of them have in common.
 This usually means anything that is part of SQL '99.
-Upsert does not make the cut, unfortunately.
+Therefore, upsert does not make the cut.
 
 Thankfully, however, Knex does provide an "escape hatch" of sorts,
 via [`knex.raw()`](http://knexjs.org/#Raw):
@@ -89,6 +89,15 @@ which allows you to write raw SQL
 <sup name="post-content-location-rawsql">[2](#post-footnote-location-rawsql)</sup>.
 Forewarned, let us proceed to write a PostgreSql-specific command in Knex,
 which does an upsert.
+
+Some readers out there might take it even further,
+and think, if we are using raw statements,
+why use Knex at all - why not interface with the database driver directly?
+We use Knex here mainly for the migrations and connection pooling which comes out of the box,
+and the query building is a nice-to-have which we might as well use.
+That being said, if you are already doing connection pooling and database migrations
+by interfacing directly with the database driver, or some other means,
+simply extract the SQL parts out in the following segments for the same effect.
 
 ## Example of Upsert in Knex
 
@@ -102,9 +111,10 @@ This account table consisted of only 2 columns:
 
 ```javascript
 knex.raw(
-  `insert into account(id, body) values(:id, :body::jsonb)
-  on conflict(id) do update
-  set body = jsonb_merge_recurse(excluded.body, :body::jsonb)
+  `insert into account ( id, body ) as original
+  values ( :id, :body::jsonb )
+  on conflict ( id ) do update
+  set body = jsonb_merge_recurse ( original.body::jsonb, excluded.body::jsonb )
   returning *`,
   { id, body }
 )
@@ -127,18 +137,25 @@ to substitute the values in manually,
 because that would leave this query *vulnerable* to SQL injection attacks.
 
 ```sql
-insert into account(id, body) values(:id, :body::jsonb)
+insert into account ( id, body ) as original
+values( :id, :body::jsonb )
 ```
 
 This is a standard `insert` statement.
+The alias part (`as original`)
+is needed here to reference the current value in the table row,
+where it currently exists.
+You can name this what you want of course (does not have to be `original`),
+so long as it matches the usage in the following parts of the statement.
+
 The next segment turns it into an upsert.
 
 ```sql
-on conflict(id) do update
+on conflict ( id ) do update
 ```
 
 The `on conflict` clause flags that this insert statement
-is actually an upsert,
+is actually an *upsert*,
 and therefore that it should check whether `id` *already exists*
 in one of the rows in the `account` table.
 If it exists, it will attempt an `update` *instead of* an `insert`.
@@ -149,21 +166,27 @@ Instead, it would need to do an index lookup on the primary key (`id`),
 then know immediately which of `insert` or `update` needs to happen.
 
 ```sql
-set body = jsonb_merge_recurse(excluded.body, :body::jsonb)
+set body = jsonb_merge_recurse ( original.body::jsonb, excluded.body::jsonb )
 ```
 
 Here we are updating the `body` as we would in a standard `update` statement.
-The only difference resultant from this being an `upsert` statement
-instead of an `update` statement, is `excluded`
 <sup name="post-content-location-jsonbmergerecurse">[4](#post-footnote-location-jsonbmergerecurse)</sup>.
-`excluded` is a special keyword that refers to the *existing row*
-that matches the `id`,
-as specified previously in `on conflict(id)`.
+
+Of particular note, is `excluded`,
+which is a special keyword that refers to the *new values*
+in the row that would have been inserted if this had not become an update.
 This is mentioned in passing in the
 `alias` and `conflict_action` action sections of the
 [`on conflict`](https://www.postgresql.org/docs/devel/static/sql-insert.html#sql-on-conflict)
 section of PostgreSql's documentation
 <sup name="post-content-location-postgresql-onconflict-docs">[5](#post-footnote-location-postgresql-onconflict-docs)</sup>.
+
+`original` is the alias which we defined earlier,
+and refers to the *previous values*
+in the row in the table which matches the `id`,
+as specified previously in `on conflict ( id )`.
+So the values are the values prior to this statement being executed.
+<sup name="post-content-location-original-and-excluded">[6](#post-footnote-location-original-and-excluded)</sup>.
 
 ```sql
 returning *
@@ -262,3 +285,11 @@ it does not appear to be necessary for
 This rather sparse documentation from PostgreSql was, in fact,
 the main motivation behind writing this post!
 [↩](#post-content-location-postgresql-onconflict-docs)
+
+<b name="post-footnote-location-original-and-excluded">5</b>
+A previous version of this post used `excluded` where `original`,
+in part, due to confusion over the `on conflict` section of PostgreSql's documentation.
+Thanks to [Ufuk Tandogan](https://github.com/spekulatif1)
+for pairing with me on this to figure it out -
+it was a particularly tricky issue to debug!
+[↩](#post-content-location-original-and-excluded)

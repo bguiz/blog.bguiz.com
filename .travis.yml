@@ -14,3 +14,4 @@ env:
   - FLAG_ALL_PAGE: 'false'
   - FLAG_LATEST_PAGE: 'false'
   - FLAG_CLEAN_DOCUMENT: 'true'
+  - FLAG_SKIP_PUSH: 'true'

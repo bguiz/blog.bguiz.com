@@ -12,7 +12,8 @@ and supports server-side joins between multiple entities (tables).
 Interestingly, in addition to this,
 it also supports a JSON data type natively,
 and provides a [rich set of functions and operators](https://www.postgresql.org/docs/9.6/static/functions-json.html)
-to work with its `json` and `jsonb` types.
+to work with its `jsonb` type.
+<sup name="post-content-location-jsonb">[1](#post-footnote-location-jsonb)</sup>
 
 The support for relational and document database paradigms is a potent combination,
 as it is feasible to use PostgreSql as a
@@ -110,18 +111,64 @@ The problems with the above approach include:
 - Disk I/O needs to happen twice
 - When multiple operations occur on the same document concurrently, the last one overwrites the first one
 
+### Concurrency + race to last write
+
 The first two are somewhat forgivable,
 as they are potential performance problems.
 However, the last one means that you have potentially wrong data being written to your database,
 due to some sort of race condition occurring.
 This is somewhat similar to the
-[cliched bank transaction processing scenarios](https://en.wikipedia.org/wiki/Transaction_processing#Description).
-This description of
-[lost update scenarios](https://vladmihalcea.com/2014/09/14/a-beginners-guide-to-database-locking-and-the-lost-update-phenomena/)
-is a rather detailed guide to this particular problem.
-Recall that right at the beginning, the ACID principles of relational databases were mentioned.
-Let us next attempt to tackle this, *while* still adhering to ACID principles -
-after all, just because we are working with documents, we should not need to sacrifice these principles.
+[cliched bank transaction processing scenarios](http://www.informit.com/articles/article.aspx?p=26890&seqNum=3).
+This article goes into greater depth regarding
+[lost update scenarios](https://vladmihalcea.com/2014/09/14/a-beginners-guide-to-database-locking-and-the-lost-update-phenomena/).
+A brief summary of this would be:
+
+- There an `account` entity that has the following fields: `id: 123, balance: 100`
+- This particular account happens to receive a credit of `20`
+  - Database query `select balance from user where id= 123;` returns `100`
+  - Application server works out `100 + 20 = 120`
+  - Database query `update user set balance = 120 where id = 123;`
+- The same account also receives a debit of `10`
+  - Database query `select balance from user where id= 123;` returns `120`
+  - Application server works out `100 - 10 = 110`
+  - Database query `update user set balance = 110 where id = 123;`
+
+This approach works fine, except when both the credit and the debit come through at exactly the same time.
+If both `select` statements are executed before either `update` statement,
+we have a problem, because tboh select statements would return `100`,
+and thherefore one of the `update` statements would attempt to set balance to `120` and `90` respectively,
+neither of which are correct.
+
+There are two ways to solve this problem:
+
+- Block updates to entity by other instances of application server until done
+  - Use this when updates to the entity are complex,
+    and it makes the most sense to do this on the application server.
+  - In PostgreSql this can be achieved through
+    row-level locking,
+    `serializable` transactions, or
+    optimistic locking.
+    [Detailed explanation here.](https://blog.2ndquadrant.com/postgresql-anti-patterns-read-modify-write-cycles/)
+- Move update logic to the database
+  - Use this when updates to the entity are simple,
+    and can be composed out of functions and operators available on the database
+
+An example of moving the update logic to the application server,
+continuing with the same account balance example above:
+
+- There an `account` entity that has the following fields: `id: 123, balance: 100`
+- This particular account happens to receive a credit of `20`
+  - Database query `update user set balance = balance + 20 where id = 123;`
+- The same account also receives a debit of `10`
+  - Database query `update user set balance = balance - 10 where id = 123;`
+
+Much cleaner!
+More importantly, the balance will be correct, even if both statments occur at the same time.
+
+The logic for merging JSON can feasibly be moved to the database,
+and that is the next approach that we will take a look at.
+After all, when working with documents,
+we can still adhere to the same principles that we would for relational data.
 
 ## Database 💾 modifies document: ✔️ approach
 
@@ -160,8 +207,7 @@ as it is possible to do do this purely using PostgreSql
 [JSON functions](https://www.postgresql.org/docs/9.6/static/functions-json.html).
 We have the option of using a user-defined procedural language -
 for example, Javascript via [PLv8](https://github.com/plv8/plv8/blob/master/doc/plv8.md) -
-if we wanted to.
-However, that is an exercise for another time!
+if we wanted to, however, that is an exercise for another time!
 
 ```sql
 create or replace function jsonb_merge_recurse(orig jsonb, delta jsonb)
@@ -268,3 +314,25 @@ we could append the primitive to the end of the array.
 However these cases can be quite varied,
 and these use cases would be better suited to having separate functions
 specific to array manipulation.
+
+## Thanks
+
+Thanks to [Andrew](https://twitter.com/andy_snow) and [Mitch](https://twitter.com/sir_tilbrook)
+for their helpful pointers and feedback on earlier drafts of this post.
+
+## Footnotes
+
+<sup name="post-content-location-jsonb">[1](#post-footnote-location-jsonb)</sup>
+
+<b name="post-footnote-location-jsonb">5</b>
+PostgreSql actually has two different data types that can be used to represent JSON:
+`json` and `jsonb`.
+These are ["almost identical"](https://www.postgresql.org/docs/9.6/static/datatype-json.html),
+however, one should use `jsonb` by default, and only use `json` for legacy reasons.
+Practically, `jsonb` is much more efficient as it is stored on disk in binary format,
+whereas `json` is stored in plain text format.
+The code in this article has only been tested against `jsonb`,
+and may not work with `json` -
+Let me know if you happen to try this out,
+I would be interested in the results!
+[↩](#post-content-location-jsonb)

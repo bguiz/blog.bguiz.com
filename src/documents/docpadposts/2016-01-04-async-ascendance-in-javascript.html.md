@@ -460,7 +460,7 @@ What has changed from the generator-based `callerFunction` is that
 instead of using `co` as the "runner" that wraps a generator function,
 the entire `callerFunction` itself is now marked with the `async` keyword.
 This allows `callerFunction` to use the `await` keyword -
-in a manner *very similar* to the way that generator functions use `await`.
+in a manner *very similar* to the way that generator functions use `yield`.
 Essentially, there is no need for a "runner" function any longer -
 instead, these are supported natively.
 

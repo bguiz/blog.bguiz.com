@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Uploading Files to Onedrive in Cordova App - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Uploading Files to Onedrive in Cordova App - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/06/27/uploading-files-to-onedrive/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/06/27/uploading-files-to-onedrive/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Uploading Files to Onedrive in Cordova App</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/06/28</div><span class="markdown__markdown-render___9BIqe"><h2 id="overview">Overview</h2>
+<ol>
+<li>Set up a Windows-Phonegap app in MSVS2015<ul>
+<li>Phonegap tools</li>
+<li>Create a microsoft.com account</li>
+<li>Create developer account</li>
+<li>Registering the app</li>
+</ul>
+</li>
+<li>Authentication in using LiveSDK<ul>
+<li>Install via NuGet</li>
+<li>Application manifest for extra Internets</li>
+<li>WL.* APIs + caveats</li>
+</ul>
+</li>
+<li>Backend for uploading a file to OneDrive<ul>
+<li>Using the <code>access_token</code></li>
+<li>OneDrive APIs</li>
+</ul>
+</li>
+</ol>
+<h2 id="set-up-windows-phonegap-app-in-visual-studio">Set up Windows-Phonegap app in Visual Studio</h2>
+<h3 id="phonegap-tools-to-generate-the-solution">Phonegap tools to generate the solution</h3>
+<p>The first thing that we need is to generate a Visual Studio solution.</p>
+<ul>
+<li>Install Phonegap via npm<ul>
+<li><pre class="hljs bash lang-bash">npm install --global phonegap</pre></li>
+</ul>
+</li>
+<li>Generate a Visual Studio solution for a new project<ul>
+<li><pre class="hljs bash lang-bash">phonegap create livesdk-onedrive-demo
+<span class="hljs-built_in">cd</span> livesdk-onedrive-demo
+phonegap platform add windows
+phonegap build windows</pre></li>
+</ul>
+</li>
+</ul>
+<p>Now that we have generated the project,
+we can build and debug the project in an IDE.</p>
+<ul>
+<li>Open Microsoft Visual Studio 2015</li>
+<li>Hit <code>Ctrl+Shift+O</code> to open a solution</li>
+<li>Open to <code>livesdk-onedrive-demo/platforms/windows/CordovaApp.sln</code></li>
+<li>Note that every time you run <code>phonegap build windows</code><ul>
+<li>The contents of <code>livesdk-onedrive-demo/platforms/windows/*</code> get overwritten, so be careful</li>
+<li>This means that when developing the app in Visual Studio,
+we must edit the contents of the generated folder,
+and then copy back out to the root folder (<code>livesdk-onedrive-demo/</code>)
+before committing to <code>git</code> (or other VCS),
+and before running the <code>phonegap build windows</code> command again.</li>
+<li>This is a major source of frustration, as it does not affect
+other platforms such as Android.</li>
+</ul>
+</li>
+</ul>
+<h3 id="create-a-microsoft-account">Create a Microsoft account</h3>
+<p>In order to test that any of this works,
+you will need a Microsoft account.</p>
+<p>A Microsoft account is a OneDrive account.
+Note that, confusingly enough,
+neither Hotmail accounts nor an Office365 email accounts are considered Microsoft accounts.
+That is the equivalent of Google deeming GMail and Google Plus accounts to not be Google accounts.
+I have it on good word from developers at Microsoft that they are looking into changing this.</p>
+<ul>
+<li>Skip this step if you already have a Microsoft account</li>
+<li><a href="http://www.microsoft.com/en-sg/account/default.aspx">What is a Microsoft account?</a></li>
+<li><a href="https://signup.live.com/signup.aspx">Sign up</a></li>
+<li>Use any email address that you already own</li>
+</ul>
+<h3 id="create-a-windows-store-developer-account">Create a Windows Store developer account</h3>
+<p>In order to publish your app to the Windows app store,
+you will need a developer account for it.</p>
+<ul>
+<li>Skip this step if you already have a Windows Store developer account</li>
+<li><a href="https://appdev.microsoft.com/StorePortals/en-sg/Account/signup/start">Sign up</a></li>
+<li>Use the email address of the Microsoft account that you created earlier</li>
+<li>You have to pay for this:<ul>
+<li>Approximately $20 for individuals</li>
+<li>Approximately $100 for businesses</li>
+</ul>
+</li>
+</ul>
+<h3 id="registering-the-app-with-the-windows-app-store">Registering the app with the Windows app store</h3>
+<p>In order to do anything with your app which
+requires that the user logs in to their Microsoft account,
+you need to register the app with the Windows app store.
+In order to do this, you need a developer account.
+The developer account is not free,
+which means that you cannot develop or test this feature without paying first.</p>
+<ul>
+<li>Menu: <code>Project --&gt; Store --&gt; Associate App with the Store</code></li>
+<li>Dialog: Associate</li>
+<li>Dialog: Sign in to Microsoft Account - Password</li>
+<li>Dialog: Sign in to Microsoft Account - Two factor authentication</li>
+<li>Dialog: Waiting for developer account to load</li>
+<li>Dialog: Selecting an application name</li>
+<li>Dialog: Associate confirm</li>
+<li>Solution Explorer:<ul>
+<li>Check that the following file has been created</li>
+<li><code>Solution &#39;Cordova App&#39; --&gt; CordovaApp --&gt; CordovaApp.Windows --&gt; CordovaApp.Windows_StoreKey.pfx</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="livesdk-for-authentication">LiveSDK for authentication</h2>
+<p>In order for your app to <strong>know</strong>
+who a particular user is,
+and for the user to give permissions to the app to access their account -
+in order to do stuff such as uploading to their OneDrive -
+they need to log in to their Microsoft account.
+The LiveSDK plugin is how we do this.</p>
+<h3 id="install-livesdk-via-nuget">Install LiveSDK via NuGet</h3>
+<p>NuGet is a package manager for .NET projects.
+We use it to install LiveSDK.</p>
+<ul>
+<li>Menu: <code>Project --&gt; Manage NuGet packages...</code></li>
+<li>Tab: “NuGet Package Manager”<ul>
+<li>Search for <code>LiveSDK</code></li>
+<li>Select latest stable version (<code>v5.6.2</code> at time of writing)</li>
+<li>Install it</li>
+</ul>
+</li>
+</ul>
+<h3 id="application-manifest-for-extra-internets">Application manifest for extra Internets</h3>
+<p>We also need to modify the project configuration to allow it access to the Internet.
+By default, it allows limited access,
+but we can extend this to include all forms of Internet access.</p>
+<ul>
+<li>Solution Explorer:<ul>
+<li>Open this file</li>
+<li><code>Solution &#39;Cordova App&#39; --&gt; CordovaApp --&gt; CordovaApp.Windows --&gt; package.windows.appxmanifest</code></li>
+</ul>
+</li>
+<li>Tab: <code>package.windows.appxmanifest</code><ul>
+<li>Select “Internet (Client &amp; Server)”</li>
+<li>Select “Private Networks (Client &amp; Server)”</li>
+</ul>
+</li>
+</ul>
+<h3 id="windows-live-apis">Windows Live APIs</h3>
+<p>LiveSDK exposes several Windows Live APIs via the <code>window.WL</code> object
+in a Cordova project.</p>
+<ul>
+<li>Add script tag for <code>/js/wl.js</code> immediately after <code>cordova.js</code><ul>
+<li><pre class="hljs html lang-html">  &lt;!-- Platform native wrappers --&gt;
+  &lt;script <span class="hljs-built_in">type</span>=<span class="hljs-string">"text/javascript"</span> src=<span class="hljs-string">"cordova.js"</span>&gt;&lt;/script&gt;
+  &lt;script <span class="hljs-built_in">type</span>=<span class="hljs-string">"text/javascript"</span> src=<span class="hljs-string">"/js/wl.js"</span>&gt;&lt;/script&gt;</pre></li>
+</ul>
+</li>
+<li>Scopes<ul>
+<li>Be very careful about which scopes you can use</li>
+<li>Each scope will allow the app to access certain features</li>
+<li>For uploading a file to one drive the combination that we found we needed was:<ul>
+<li><pre class="hljs javascript lang-javascript">WL
+      .login({
+        <span class="hljs-attr">scope</span>: [<span class="hljs-string">'wl.signin'</span>, <span class="hljs-string">'wl.basic'</span>, <span class="hljs-string">'wl.offline_access'</span>,
+          <span class="hljs-string">'wl.skydrive_update'</span>, <span class="hljs-string">'wl.contacts_skydrive'</span>,
+          <span class="hljs-string">'onedrive.readwrite'</span>]
+      })</pre></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Unfortunately, LiveSDK suffers from some problems which
+make developing for it difficult.
+These are the ones that caused me the most difficulties.</p>
+<ul>
+<li>Fractured documentation<ul>
+<li>The <strong>only</strong> <a href="https://msdn.microsoft.com/en-us/library/hh243646.aspx">correct reference for scopes</a></li>
+<li>Every API will also mention the scopes that it needs, and these are often partially correct - which means that they do not work at all</li>
+<li>In particular, pay attention to <a href="https://msdn.microsoft.com/en-us/library/hh243646.aspx#subset_superset">“Subset and superset behavior”</a><ul>
+<li>This caused me much pain, because when <code>WL.login()</code> was called with a <code>scope</code>
+containing both <code>wl.skydrive</code> and  <code>wl.skydrive_update</code>, write operations always failed authorization,
+however, when there was only <code>wl.skydrive_update</code> (which is a “suyperset” of <code>wl.skydrive</code>) went through just fine</li>
+</ul>
+</li>
+<li>Still not completely clear about what the difference is between <code>wl.skydrive_update</code> and <code>onedrive.readwrite</code>,
+or why both were needed for this case.</li>
+</ul>
+</li>
+<li>Cannot log out<ul>
+<li>Error got was:<ul>
+<li><pre class="hljs undefined lang-undefined"><span class="hljs-string">"[WL]Logging out the user is not supported in current session because the user is logged in with a Microsoft account on this computer.
+To logout, the user may quit the app or log out from the computer."</span></pre></li>
+</ul>
+</li>
+<li>However, quitting the app has no effect, and I have not yet logged out of my account -
+and have no intention of doing so.
+I feel that I should be able to log out of an app at any time I feel like,
+and no app should require me to log out of my operating system in order to log out within the app<ul>
+<li>This has been raised with developers from Microsoft,
+and they have indicated that they <em>may</em> look into this in the future.
+For now, however, they suggested looking into <code>WL.basic()</code> as an alternative to <code>WL.login()</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="upload-file-to-onedrive">Upload file to OneDrive</h2>
+<p>So far, we have only managed to install the necessary libraries,
+and authenticate the user.
+Now we can finally get around to the original intent,
+which is uploading a file to a user’s OneDrive.</p>
+<h3 id="using-the-access_token-on-the-front-end">Using the <code>access_token</code> on the front end</h3>
+<p>We need an access token, obtained during authentication,
+in order to interact with a user’s account,
+including their OneDrive.</p>
+<ul>
+<li><code>WL.login()</code> returns a promise<ul>
+<li><pre class="hljs javascript lang-javascript">WL
+  .login(<span class="hljs-comment">/* ... */</span>)
+  .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onLoginSuccess</span>(<span class="hljs-params">result</span>) </span>{
+    <span class="hljs-comment">// Do something with result</span>
+  }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onLoginFailure</span>(<span class="hljs-params">err</span>) </span>{
+    <span class="hljs-comment">// Do something with err</span>
+  });</pre></li>
+</ul>
+</li>
+<li>In the success callback of the promise, the first parameter is the result object,
+which should look something like this:<ul>
+<li><pre class="hljs javascript lang-javascript">{
+  <span class="hljs-attr">status</span>: <span class="hljs-string">'connected'</span>,
+  <span class="hljs-attr">session</span>: {
+    <span class="hljs-attr">access_token</span>: <span class="hljs-string">'AReallyLongBase64EncodedToken'</span>,
+  },
+}</pre>Now if we were to invoke the Windows Live APIs,
+which includes the OneDrive APIs,
+directly from the front end,
+we have no use for these.
+We can simply call <code>WL.api()</code> and have that deal with the necessary authentication related work
+However, in this case, we want to call our own back end APIs,
+and have the back end upload a file to OneDrive on our behalf.
+This is where <code>session.access_token</code> comes into play</li>
+</ul>
+</li>
+</ul>
+<h3 id="using-the-access_token-on-the-back-end">Using the <code>access_token</code> on the back end</h3>
+<p>With the access token passed from the front end
+and in the hands of the back end,
+we can next invoke the relevant OneDrive APIs to upload the file.</p>
+<ul>
+<li>Our own back end API thus receives the <code>access_token</code>,
+along with other information about the file that it needs to upload,
+such as the file name</li>
+<li><p>The first step is to determine the folder ID that we should upload to, using a HTTP GET request</p>
+<ul>
+<li><p>In C#:</p>
+<ul>
+<li><pre class="hljs csharp lang-csharp">public virtual <span class="hljs-keyword">string</span> GetUploadLocation(<span class="hljs-keyword">string</span> accessToken) {
+  <span class="hljs-comment">// Find out the folder ID (and therefore also the upload path) of the root directory in OneDrive</span>
+    <span class="hljs-keyword">var</span> request =
+      (HttpWebRequest)WebRequest.Create(
+        String.format(<span class="hljs-string">"https://apis.live.net/v5.0/me/skydrive?access_token={0}"</span>, accessToken));
+    request.Method = <span class="hljs-string">"GET"</span>;
+    <span class="hljs-keyword">var</span> response = (HttpWebResponse)request.GetResponse();
+    <span class="hljs-keyword">var</span> responseReader = <span class="hljs-built_in">new</span> StreamReader(response.GetResponseStream());
+
+    <span class="hljs-comment">// Parse the JSON response and extract the upload_location property</span>
+    <span class="hljs-keyword">string</span> jsonStr = responseReader.ReadToEnd();
+    <span class="hljs-keyword">var</span> json =
+      (Dictionary&lt;<span class="hljs-keyword">string</span>, dynamic&gt;)JsonConvert.DeserializeObject(
+        jsonStr, typeof(Dictionary&lt;<span class="hljs-keyword">string</span>, dynamic&gt;));
+    <span class="hljs-keyword">return</span> json[<span class="hljs-string">"upload_location"</span>].ToString();
+}</pre></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>The second step is to actually perform the upload, using a HTTP PUT request</p>
+<ul>
+<li><p>In C#:</p>
+<ul>
+<li><pre class="hljs csharp lang-csharp">public virtual HttpWebResponse UploadFile(<span class="hljs-keyword">string</span> accessToken, <span class="hljs-keyword">string</span> fileName, <span class="hljs-keyword">byte</span>[] fileData) {
+    <span class="hljs-comment">// Construct the upload URL</span>
+    String folderName = GetUploadLocation(accessToken);
+    <span class="hljs-keyword">var</span> uploadFileUrl = <span class="hljs-built_in">new</span> Uri(
+      String.Format(<span class="hljs-string">"{0}{1}?access_token={2}"</span>, folderName, fileName, accessToken));
+
+    <span class="hljs-comment">// Upload the file by means of a streaming writer</span>
+    <span class="hljs-keyword">var</span> request = (HttpWebRequest)WebRequest.Create(uploadFileUrl);
+    request.Method = <span class="hljs-string">"PUT"</span>;
+    request.ContentLength = fileData.Length;
+    request.AllowWriteStreamBuffering = <span class="hljs-literal">true</span>;
+    Stream stream = request.GetRequestStream();
+    stream.Write(fileData, <span class="hljs-number">0</span>, fileData.Length);
+    stream.Close();
+
+    <span class="hljs-keyword">return</span> (HttpWebResponse) request.GetResponse();
+}</pre></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>This part is the most straightforward part,
+however, also the part that fails,
+and thus feels like is at fault.
+In implementing this, the biggest source of grief was that using
+the wrong scope in <code>WL.login()</code> was the biggest cause of errors
+The responses returned by the Windows Live APIs were
+simply HTTP error codes (401, 403 and 405) plus their generic descriptions.
+It would be much more helpful if the responses
+were to include a reason as well,
+such as “You need the wl.skydrive_update scope to perform this action”</p>
+<p>Microsoft also has published some docs on the brand new “Unified APIS”,
+available on the subdomain, <code>graph.microsoft.com</code>,
+however, these unified APIs do not cover OneDrive.
+It would be great if it did though.</p>
+<h2 id="thanks">Thanks</h2>
+<p>Thanks to Saurabh Pawar for the work on the back end to upload the file to OneDrive.</p>
+<p>Thanks to Rocky Heckman, Kiril Seksenov, &amp; Ali Al Abbas from Microsoft
+for their help with navigating Windows APIs.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Uploading Files to Onedrive in Cordova App - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/06/27/uploading-files-to-onedrive" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/windows">windows</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/cordova">cordova</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/onedrive">onedrive</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/livesdk">livesdk</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-06-27-uploading-files-to-onedrive.html.md" target="_blank">Edit this content</a></div><div><div title="Uploading Files to Onedrive in Cordova App"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

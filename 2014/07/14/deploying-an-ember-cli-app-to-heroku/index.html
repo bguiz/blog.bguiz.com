@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Deploying an ember-cli app to Heroku - Demo Apps Only! - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Deploying an ember-cli app to Heroku - Demo Apps Only! - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2014/07/14/deploying-an-ember-cli-app-to-heroku/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2014/07/14/deploying-an-ember-cli-app-to-heroku/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Deploying an ember-cli app to Heroku - Demo Apps Only!</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2014/07/15</div><span class="markdown__markdown-render___9BIqe"><p>Deploying to Heroku is easy… if you can figure out all of the hidden gotchas!</p>
+<h3 id="no-dev-dependencies">No dev dependencies</h3>
+<p>That means that you cannot depend on any global <code>npm</code> packages.</p>
+<p>Since <code>ember-cli</code> install itself locally by default,
+the only global package you will need is <code>bower</code>.</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-title">npm</span> install <span class="hljs-comment">--save bower</span></pre><h4 id="except-ember-cli">Except ember-cli</h4>
+<p>… which must be in both <code>dependencies</code> and <code>devDependencies</code>.</p>
+<p>This is because the <code>ember</code> command inspects the <code>package.json</code>
+in the file, looking for <code>ember-cli</code>.
+It does this to determine if that project is indeed an <code>ember-cli</code> app.
+If it does not find this there,
+it will display an error saying that you need to run the command from within
+a folder containing an ember-cli app.</p>
+<p>If this is too much trouble for what it is worth,
+simply issue this command instead:</p>
+<pre class="hljs undefined lang-undefined">heroku config:<span class="hljs-built_in">set</span> NODE_ENV=staging</pre><p>… so that Heroku will run <code>npm install</code> instead of <code>npm install --production</code>
+when it spins up the dyno.</p>
+<h3 id="server-on-web-proc-only">Server on <code>web</code> Proc only</h3>
+<p>The process that runs the server <em>must</em> be called <code>web</code>.
+Do not call it <code>main</code> or anything else.
+If you want to access a server running on a Heroku dyno from port <code>80</code> externally,
+that server <em>must</em> be running in a <code>Proc</code> named <code>web</code>.
+I wish Heroku’s documents actually stated this explicitly.</p>
+<pre class="hljs undefined lang-undefined">web: npm run start</pre><h3 id="use-scripts-in-package-json-">Use <code>scripts</code> in <code>package.json</code></h3>
+<p>NodeJs packages may define an optional <code>scripts</code> section in their <code>package.json</code> file.
+For ember-cli apps, use <code>scripts.postinstall</code> to do a <code>bower</code> install;
+and use <code>scripts.start</code> to start run <code>ember serve</code></p>
+<h4 id="use-the-port-environment-variable">Use the <code>PORT</code> environment variable</h4>
+<p>When running ember serve, do not use a default port number.
+Whenever heroku spins up a dyno (which happens at least once per deploy),
+it will assign a new port number (among other things),
+and this is the one that Heroku will port forward from port <code>80</code>.</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-string">"scripts"</span>: {
+    <span class="hljs-string">"start"</span>: <span class="hljs-string">"./node_modules/ember-cli/bin/ember serve --environment=production --port=<span class="hljs-variable">${PORT}</span>"</span>,
+    <span class="hljs-string">"build"</span>: <span class="hljs-string">"./node_modules/ember-cli/bin/ember build"</span>,
+    <span class="hljs-string">"test"</span>: <span class="hljs-string">"./node_modules/ember-cli/bin/ember test"</span>,
+    <span class="hljs-string">"postinstall"</span>: <span class="hljs-string">"./node_modules/bower/bin/bower install"</span>
+},</pre><p>Note that <code>npm install</code> is not necessary in <code>scripts.postinstall</code> -
+Heroku does that automatically for all NodeJs projects.</p>
+<h2 id="a-word-of-caution">A Word of Caution</h2>
+<p>You should not use <code>ember serve</code> to deploy production apps.
+There are possibly some security and performance problems that this entails.
+But of course, sometimes you simply want to deploy a demo app,
+and in these cases deploying and ember-cli app like this works quite well.</p>
+<h2 id="new-to-heroku-quick-run-down">New to Heroku? - Quick Run-down</h2>
+<p>Heroku is a cloud hosting service,
+which allows you to spin up and down instances on the fly.
+You can operate it entirely via the command line by installing Heroku toolbelt,
+and deployment happens by pushing to a git remote hosted on Heroku.</p>
+<p>If deploying to Heroku for the first time,
+you will need to set up the requisites on your computer</p>
+<pre class="hljs undefined lang-undefined">wget -qO- https://toolbelt.heroku.com/install-ubuntu.sh | sh
+<span class="hljs-comment"># for other OS'es: https://toolbelt.heroku.com/</span>
+ssh-keygen <span class="hljs-comment"># save to id_rsa_heroku</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Host heroku.com"</span> &gt;&gt; ~/.ssh/config
+<span class="hljs-built_in">echo</span> <span class="hljs-string">" IdentityFile ~/.ssh/id_rsa_heroku"</span> &gt;&gt; ~/.ssh/config
+chmod 600 ~/.ssh/config
+heroku keys:add</pre><p>To get a NodeJs app up and running on Heroku,
+first create the app, and when ready for deployment:</p>
+<pre class="hljs undefined lang-undefined">git init <span class="hljs-comment"># if you have not done so already</span>
+git add . &amp;&amp; git commit -a <span class="hljs-comment"># commit whatever should be deployed</span>
+heroku create name-of-your-app
+git push heroku master</pre><p>Heroku’s git repository has a post-hook that runs upon each push,
+which will attempt to (re)install and (re)deploy your app,
+and the push will only succeed if it the installation and deployment succeeds.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Deploying an ember-cli app to Heroku - Demo Apps Only! - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2014/07/14/deploying-an-ember-cli-app-to-heroku" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/emberjs">emberjs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/nodejs">nodejs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/ember-cli">ember-cli</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/deploy">deploy</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/heroku">heroku</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2014-07-14-deploying-an-ember-cli-app-to-heroku.html.md" target="_blank">Edit this content</a></div><div><div title="Deploying an ember-cli app to Heroku - Demo Apps Only!"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

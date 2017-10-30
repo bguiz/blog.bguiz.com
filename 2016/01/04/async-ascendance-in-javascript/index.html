@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Async Ascendance in Javascript - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Async Ascendance in Javascript - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2016/01/04/async-ascendance-in-javascript/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2016/01/04/async-ascendance-in-javascript/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Async Ascendance in Javascript</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2016/01/08</div><span class="markdown__markdown-render___9BIqe"><h2 id="what-why-asynchronous-">What &amp; Why Asynchronous?</h2>
+<p>When you write a program, a lot of time is spent waiting for something.
+In fact, most programs spend most of their time idling,
+waiting for something to happen,
+and then burst into life in short spurts whenever things need to happen.
+The most common one is waiting for user input -
+for a user to type something into a form,
+or to press a button -
+but there are many other things that aren’t user-related that
+programs typically have to wait for:
+Reading or writing files to disk,
+and waiting on network latency,
+and many, many more.</p>
+<p>Now, if your program was extremely selfish,
+it could simply hog all the resources on your computer while waiting on these things.
+The problem is that users don’t like selfish programs,
+because they “hang” the computer -
+that is, when the computer becomes unresponsive.</p>
+<p>Adding asynchronous execution capabilities to your program
+makes it a much less selfish consumer of the resources on a computer,
+and thus the computers don’t “hang”, and users are happy.
+This is pretty much default practice,
+and you’ll be hard pressed
+(although it is not impossible)
+to find programs that do not incorporate some form of asynchronous code execution.</p>
+<h2 id="the-standard-way-and-the-javascript-way">The “standard” way, and the Javascript way</h2>
+<p>Most programs are able to execute their code asynchronously by employing threads.
+Threads are a where a single process defines more than one execution path,
+leaving the operating system to time slice to share resources between each of them.</p>
+<p>This is not how Javascript environments do it,
+because Javascript is single-threaded.
+Instead Javascript achieves asynchronous code execution
+using its own run-time engine to store events
+(asynchronous execution entry points)
+and execute them in an event loop.
+Essentially this is also time slicing,
+except that since it doesn’t operate at the operating system’s kernel level,
+as a developer you need to reason about it in a different manner
+than you would do when programming using threads.</p>
+<p><em>Footnote:</em>
+There are various proposals for Javascript to support multiple threads,
+such as WebWorkers,
+but these haven’t come to fruition yet.</p>
+<h2 id="how-to-asynchronous">How to Asynchronous</h2>
+<p>Say you call Sync Sam,
+as well as Async Alice,
+and ask give each of them a task to do.
+Usually that works out in one of two ways:</p>
+<p>1) You can say, “I’ll stay on the line,”
+and wait while they do the task,
+twiddling your thumbs in the mean time.</p>
+<p>2) You can say, “How about you call me back at this number, when you’re done?”
+Then hang up, and wait for them to call you back,
+and you can do whatever you feel like until she does.</p>
+<p>Both options are valid in different scenarios.</p>
+<p>Let’s say that the task was for Sync Sam to
+retrieve someone’s address and give it to you.
+He has it on a sticky note somewhere at her desk,
+so she can get back to you almost right away.
+In this scenario, the first option,
+where you stay on the line is the valid one.</p>
+<p>Let’s say, instead, that the task for Async Alice was a bit more involved.
+It involves her picking up something from the store around the corner.
+That would take much longer than would make sense to sit waiting on the phone.
+So the latter option, where you ask Async Alice to call you back when she
+has completed the task would make much more sense.</p>
+<p>In other words, when you expect the task to be completed immediately,
+you should simply wait for the task to be done.
+When you expect the task to take a while to complete,
+you should do something else instead, and wait to be notified before resuming;
+and this is precisely what a callback does.
+Callbacks are the basic building block of asynchronous programming
+in Javascript.
+Currently, there are four mechanisms:
+callbacks and three others, each of which build upon callbacks.</p>
+<ol>
+<li>callback functions,</li>
+<li>promises,</li>
+<li>generator functions, and</li>
+<li><code>async</code> functions.</li>
+</ol>
+<p>Let’s take a look at each of them.</p>
+<h3 id="callback-functions">Callback Functions</h3>
+<p>Callbacks are the most basic, and easy to grasp,
+way to do things asynchronously.
+You are simply providing a function,
+and telling the Javascript engine to call you back when it is done doing whatever,
+by calling the function.
+Hence the name “callback”.</p>
+<p>Now let’s a look at callbacks in action:</p>
+<pre class="hljs javascript lang-javascript">callerFunction();
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callerFunction</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'I am going to call three nested callback functions'</span>);
+  asyncUsingCallbackFunction(<span class="hljs-string">'foo'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errBackFunction</span>(<span class="hljs-params">err, result</span>) </span>{
+    <span class="hljs-keyword">if</span> (!!err) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+    }
+    <span class="hljs-keyword">else</span> {
+      secondAsyncUsingCallbackFunction(result, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errBackFunction</span>(<span class="hljs-params">err, result</span>) </span>{
+        <span class="hljs-keyword">if</span> (!!err) {
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+        }
+        <span class="hljs-keyword">else</span> {
+          thirdAsyncUsingCallbackFunction(result, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">errBackFunction</span>(<span class="hljs-params">err, result</span>) </span>{
+            <span class="hljs-keyword">if</span> (!!err) {
+              <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+            }
+            <span class="hljs-keyword">else</span> {
+              <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Here is the result:'</span>, result);
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">asyncUsingCallbackFunction</span>(<span class="hljs-params">input, callback</span>) </span>{
+  setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    callback(<span class="hljs-literal">undefined</span>, input+<span class="hljs-string">'bar'</span>);
+  }, <span class="hljs-number">300</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">secondAsyncUsingCallbackFunction</span>(<span class="hljs-params">input, callback</span>) </span>{
+  setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    callback(<span class="hljs-literal">undefined</span>, input+<span class="hljs-string">'baz'</span>);
+  }, <span class="hljs-number">300</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">thirdAsyncUsingCallbackFunction</span>(<span class="hljs-params">input, callback</span>) </span>{
+  setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    callback(<span class="hljs-literal">undefined</span>, input+<span class="hljs-string">'meh'</span>);
+  }, <span class="hljs-number">300</span>);
+}</pre><p>Run this using NodeJs.
+You should get the output: <code>Here is the result: foobarbazmeh</code>,
+but you will have to wait for just under a second before it pops up.
+Try tracing the control flow as the program executes.</p>
+<ul>
+<li>The <code>callerFunction</code> simply runs two lines of code and then returns</li>
+<li>This would normally mean that the program has finished execution and exit</li>
+<li>However, it does not, because in the second line,
+<code>asyncUsingCallbackFunction</code> is called,
+and its second parameter happens to be a callback function.</li>
+<li>This callback function gets added to the stack in the event loop
+(well, technically, the anonymous function passed into <code>setTimeout</code>
+within it is the one that get added)</li>
+<li>When that function is done executing,
+it gets popped off the stack and gets executed by the event loop.</li>
+<li>The same thing happens with <code>secondAsyncUsingCallbackFunction</code>,
+and <code>thirdAsyncUsingCallbackFunction</code> in turn, recursively.</li>
+</ul>
+<p>Here is a great animation that
+<a href="http://latentflip.com/loupe">demonstrates Javascript’s event loop</a>
+which I like very much.</p>
+<p>Observe how the callback functions are “nested” within each other.</p>
+<h3 id="promises">Promises</h3>
+<p>While it is possible to write virtually any sort of asynchronous code
+in Javascript, using only callbacks,
+it only really tends to work well for simple tasks where there are one or two
+asynchronous tasks that need to be done.</p>
+<p>In more complex tasks where there are many asynchronous tasks,
+if you were to write your code suing just callbacks,
+you would wind up with an anti-pattern known as
+“callback hell” or “pyramid of doom”.</p>
+<p>Promises have emerged to solve this problem.
+The main benefit that you get from promises are:</p>
+<ol>
+<li>You can write your asynchronous code in a “flat” way.</li>
+<li>Instead of multiple error handlers (one for each asynchronous function),
+you can have a single error handler which handles errors across them all.</li>
+</ol>
+<p>Promises first came out as Javascript libraries -
+<code>Q</code>, <code>RSVP</code>, and <code>bluebird</code> are amongst the most popular -
+and these exposed functions that would wrap callbacks in clever ways.
+This evolved into a specification, and
+now, with ES6, the latest edition of Javascript,
+promises are built into the language itself.</p>
+<p>Let’s take a look at promises in action:</p>
+<pre class="hljs javascript lang-javascript">callerFunction();
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callerFunction</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'I am going to call three chained promise functions'</span>);
+  asyncUsingPromise(<span class="hljs-string">'foo'</span>)
+    .then(secondAsyncUsingPromise)
+    .then(thirdAsyncUsingPromise)
+    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">result</span>) </span>{
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Here is the result:'</span>, result);
+    })
+    .catch(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+    });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">asyncUsingPromise</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'bar'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">secondAsyncUsingPromise</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'baz'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">thirdAsyncUsingPromise</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'meh'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}</pre><p>Run this file using NodeJs and you’ll get the same result as before,
+when using callbacks.
+The main difference lies in the syntax.
+Each of the functions,
+<code>asyncUsingPromise</code>, <code>secondAsyncUsingPromise</code>, and <code>thirdAsyncUsingPromise</code>,
+are now slightly more complex than before:
+we have to wrap them with <code>new Promise()</code> syntax.
+However, doing this allows us to write the asynchronous code in a “flat” way -
+avoiding deep nesting -
+and also means that we only have to write the error handling code once.
+This makes it easier to reason about the code while writing it.</p>
+<h3 id="generator-functions-yield-">Generator Functions + <code>yield</code></h3>
+<p>Generator functions, used together with <code>yield</code>,
+are yet another way in which you can
+do asynchronous programming,
+and they have also landed in ES6 Javascript.</p>
+<p>Let’s take a look at generator functions in action:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">var</span> co = <span class="hljs-built_in">require</span>(<span class="hljs-string">'co'</span>);
+
+callerFunction();
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callerFunction</span>(<span class="hljs-params"></span>) </span>{
+  co(<span class="hljs-function"><span class="hljs-keyword">function</span> * (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'I am going to yield three consecutive generator functions'</span>);
+    <span class="hljs-keyword">try</span> {
+      <span class="hljs-keyword">var</span> firstResult = <span class="hljs-keyword">yield</span> asyncUsingGenerator(<span class="hljs-string">'foo'</span>);
+      <span class="hljs-keyword">var</span> secondResult = <span class="hljs-keyword">yield</span> secondAsyncUsingGenerator(firstResult);
+      <span class="hljs-keyword">var</span> thirdResult = <span class="hljs-keyword">yield</span> thirdAsyncUsingGenerator(secondResult);
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Here is the result:'</span>, thirdResult);
+    } <span class="hljs-keyword">catch</span> (err) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+    }
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">asyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'bar'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">secondAsyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'baz'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">thirdAsyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'meh'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}</pre><p>Run <code>npm install co</code> to install the <code>co</code> library
+before running the above file with NodeJs.
+You’ll get the same result as before,
+when using promises or callbacks.</p>
+<p>Note that each of the functions,
+<code>asyncUsingPromise</code>, <code>secondAsyncUsingPromise</code>, and <code>thirdAsyncUsingPromise</code>,
+have not changed at all from the promise-based code.
+These functions still return promises.</p>
+<p>What has changed,
+is the way in which they are called, from <code>callerFunction</code>.
+Firstly, the contents of <code>callerFunction</code> has now been
+wrapped in an anonymous function, which has been, in turn,
+wrapped in a <code>co</code> function, like so:</p>
+<pre class="hljs javascript lang-javascript">co(<span class="hljs-function"><span class="hljs-keyword">function</span> * (<span class="hljs-params"></span>) </span>{ <span class="hljs-comment">/* do stuff */</span> });</pre><p>You’ll also notice, that the anonymous function has an asterisk
+between the function keyword and the parentheses for its parameters.
+This is what marks a function as a generator function.
+Generator functions are allowed to use the <code>yield</code> keyword
+within their body.</p>
+<p>Now that we have got the syntax/ semantics out of the way…
+let’s look at the main benefit,
+and that is that you can write asynchronous code
+using syntax that is identical to the way you would write synchronous code.</p>
+<ul>
+<li>With callback functions, the “return value” of the asynchronous function
+would come as the parameter of the callback function</li>
+<li>With promises, the “return value” of the asynchronous function
+would come as the parameter in the next function in the promise chain</li>
+<li>With generator functions, you the “return value” would
+<strong>actually be</strong> a return value,
+and you can assign it to a variable in line using <code>var</code> (or <code>let</code>) …
+just like you would when writing synchronous code.</li>
+</ul>
+<p>A parallel exists for error handling as well.</p>
+<ul>
+<li>With callback functions, errors are handled within the callback function
+by testing a parameter of the callback function</li>
+<li>With promises, errors are handled by the <code>catch</code> function in the promise chain</li>
+<li>With generator functions, errors are handled using a <code>try ... catch</code> block …
+just like you would when writing synchronous code.</li>
+</ul>
+<p>Being able to write asynchronous code with syntax that is
+so close to synchronous code is <em>brilliant</em>.
+Promises are an improvement over callback functions
+because they remove the mental overhead of looking at deeply nested syntax.
+Generator functions are an improvement on promises -
+in fact they <em>make use of</em> promises -
+because they remove the mental overhead of thinking in terms of promise chains.</p>
+<p><em>Footnote:</em>
+Generator functions and <code>yield</code>, on their own,
+are not language constructs
+designed to provide asynchronous code execution.
+It is more general purpose than that.
+For example, you can use them to output infinite sequences of numbers,
+which is useful for mathematical applications and pure functional programming,
+but has nothing to do with asynchronous programming techniques.
+This is what the <code>co</code> library is used for -
+to take generator functions,
+and adapt them for the specific purposes of asynchronous code execution.
+Think of <code>co</code> as a “runner” for generator functions.</p>
+<h3 id="-async-functions-await-"><code>async</code> Functions + <code>await</code></h3>
+<p><code>async</code> functions, used together with <code>await</code>,
+are an even newer way in which you can do asynchronous programming.
+So new, in fact, that they have yet to become “officially” part of Javascript.
+They are slated for ES7,
+the next edition of Javascript.
+You can, however, use them today
+via your transpiler/ polyfiller of choice, e.g. <code>babel</code>.</p>
+<p>Let’s take a look at <code>async</code> functions in action:</p>
+<pre class="hljs javascript lang-javascript">callerFunction();
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callerFunction</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'I am going to await three async functions'</span>);
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">var</span> firstResult = <span class="hljs-keyword">await</span> asyncUsingPromise(<span class="hljs-string">'foo'</span>);
+    <span class="hljs-keyword">var</span> secondResult = <span class="hljs-keyword">await</span> secondAsyncUsingThunkify(firstResult);
+    <span class="hljs-keyword">var</span> thirdResult = <span class="hljs-keyword">await</span> thirdAsyncUsingPromisify(secondResult);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Here is the result:'</span>, thirdResult);
+  } <span class="hljs-keyword">catch</span> (err) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'There was an error:'</span>, err);
+  }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">asyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'bar'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">secondAsyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'baz'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">thirdAsyncUsingGenerator</span>(<span class="hljs-params">input</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">resolve, reject</span>) </span>{
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      resolve(input+<span class="hljs-string">'meh'</span>);
+    }, <span class="hljs-number">300</span>);
+  });
+}</pre><p>Run <code>npm install babel</code> to install the <code>babel</code> transpiler
+before running the above file with <code>babel</code>‘s interpreter:
+<code>./node_modules/.bin/babel-node</code>.
+You need to do this because ES7 Javascript is not out yet -
+we’re currently on ES6 -
+and so we’ll need a transpiler to get it running.
+You’ll get the same result as before,
+when using generator, promises, or callbacks.</p>
+<p>Note that each of the functions,
+<code>asyncUsingPromise</code>, <code>secondAsyncUsingPromise</code>, and <code>thirdAsyncUsingPromise</code>,
+have not changed at all from either the promise-based code
+or the generator-based code.</p>
+<p>What has changed from the generator-based <code>callerFunction</code> is that
+instead of using <code>co</code> as the “runner” that wraps a generator function,
+the entire <code>callerFunction</code> itself is now marked with the <code>async</code> keyword.
+This allows <code>callerFunction</code> to use the <code>await</code> keyword -
+in a manner <em>very similar</em> to the way that generator functions use <code>yield</code>.
+Essentially, there is no need for a “runner” function any longer -
+instead, these are supported natively.</p>
+<h2 id="review">Review</h2>
+<p>Let’s recap the different method of asynchronous programming
+available in Javascript.</p>
+<ol>
+<li>Callback functions<ul>
+<li>The most primitive method</li>
+<li>“Pyramid of doom”</li>
+<li>Available since 1st ever Javascript</li>
+</ul>
+</li>
+<li>Promises<ul>
+<li>Flattens the “pyramid of doom”</li>
+<li>Consolidates error handling</li>
+<li>Available as libraries in ES5, and natively in ES6</li>
+</ul>
+</li>
+<li>Generator functions + <code>yield</code><ul>
+<li>Can write using synchronous code syntax</li>
+<li>Need to use <code>co</code> (or other similar) library as a “runner”</li>
+<li>Available natively in ES6</li>
+</ul>
+</li>
+<li><code>async</code> functions + <code>await</code><ul>
+<li>Can write using synchronous code syntax</li>
+<li>Available in the future in ES7, and via transpilers in ES5 &amp; ES6</li>
+</ul>
+</li>
+</ol>
+<p>Each of these methods have their own pros and cons,
+and it is up to you to pick which is appropriate.
+My own approach at the moment is to
+use callback functions, as they hard to beat for basics.
+For more complex things, on the other hand,
+I currently use generator functions with promises.
+When using together with older packages,
+use the <code>es6-promisify</code> NodeJs package
+to “promisify” their callback functions.
+If you’re willing to live on the bleeding edge,
+go for <code>async</code> functions;
+however keep in mind the risk that its syntax could
+change considerably before it officially becomes part of ES7.</p>
+<p>It is nice to see the evolution of Javascript in general as well,
+going from primitive constructs to more advanced and expressive ones with time.
+Writing asynchronous Javascript code is much much easier to do now
+than it used to be, and as this trend continues, the future’s bright!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Async Ascendance in Javascript - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2016/01/04/async-ascendance-in-javascript" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/async">async</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2016-01-04-async-ascendance-in-javascript.html.md" target="_blank">Edit this content</a></div><div><div title="Async Ascendance in Javascript"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

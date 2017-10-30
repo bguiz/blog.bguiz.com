@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">The Caffeinated Jester - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="The Caffeinated Jester - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/caffeinated-jester/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/caffeinated-jester.jpeg"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/caffeinated-jester/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">The Caffeinated Jester</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/05/05</div><img src="/images/posts/caffeinated-jester.jpeg" alt="The Caffeinated Jester" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><h2 id="the-caffeinated-jester">The Caffeinated Jester</h2>
+<p>Having previously tested a NodeJs API server using <code>mocha</code> + <code>chai</code> + <code>sinon</code>,
+I have migrated a very large numbers of tests over to Jest recently.
+There were several hard-won lessons along the way,
+which requires one to change the way one approaches writing tests,
+and even thinking about tests.</p>
+<p>Jest is the new kid on the block,
+with other Javascript test frameworks being around for much longer.
+The value proposition of Jest is very strong though,
+and it is worth considering.
+This post will highlight several contrasting concepts learnt as part of this process.</p>
+<p>It is worth noting that Jest, presently,
+is predominantly used to test in-browser Javascript,
+in particular web applications written using ReactJs -
+as both Jest and ReactJs are developed by the same company.
+While it is engineered to work very well when testing ReactJs,
+it is worth noting that it is, in its own right,
+a very versatile framework.
+This post explores this “general” use case for Jest,
+in the context where a NodeJs API server is the test target.</p>
+<h3 id="library-vs-framework">Library vs framework</h3>
+<p>Jest is not a testing library, but a framework.
+It is an all in one.
+Let’s compare “test stacks”:</p>
+<p>My previous stack:</p>
+<ul>
+<li>Test Runner: <a href="https://github.com/mochajs/mocha"><code>mocha</code></a></li>
+<li>Assertions: <a href="https://github.com/chaijs/chai"><code>chai</code></a></li>
+<li>Mocks: <a href="https://github.com/sinonjs/sinon"><code>sinon</code></a></li>
+<li>Time: <a href="https://github.com/sinonjs/lolex"><code>lolex</code></a> (via sinon)</li>
+</ul>
+<p>My new testing stack:</p>
+<ul>
+<li>Test Runner: <a href="https://github.com/facebook/jest"><code>jest</code></a></li>
+<li>Assertions: <a href="https://github.com/facebook/jest"><code>jest</code></a></li>
+<li>Mocks: <a href="https://github.com/facebook/jest"><code>jest</code></a></li>
+<li>Time: <a href="https://github.com/facebook/jest"><code>jest</code></a></li>
+</ul>
+<p>Jest wears many hats at the same time.</p>
+<h3 id="asynchronous-tests">Asynchronous tests</h3>
+<p>What does <code>done()</code> do?</p>
+<p>In <code>jasmine</code>, unlike in mocha, <code>done()</code> only signifies that a test is done.
+In <code>mocha</code>, if the first argument is defined, the test fails, e.g. <code>done(err)</code>.
+Jest uses <code>jasmine</code> as the test runner under the hood by default, the test will pass.
+Solution: Split <code>done(err)</code> into an <code>expect(...)</code> followed by <code>done()</code>.</p>
+<p>Jest also allows you to write tests as <code>async</code> functions,
+however <code>async</code> functions can only <code>await</code> on <code>Promise</code>s.
+My code base makes use of error-first callbacks as its primary asynchronous Javascript mechanism,
+so I have not explored this much;
+but worth pointing out for those of you who are writing tests for <code>Promise</code>s.</p>
+<h3 id="mocks">Mocks</h3>
+<p>In <code>mocha</code> and <code>jasmine</code>, it is common to use <code>sinon</code> for spies, stubs, and mocks.
+For best results in Jest, use the built in <code>jest.fn()</code> and <code>jest.fn().mockImplementation()</code>.
+This is actually a boon for
+<a href="http://blog.bguiz.com/2017/mocking-chained-apis-jest">mocking objects with chained APIs</a>,
+which I have written about previously.</p>
+<h3 id="time">Time</h3>
+<p>In <code>mocha</code> &amp; <code>jasmine</code>, it is common to use <code>lolex</code> (via <code>sinon</code>) to fake timers.
+In Jest, this doesn’t play well. Use a combination of <code>mockdate</code> (for <code>Date</code>),
+and Jest’s built in <code>jest.runTimersToTime(ms);</code> (for <code>setTimeout</code> and pals)
+<code>jest.runAllTicks();</code> (for <code>Promise</code>s, as well as <code>nextTick</code> and pals).</p>
+<p>This might seem like a lot of redundant code for time related events,
+at least compared to the <code>clock.tick(ms)</code> syntax common in <code>sinon</code>.
+Most of the time it is.
+However, in some cases you can actually split them up,
+and do assertions in between.
+Don’t expect to do this very often though -
+I have thus far only needed to do this twice.</p>
+<h3 id="watch">Watch</h3>
+<p>In <code>mocha</code> &amp; <code>jasmine</code>, it is common to use <code>describe.only()</code>, <code>it.only()</code> and pals to narrow down which tests get run.
+In Jest, invoke the test script using the <code>--watch</code> CLI flag,
+and after the process has started,
+hit <code>p</code> (for pattern) on the keyboard,
+and type a regular expression to filter by test file name.</p>
+<p>Take note that Jest persists the filter,
+so when you kill the test process, and restart it,
+the previous filter is still intact
+(only for <code>--watch</code> mode).
+To clear the filter,
+hit <code>a</code> (for all) on the keyboard.</p>
+<h3 id="multiple-test-scenarios">Multiple test scenarios</h3>
+<p>In larger projects,
+you may have different sets of tests
+which you wish to run in different scenarios,
+e.g. complete set of tests vs smoke tests.
+ In these scenarios,
+ you would conceivably wish to not just choose which test files to run,
+ but also change several other options.
+ In this case,
+ it might be easier to configure multiple test commands in <code>package.json</code>,
+ e.g. <code>test</code> and <code>test-smoke</code>,
+ then put the config for each of them in JSON files,
+ and point to them using the <code>--config</code> CLI flag.</p>
+<p>For example, given the following folder structure:</p>
+<pre class="hljs undefined lang-undefined">/foo
+<span class="hljs-comment">--/__snapshots__</span>
+<span class="hljs-comment">----/foo-api.unit.jest.js.snap</span>
+<span class="hljs-comment">----/foo-api.ntgr.jest.js.snap</span>
+<span class="hljs-comment">--/foo-api.js</span>
+<span class="hljs-comment">--/foo-api.mock.jest.js</span>
+<span class="hljs-comment">--/foo-api.unit.jest.js</span>
+<span class="hljs-comment">--/foo-api.ntgr.jest.js</span>
+<span class="hljs-comment">--/foo-api.smok.jest.js</span></pre><p>You can create a file named <code>jest-config-unit.json</code></p>
+<pre class="hljs undefined lang-undefined">{
+  <span class="hljs-attr">"testMatch"</span>: [
+    <span class="hljs-string">"**/*.unit.jest.js"</span>
+  ],
+  <span class="hljs-attr">"collectCoverageFrom"</span>: [
+    <span class="hljs-string">"**/*.js"</span>,
+    <span class="hljs-string">"!**/*.jest.js"</span>,
+    <span class="hljs-string">"!**/node_modules/**"</span>
+  ]
+}</pre><p>(and create additional files, with modified matchers for integration tests and smoke tests)</p>
+<p>… then run only the unit tests using the following command,
+which you would place in the <code>scripts</code> section of <code>package.json</code>.</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-title">jest</span> <span class="hljs-comment">--config ./jest-config-unit.json</span></pre><p>(and run additional commands, pointing to their respective files, for integration tests and smoke tests)</p>
+<h3 id="sand-boxing">Sand boxing</h3>
+<p>In <code>mocha</code> &amp; <code>jasmine</code>,
+any side effects introduced from a test will carry over from one test to the next.</p>
+<p>In Jest, you don’t have to clean up anything that
+is in memory in the <code>node</code> process
+because that is completely sandboxed;
+but you still need to clean up anything that is external to this,
+e.g. file system, database, etc.
+Better yet, where possible,
+mock these externals so that it truly stays all in memory.</p>
+<h3 id="dry-and-damp">DRY and DAMP</h3>
+<p>In mocha/ jasmine,
+ you would write your tests such that they were DAMP
+(opposite of DRY: do not repeat yourself).
+The repetition is considered good in this case,
+because it enables the tests to be
+self-contained description of the features being tested.</p>
+<p>In Jest, you can write your test code in a DRY manner,
+while still maintaining the descriptiveness,
+by making use of <em>snapshots</em>
+to capture the variations and differences between each test.</p>
+<p>This is especially useful when you are testing variations
+of calling the same code multiple times in a sequence,
+and other scenarios where there are iterations.</p>
+<p>The main <em>caveat</em> of this approach is resultant from the fact that
+you are not crafting the assertions by hand
+(the contents of each snapshot),
+and instead, it is all automatically generated for you.
+This requires greater discipline on the part of you as a developer
+to <em>read through the snapshots</em> in nitpick-level detail,
+and verify that you are indeed asserting
+what you should be asserting.</p>
+<p>Used properly, snapshots can be an enormous boon to testing,
+allowing one to write and update tests quickly,
+making iterations faster.</p>
+<p>One more tip regarding snapshots:
+Don’t <code>expect(result).toMatchSnapshot(...)</code> directly.
+Instead transform the result object to strip out the parts of it that aren’t important to test,
+and add additional bits of meta data about the test -
+think, “what would I want to <code>console.log(...)</code> here?” -
+and then do the snapshots on <em>that</em> object.</p>
+<h3 id="all-the-docs">All the docs</h3>
+<p>Jest has rather good documentation -
+every one of its exposed APIs are documented somewhere on its website.
+That being said, Jest is a test runner,
+and assertions library,
+a mocks library,
+and a time library,
+all rolled into one.
+Therefore, the surface area of its API is huge.
+This is problematic for documentation,
+because it can be quite hard to find things -
+things that you know should be in there somewhere,
+but are just not sure where to look.</p>
+<p>This <a href="https://dmitriiabramov.github.io/jest-cheatsheet/index.html">handy reference</a>
+deep links to all of the Jest API &amp; CLI in one page,
+and I have found this tremendously useful.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=The Caffeinated Jester - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/caffeinated-jester" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/jest">jest</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/test">test</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/mock">mock</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-05-caffeinated-jester.md" target="_blank">Edit this content</a></div><div><div title="The Caffeinated Jester"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

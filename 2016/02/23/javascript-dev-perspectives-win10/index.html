@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Perspectives of a Javascript Developer of Windows 10 UWP - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Perspectives of a Javascript Developer of Windows 10 UWP - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2016/02/23/javascript-dev-perspectives-win10/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2016/02/23/javascript-dev-perspectives-win10/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Perspectives of a Javascript Developer of Windows 10 UWP</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2016/02/24</div><span class="markdown__markdown-render___9BIqe"><p>Not a Windows or a .NET developer of any flavour,
+but I have been using Javascript to write applications that work on
+devices running windows.</p>
+<p>I have been packaging them up using Cordova/ Phonegap.
+This works well for Android and iOS,
+but not so well for Windows;
+but thankfully Microsoft has released a
+<em>HTML + JS</em> offering which it calls <em>WinJS</em>,
+and is essentially a tool chain which does what Cordova/ Phonegap do,
+from Visual Studio, building Windows 10 UWP apps.
+(There are also Windows 8 UWPs, but I won’t go into that here.)</p>
+<h2 id="windows-10-workshop">Windows 10 Workshop</h2>
+<p>Attended a full-day workshop by
+Andrew Wigley from <em>Microsoft</em> and
+Nick from <em>Built to Roam</em>.</p>
+<p>The workshop day consisted of multiple <em>hands-on labs</em>.
+The workshops are available from
+<a href="https://github.com/Windows-Readiness/WinDevHOLs">this Github Repository</a>,
+and they include the completed source code,
+but more importantly PDF files with step by step instructions
+on how to create the applications from scratch,
+with screen shots along the way.
+These were extremely helpful, and very high quality -
+I have yet to attend any workshop where the materials prepared were this great!</p>
+<h2 id="winjs">WinJS</h2>
+<p>All of the labs were focused on developing using .NET (<em>XAML + C#</em>),
+with the exception of one,
+which covers WinJS (<em>HTML + JS</em>),
+which is precisely the technology that I have been using.
+This lab, was by far the most useful one I have attended,
+as it gave me one great idea to take away.</p>
+<p>There is a tool called manifest which Microsoft has published on
+<a href="http://npmjs.com">npm</a>.
+Point it at your own website,
+and it will analyse it,
+and generate a Visual Studio solution from it.
+This is essentially is a shell or wrapper around the website.
+You can then use standard Javascript feature detection techniques, e.g.:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">if</span> (<span class="hljs-built_in">window</span>.WinJS) {
+  <span class="hljs-comment">// access Windows APIs</span>
+}</pre><p>in your main website in order to access device-specific APIs
+from within your wrapped app.
+(all within the confines of a standard security sandbox model, of course)</p>
+<p>A lot of bang, for very little buck!
+Of course, this is <em>too good to be true</em>,
+because a mobile app that requires constant Internet connectivity is…
+well not a very good mobile app at all!</p>
+<h2 id="offline-first">Offline First</h2>
+<p>I sat on this for a while,
+letting the thought percolate in the background;
+and I recalled the concept of offline-first web applications:
+Here’s a <a href="http://offlinefirst.org/">primer on offline-first</a>.</p>
+<p>The basic idea is that
+when the user loads a page for the first time,
+the page is stored in your browser’s regular ol’ cache.
+The browser uses offline storage capabilities -
+<a href="https://github.com/mozilla/localForage"><code>localStorage</code>/ IndexedDb/ WebSql</a> -
+to store information,
+and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">Service Worker APIs</a>
+as a fall back for when actual HTTP endpoints are not reachable.</p>
+<p>That is quite exciting because it means that instead of
+maintaining a separate code base for a packaged app,
+we need just the one.
+An added benefit would be a much snappier regular web site.</p>
+<p>… but there is a catch,
+for Windows 10 UWP that is,
+because it runs the same technology under the hood as
+the Edge browser, and it turns out that
+<a href="http://caniuse.com/#feat=serviceworkers">Edge doesn’t support Service Worker APIs</a>.</p>
+<p>Hope it lands soon!</p>
+<h2 id="so-windows-10-">So Windows 10?</h2>
+<p>The Javascript tool chain has a way to go yet -
+Despite starting out with Windows 10,
+and Visual Studio 2015 <em>already installed</em>,
+there was a constant stream of miscellaneous updates
+that needed to be installed for the next thing to work.
+Each of these updates weighed in at over a Gigabyte,
+and between ten and thirty minutes of “applying changes” time
+(in addition to the download time).
+I would estimate I spent about half the time at the workshop
+just installing stuff, rather than following along and writing code.</p>
+<p>If you are used to working with the <code>npm</code> ecosystem,
+such a <em>high barrier to entry</em> just seems absurd.</p>
+<p>One of the presenters said that you have to get “all your stars to align”
+before some particular feature (Cortana, I recall) works.
+IMHO, that is true in general about Microsoft’s Javascript tool chain.</p>
+<p>That being said, it is still early days,
+and I hope they improve the developer experience.
+It is worth giving it a go, and
+<a href="https://github.com/Windows-Readiness/WinDevHOLs/tree/master/04.%20Edge%20and%20Web%20Apps" title="Edge and Web Apps">this guide</a>
+is a great place to start.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Perspectives of a Javascript Developer of Windows 10 UWP - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2016/02/23/javascript-dev-perspectives-win10" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/windows">windows</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/offline">offline</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/cordova">cordova</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/conference">conference</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2016-02-23-javascript-dev-perspectives-win10.html.md" target="_blank">Edit this content</a></div><div><div title="Perspectives of a Javascript Developer of Windows 10 UWP"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

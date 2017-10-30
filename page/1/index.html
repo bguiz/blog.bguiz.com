@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:title" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:type" content="site"/>
+  <link data-react-helmet="true" rel="canonical" href="http://blog.bguiz.com"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-pagination" class="page page-pagination"><noscript></noscript><h1 id="page-title" class="page-title">Brendan Graetz</h1><div id="page-body" class="page-body"><ul class="pagination-list pagination-page__pagination-list___2Sbg3"><li class="pagination-item"><div class="pagination-item-header"><a href="/2017/json-merge-postgresql"><h2>JSON merge in PostgreSql</h2></a></div><div class="pagination-item-body"><span class="markdown__markdown-render___9BIqe"><p>PostgreSql is a relational database
+which adheres to <a href="https://en.wikipedia.org/wiki/ACID">ACID principles</a> -
+atomicity, consistency, isolation, durability -
+and supports server-side joins between multiple entities (tables).
+Interestingly, in addition to this,
+it also supports a JSON data type natively,
+and provides a <a href="https://www.postgresql.org/docs/9.6/static/functions-json.html">rich set of functions and operators</a>
+to work with its <code>jsonb</code> type.
+<sup name="post-content-location-jsonb"><a href="#post-footnote-location-jsonb">1</a></sup>&nbsp;&hellip;</p>
+</span><a href="/2017/json-merge-postgresql"><span>continue reading »</span></a></div><div class="pagination-page__pagination-item-footer___2PLuO"><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/json">json</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/document">document</a></li></ul></div></li><li class="pagination-item"><div class="pagination-item-header"><a href="/2017/postgresql-upsert-knex"><h2>Upsert in PostgreSql using Knex</h2></a></div><div class="pagination-item-body"><span class="markdown__markdown-render___9BIqe"><p>What is an upsert, anyway?</p>
+<p>An <em>upsert</em> is short for “update or insert” in the context of SQL statements for databases.</p>
+<p>The typical use case for an upsert,
+is when you have some data that needs to be in a row,
+but you are not sure if that row already exists -
+based on its primary key -
+then you would need to either insert a new row, <em>or</em>
+update the existing row.</p>
+<p>However, <em>upsert</em> is not a command that was part of the
+<a href="https://en.wikipedia.org/wiki/SQL:1999">SQL ‘99 standard</a>,
+and therefore many database vendors either do not support it,&nbsp;&hellip;</p>
+</span><a href="/2017/postgresql-upsert-knex"><span>continue reading »</span></a></div><div class="pagination-page__pagination-item-footer___2PLuO"><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/knex">knex</a></li></ul></div></li><li class="pagination-item"><div class="pagination-item-header"><a href="/2017/caffeinated-jester"><h2>The Caffeinated Jester</h2></a></div><div class="pagination-item-body"><span class="markdown__markdown-render___9BIqe"><h2 id="the-caffeinated-jester">The Caffeinated Jester</h2>
+<p>Having previously tested a NodeJs API server using <code>mocha</code> + <code>chai</code> + <code>sinon</code>,
+I have migrated a very large numbers of tests over to Jest recently.
+There were several hard-won lessons along the way,
+which requires one to change the way one approaches writing tests,
+and even thinking about tests.</p>
+<p>Jest is the new kid on the block,
+with other Javascript test frameworks being around for much longer.
+The value proposition of Jest is very strong though,
+and it is worth considering.&nbsp;&hellip;</p>
+</span><a href="/2017/caffeinated-jester"><span>continue reading »</span></a></div><div class="pagination-page__pagination-item-footer___2PLuO"><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/jest">jest</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/test">test</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/mock">mock</a></li></ul></div></li><li class="pagination-item"><div class="pagination-item-header"><a href="/2017/mocking-chained-apis-jest"><h2>Mocking Chained APIs in Jest</h2></a></div><div class="pagination-item-body"><span class="markdown__markdown-render___9BIqe"><p><code>jest</code> is a test runner that has all batteries included.
+Previously I have been using <code>mocha</code>, which is only a test runner.
+<code>mocha</code>, on the other hand, has assertions, mocking,
+and all the other bells and whistles, all baked in.
+With <code>mocha</code>, you would need to <code>require()</code> these in,
+from other modules - my go to ones were <code>chai</code> and <code>sinon</code>.
+Further to this, <code>jest</code> adds snapshot testing,
+which is something I have not previously done in <code>mocha</code> -
+that is perhaps something for a another article.</p>
+<p>Suffice to say that <code>jest</code> testing covers a huge surface area.&nbsp;&hellip;</p>
+</span><a href="/2017/mocking-chained-apis-jest"><span>continue reading »</span></a></div><div class="pagination-page__pagination-item-footer___2PLuO"><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/jest">jest</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/test">test</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/mock">mock</a></li></ul></div></li><li class="pagination-item"><div class="pagination-item-header"><a href="/2017/postgres-many2many-sql-non-relational"><h2>PostgreSql Many-to-Many with Non-relational SQL</h2></a></div><div class="pagination-item-body"><span class="markdown__markdown-render___9BIqe"><p>Many to many relationships are usually quite expensive in relational databases.
+For example, when you do a select in a purely relational database,
+you need to do <em>two</em> joins.
+When reading (<code>select</code>) from a database,
+joins are often the most expensive operation.
+Sure the cost of these can be mitigated through various optimisations,
+such as composite keys, indices on composite keys, SQL hints, et cetera;
+but are these really the only way?
+In a pure <em>relational database</em> system,
+that might be the extent of the surface area to be explored.&nbsp;&hellip;</p>
+</span><a href="/2017/postgres-many2many-sql-non-relational"><span>continue reading »</span></a></div><div class="pagination-page__pagination-item-footer___2PLuO"><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/relational">relational</a></li></ul></div></li></ul></div><div class="pagination-page__pagination-nav___wdva6"><a class="pagination-page__pagination-older___1_oGh" href="/page/2"><span>Older »</span></a><a class="pagination-page__pagination-archives___3KfTt" href="/archives">- Archives -</a><div class="pagination-page__pagination-clear___LZnQ_"></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

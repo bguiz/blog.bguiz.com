@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Upsert in PostgreSql using Knex - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Upsert in PostgreSql using Knex - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/postgresql-upsert-knex/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/postgresql-upsert-knex.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/postgresql-upsert-knex/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Upsert in PostgreSql using Knex</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/05/18</div><img src="/images/posts/postgresql-upsert-knex.png" alt="Upsert in PostgreSql using Knex" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><p>What is an upsert, anyway?</p>
+<p>An <em>upsert</em> is short for “update or insert” in the context of SQL statements for databases.</p>
+<p>The typical use case for an upsert,
+is when you have some data that needs to be in a row,
+but you are not sure if that row already exists -
+based on its primary key -
+then you would need to either insert a new row, <em>or</em>
+update the existing row.</p>
+<p>However, <em>upsert</em> is not a command that was part of the
+<a href="https://en.wikipedia.org/wiki/SQL:1999">SQL ‘99 standard</a>,
+and therefore many database vendors either do not support it,
+or if they do support it, the query syntax for it can vary significantly
+<sup name="post-content-location-various-db-upsert"><a href="#post-footnote-location-approaches-otherdb-upsert">0</a></sup>
+.</p>
+<h2 id="sans-explicit-upsert-support">Sans explicit upsert support</h2>
+<p>If you wish to perform an “insert or update” in a scenario
+that is similar to the one described above, <em>but</em>
+the database that you are using does not support it,
+with some difficulty, you can achieve the same thing.</p>
+<p>If, based on your application domain,
+inserts are <em>more common</em> than updates:</p>
+<ol>
+<li>Perform an insert</li>
+<li>If the insert failed because primary key already exists, perform an update</li>
+<li>Wrap the above in a transaction, so that the operation remains atomic</li>
+</ol>
+<p>Otherwise,
+if updates are <em>more common</em> than inserts:</p>
+<ol>
+<li>Perform an update</li>
+<li>If the update failed because primary key does not exist, perform an insert</li>
+<li>Wrap the above in a transaction, so that the operation remains atomic</li>
+</ol>
+<p>Both of the above are the same,
+except for the order in which the insert and update operations are attempted.</p>
+<h2 id="upsert-in-postgresql">Upsert in PostgreSql</h2>
+<p>Postgres landed support for upsert in <code>9.5</code>,
+so thankfully one does not need to deal with the above.
+They do not name it upsert though,
+instead it is done via an
+<a href="https://www.postgresql.org/docs/devel/static/sql-insert.html"><code>insert</code></a> statement that uses
+an <a href="https://www.postgresql.org/docs/devel/static/sql-insert.html#sql-on-conflict"><code>on conflict</code></a> clause.
+An excerpt from the documentation:</p>
+<blockquote>
+<p>ON CONFLICT DO UPDATE guarantees an atomic INSERT or UPDATE outcome;
+provided there is no independent error,
+one of those two outcomes is guaranteed, even under high concurrency.
+This is also known as UPSERT — “UPDATE or INSERT”.</p>
+</blockquote>
+<h2 id="knex-raw-statements">Knex raw statements</h2>
+<p><a href="http://knexjs.org/">Knex</a> is a NodeJs database library
+which performs 3 key functions:</p>
+<ul>
+<li>Query building</li>
+<li>Migrations</li>
+<li>Connection and pool management</li>
+</ul>
+<p>It is, however, important to stress that it is <em>not</em>
+an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">Object-Relational Mapping</a> library,
+even though most ORMs typically provide these functions too.
+<sup name="post-content-location-orm"><a href="#post-footnote-location-orm">1</a></sup></p>
+<p>Knex supports multiple database vendors,
+including PostgreSql.
+Therefore when using its query builder,
+it only supports the commands that all of them have in common.
+This usually means anything that is part of SQL ‘99.
+Therefore, upsert does not make the cut.</p>
+<p>Thankfully, however, Knex does provide an “escape hatch” of sorts,
+via <a href="http://knexjs.org/#Raw"><code>knex.raw()</code></a>:
+which allows you to write raw SQL
+<sup name="post-content-location-rawsql"><a href="#post-footnote-location-rawsql">2</a></sup>.
+Forewarned, let us proceed to write a PostgreSql-specific command in Knex,
+which does an upsert.</p>
+<p>Some readers out there might take it even further,
+and think, if we are using raw statements,
+why use Knex at all - why not interface with the database driver directly?
+We use Knex here mainly for the migrations and connection pooling which comes out of the box,
+and the query building is a nice-to-have which we might as well use.
+That being said, if you are already doing connection pooling and database migrations
+by interfacing directly with the database driver, or some other means,
+simply extract the SQL parts out in the following segments for the same effect.</p>
+<h2 id="example-of-upsert-in-knex">Example of Upsert in Knex</h2>
+<p>In the application I have been working on,
+an upsert was needed to insert or update rows in an <code>account</code> table.
+This account table consisted of only 2 columns:</p>
+<ul>
+<li><code>id</code> as a <code>string</code>, which is the primary key.</li>
+<li><code>body</code> as a <code>jsonb</code>, which is for the rest of the account data
+<sup name="post-content-location-document-pattern-postgres"><a href="#post-footnote-location-document-pattern-postgres">3</a></sup>.</li>
+</ul>
+<pre class="hljs javascript lang-javascript">knex.raw(
+  <span class="hljs-string">`insert into account ( id, body ) as original
+  values ( :id, :body::jsonb )
+  on conflict ( id ) do update
+  set body = jsonb_merge_recurse ( original.body::jsonb, excluded.body::jsonb )
+  returning *`</span>,
+  { id, body }
+)</pre><p>Let us break this statement down, into its constituent parts:</p>
+<pre class="hljs javascript lang-javascript">knex.raw(sqlStatement, { id, body })</pre><p>This is Knex’ way of using named parameters -
+it substitutes in the values of <code>id</code> and <code>body</code>
+where <code>:id</code> and <code>:body</code> are present in <code>sqlStatement</code>.
+When Knex parses this,
+it transforms this into <code>$1</code> and <code>$2</code> in the SQL string passed to PostgreSql,
+so that you get proper parameterised queries.
+Do <em>not</em> use ES6 string templates - or any other equivalent method -
+to substitute the values in manually,
+because that would leave this query <em>vulnerable</em> to SQL injection attacks.</p>
+<pre class="hljs sql lang-sql"><span class="hljs-selector-tag">insert</span> <span class="hljs-selector-tag">into</span> <span class="hljs-selector-tag">account</span> ( <span class="hljs-selector-tag">id</span>, <span class="hljs-selector-tag">body</span> ) <span class="hljs-selector-tag">as</span> <span class="hljs-selector-tag">original</span>
+<span class="hljs-selector-tag">values</span>( <span class="hljs-selector-pseudo">:id</span>, <span class="hljs-selector-pseudo">:body</span><span class="hljs-selector-pseudo">::jsonb</span> )</pre><p>This is a standard <code>insert</code> statement.
+The alias part (<code>as original</code>)
+is needed here to reference the current value in the table row,
+where it currently exists.
+You can name this what you want of course (does not have to be <code>original</code>),
+so long as it matches the usage in the following parts of the statement.</p>
+<p>The next segment turns it into an upsert.</p>
+<pre class="hljs sql lang-sql">on conflict ( id ) <span class="hljs-keyword">do</span> update</pre><p>The <code>on conflict</code> clause flags that this insert statement
+is actually an <em>upsert</em>,
+and therefore that it should check whether <code>id</code> <em>already exists</em>
+in one of the rows in the <code>account</code> table.
+If it exists, it will attempt an <code>update</code> <em>instead of</em> an <code>insert</code>.
+When defined in this manner, during query execution,
+PostgreSql does not need to attempt an <code>insert</code> and if a failure occurs,
+subsequently attempt an <code>update</code>, as the literal reading of the query string syntax might imply.
+Instead, it would need to do an index lookup on the primary key (<code>id</code>),
+then know immediately which of <code>insert</code> or <code>update</code> needs to happen.</p>
+<pre class="hljs sql lang-sql">set body = jsonb_merge_recurse ( original.body::jsonb, excluded.body::jsonb )</pre><p>Here we are updating the <code>body</code> as we would in a standard <code>update</code> statement.
+<sup name="post-content-location-jsonbmergerecurse"><a href="#post-footnote-location-jsonbmergerecurse">4</a></sup>.</p>
+<p>Of particular note, is <code>excluded</code>,
+which is a special keyword that refers to the <em>new values</em>
+in the row that would have been inserted if this had not become an update.
+This is mentioned in passing in the
+<code>alias</code> and <code>conflict_action</code> action sections of the
+<a href="https://www.postgresql.org/docs/devel/static/sql-insert.html#sql-on-conflict"><code>on conflict</code></a>
+section of PostgreSql’s documentation
+<sup name="post-content-location-postgresql-onconflict-docs"><a href="#post-footnote-location-postgresql-onconflict-docs">5</a></sup>.</p>
+<p><code>original</code> is the alias which we defined earlier,
+and refers to the <em>previous values</em>
+in the row in the table which matches the <code>id</code>,
+as specified previously in <code>on conflict ( id )</code>.
+So the values are the values prior to this statement being executed.
+<sup name="post-content-location-original-and-excluded"><a href="#post-footnote-location-original-and-excluded">6</a></sup>.</p>
+<pre class="hljs sql lang-sql">returning *</pre><p>In both <code>update</code> and <code>insert</code> statements,
+the returned output from the database is normally
+the number of rows that have been affected.
+In this case, we are always expecting this value to be <code>1</code>, because:</p>
+<ul>
+<li>If there was no row with the specified <code>id</code> before, there is a new <em>one</em> now</li>
+<li>If there was an existing row with the specified <code>id</code> before, the same <em>one</em> is still there</li>
+</ul>
+<p>That is <em>not</em> very useful.
+Since it is an upsert,
+we care about what the new value for <code>body</code>
+in this particular one row is <em>after</em> the statement is executed.
+Therefore we use <code>returning *</code> to get the entire row back.</p>
+<p>This is, of course, optional -
+if you do not need to use this information,
+and only care whether your query has succeeded or not,
+you can omit this,
+and shave off a few bytes of network traffic
+between the database and the server.</p>
+<h2 id="when-you-should-use-upserts">When you should use upserts</h2>
+<p>If you have an action where the entity you need to write to
+may or may not already exist at that point.
+In other words,
+when the business logic of the application
+has no clear <em>demarcation of separate operations</em> for create and update operations,
+an upsert is the perfect use case for this.</p>
+<p>If the database you are using provides built in support for upserts,
+it is certainly a great idea to use that
+instead of a hand rolled solution
+using separate <code>update</code> and <code>insert</code> statements wrapped in a transaction,
+for performance reasons.
+Not to mention that the database can provide a stronger guarantee of adherence to
+<a href="https://en.wikipedia.org/wiki/ACID">ACID principles</a>
+than custom SQL transactions can.</p>
+<h2 id="footnotes">Footnotes</h2>
+<p><b name="post-footnote-location-various-db-upsert">0</b>
+Support for upsert, or upsert-like, statements in various databases:</p>
+<ul>
+<li><code>merge</code> statements are supported by Oracle, MS-Sql, and DB2</li>
+<li><code>insert</code> statements with <code>on duplicate key</code> clauses are supported by MySql</li>
+<li><code>insert</code> statements with <code>on conflict</code> clauses are supported by PostgreSql and SQLite
+<a href="#post-content-location-various-db-upsert">↩</a></li>
+</ul>
+<p><b name="post-footnote-location-orm">1</b>
+ORMs never seem to get it right.
+They either do not map relational table rows to objects closely enough,
+or they do at the expense of being extremely bloated.
+There is no Goldilocks amongst ORMs.
+In my experience, they usually seem like a <em>good idea</em> at the beginning of a project.
+They then transition, slowly but surely,
+to a source of <em>technical debt</em> towards later stages of a project.
+Knex, thus, occupies the <em>sweet spot</em>,
+by providing most of the bells and whistles that ship alongside ORM libraries,
+but <em>skip</em> automating the actual mapping or objects to relations.
+As a developer in the later stages of a project,
+chances are that you will find yourself wanting to write the mapping logic by hand anyway.
+<a href="#post-content-location-orm">↩</a></p>
+<p><b name="post-footnote-location-rawsql">2</b>
+When you do this, it is important to take note that
+this statement will likely not work on other databases.
+In practice, however, when switching databases,
+re-writing your queries is one of the least problematic tasks.
+In any case, it is a rare occurrence for any application to switch databases.
+<a href="#post-content-location-rawsql">↩</a></p>
+<p><b name="post-footnote-location-document-pattern-postgres">3</b>
+This particular database table schema is designed to
+use PostgreSql as a <em>document database</em>,
+but that is a story for another post!
+<a href="#post-content-location-document-pattern-postgres">↩</a></p>
+<p><b name="post-footnote-location-jsonb-merge-recurse">4</b>
+Note that <code>jsonb_merge_recurse</code> is a custom PostgreSql function
+defined using <code>create or replace function ...;</code>,
+but that is a story for <em>yet another</em> post!
+<a href="#post-content-location-jsonb-merge-recurse">↩</a></p>
+<p><b name="post-footnote-location-postgresql-onconflict-docs">5</b>
+There is room for improvement in explaining <code>excluded</code> properly,
+in PostgreSql’s documentation.
+There is also a <code>target</code> keyword mentioned here, but again,
+it is not clear from the documentation what this is for -
+it does not appear to be necessary for
+(this type of) upsert statements.
+This rather sparse documentation from PostgreSql was, in fact,
+the main motivation behind writing this post!
+<a href="#post-content-location-postgresql-onconflict-docs">↩</a></p>
+<p><b name="post-footnote-location-original-and-excluded">5</b>
+A previous version of this post used <code>excluded</code> where <code>original</code>,
+in part, due to confusion over the <code>on conflict</code> section of PostgreSql’s documentation.
+Thanks to <a href="https://github.com/spekulatif1">Ufuk Tandogan</a>
+for pairing with me on this to figure it out -
+it was a particularly tricky issue to debug!
+<a href="#post-content-location-original-and-excluded">↩</a></p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Upsert in PostgreSql using Knex - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/postgresql-upsert-knex" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/knex">knex</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-05-postgresql-upsert-knex.md" target="_blank">Edit this content</a></div><div><div title="Upsert in PostgreSql using Knex"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

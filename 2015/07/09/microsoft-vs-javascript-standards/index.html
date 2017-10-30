@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Microsoft vs Javascript standards - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Microsoft vs Javascript standards - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/07/09/microsoft-vs-javascript-standards/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/07/09/microsoft-vs-javascript-standards/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Microsoft vs Javascript standards</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/07/09</div><span class="markdown__markdown-render___9BIqe"><p><code>&lt;rant&gt;</code></p>
+<p>Microsoft’s flagship browser has been causing web developers much anguish
+for over a decade now,
+and they appear to have unleashed an “improved” version of that mediocrity
+upon us via WinJS in their offering for HTML apps for Windows.</p>
+<p>In Javascript norms, when a function throws an error,
+the error and its stack trace get output to the console,
+all functions on this stack get aborted,
+and execution of other parts of the page resume.
+<strong>Even IE</strong> gets this right.
+Microsoft has, however, decided to “improve” upon this behaviour
+in their WinJS run time, where they decide that in the above scenario,
+what should happen instead is to simply crash the program,
+in a manner similar to that of a <code>SEGFAULT</code> in a C program.</p>
+<p>This is most likely the root cause of the plentiful random crashes
+in an app that we have been working on.</p>
+<p>Even if we wrote our own code in defensively to work around this limitation
+by <em>wrapping everything</em> in a <em><code>try-catch</code> block</em>,
+we simply <strong>cannot enforce that the 3rd-party libraries</strong>
+we include do so as well.</p>
+<p>… But there is <em>light at the end of the tunnel</em>.
+After much sleuthing, <a href="https://github.com/impaler">Chris</a>
+and I have worked out that there is indeed a way to catch these errors:
+by setting a <code>window.onerror</code> handler function,
+and doing <code>evt.preventDefault()</code> inside it.</p>
+<p>But that would be too easy, wouldn’t it?
+Why yes, of course, we should have had the foresight to realise that
+the <strong>spec would be ignored yet again</strong>,
+and be required to use a parallel API instead.
+Here’s the workaround that we ended up with that appears to work:</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-built_in">window</span>.WinJS.Application.addEventListener(<span class="hljs-string">'error'</span>, globalOnError);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">globalOnError</span>(<span class="hljs-params">evt</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'globalOnError'</span>, evt); <span class="hljs-comment">// Replace with proper logging functions</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}</pre><p>In a 3rd instance of a <strong>flagrant disregard for Javascript norms</strong>,
+the <code>evt</code> parameter here has neither
+<code>preventDefault()</code> nor <code>stopPropagation()</code> methods available.
+On the other hand, <code>evt.details.error</code> does,
+but that does not matter,
+because calling those will crash the program <code>SEGFAULT</code> style as well -
+but of course!
+Instead, we have to do a <code>return true</code> to do so,
+which takes us all the way back to Javascript event handling patterns
+that fell out of favour in the 90’s.</p>
+<p><code>&lt;/rant&gt;</code></p>
+<p>We may have found a workaround for (at least some of) the random crashes,
+and in doing so, found this caution to be vital:
+When doing anything Microsoft Javascript platforms,
+tread carefully, and be prepared to write a parallel set of code
+from specification compliant Javascript.
+<strong>Do not expect</strong> anything that <em>“should work”</em>
+because <em>“it’s standard Javascript”</em> to actually work,
+because that does not appear to be a priority.</p>
+<p>Javascript is a language that is supposed to be both
+<strong>community-driven</strong> (ECMAScript and W3C) and <strong>open</strong>;
+and vendor should be creating platforms that go forward
+with the standards as they progress forward rather than break them
+with works-for-me-only solutions.</p>
+<p>Please <strong>reconsider</strong> your Javascript strategy.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Microsoft vs Javascript standards - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/07/09/microsoft-vs-javascript-standards" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/windows">windows</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/rant">rant</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/standards">standards</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-07-09-microsoft-vs-javascript-standards.html.md" target="_blank">Edit this content</a></div><div><div title="Microsoft vs Javascript standards"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

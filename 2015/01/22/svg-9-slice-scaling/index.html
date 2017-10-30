@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">SVG 9-slice scaling - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="SVG 9-slice scaling - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/01/22/svg-9-slice-scaling/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/01/22/svg-9-slice-scaling/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">SVG 9-slice scaling</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/01/23</div><span class="markdown__markdown-render___9BIqe"><p><a href="http://en.wikipedia.org/wiki/Scalable_Vector_Graphics">SVGs</a> are a thing.</p>
+<p><a href="http://en.wikipedia.org/wiki/Scalable_Vector_Graphics">9-slice scaling</a> is a thing.</p>
+<p>Put the two together, and …</p>
+<p>Turns out that 9-slice scaling isn’t so easy to do in SVGs,
+because SVGs use a coordinate system where it is not possible to
+specify dimensions in terms of both percentages and fixed values.
+That is exactly what you need though, for 9-slice scaling!</p>
+<p>Fortunately, the SVG specification includes an escape hatch of sorts,
+<code>&lt;foreignObject /&gt;</code> which allows you to embed something other than an SVG within itself.
+We can use this to put in a HTML fragment,
+which of course can make use of CSS properties to
+specify dimensions in terms of both percentages and fixed values!
+Once we have got the right positions and size using HTML/ CSS,
+we can then place an SVG within it.</p>
+<p>That sounds extremely inefficient, doesn’t it?
+Turns out there is a neat little trick in play here,
+enabled by <code>&lt;symbol /&gt;</code>, <code>&lt;use /</code>&gt; and <code>xlink</code>.
+In the outer SVG, you can define a <code>&lt;symbol /&gt;</code>,
+which contains the full graphic, in a <code>&lt;g /&gt;</code>, which needs to be sliced.
+Subsequently define nine <code>&lt;symbol /&gt;</code>s each of which have a <code>viewBox</code>
+to restrict their display to a particular <em>slice</em> of the full graphic.
+Within the symbol, we have a <code>&lt;use /</code>&gt; with an <code>xlink</code> to reference the original graphic.
+This is actually a big deal, because what happens behind the scenes,
+to make all this work, is that the SVG is only rendered once,
+and is thus quite efficient,
+because each of the nine slices do not need to re-render the original graphic.
+This is not the first time which we will make use of this,
+because when we use <code>&lt;foreignObject /&gt;</code>, which contain inner <code>&lt;svg /&gt;</code>s,
+we have <code>&lt;use /</code>&gt; with an <code>xlink</code> once again,
+but this time referencing the sliced graphic <code>&lt;symbol /&gt;</code>s instead.</p>
+<p>It is quite amazing that the reference still works despite going
+<code>SVG --&gt; HTML --&gt; SVG</code>.
+Thank you to whoever ensured that this was part of the SVG specification.
+When I did that for the first time, I held my breath,
+half expecting it not to work at all!</p>
+<h2 id="enough-rambling-show-me-the-sauce-">Enough rambling, show me the sauce!</h2>
+<p>I have posted the working SVG <a href="https://gist.github.com/bguiz/e3a6d0561f90735d1459">on this gist</a>.</p>
+<p><a href="https://gist.githack.com/bguiz/e3a6d0561f90735d1459/raw/2564816ff0930478264426e7e2826b3d84149675/svg-9slice-scaling.svg"><img src="https://gist.githack.com/bguiz/e3a6d0561f90735d1459/raw/2564816ff0930478264426e7e2826b3d84149675/svg-9slice-scaling.svg" alt="svg-9slice-scaling.svg"></a></p>
+<p>Click the link and open it in a new tab/ window,
+then resize the window to see what I mean.</p>
+<h2 id="-and-then-internet-explorer-happened">… and then Internet Explorer happened</h2>
+<ul>
+<li>Chrome … check!</li>
+<li>Firefox … check!</li>
+<li>IE … meh.</li>
+</ul>
+<p>A key part in the way this technique works is <code>&lt;foreignObject /&gt;</code>.
+Unfortunately, Internet Explorer does not support this so that goes out the window.
+If anyone has figured out how to make 9 slice scaling work in IE,
+I would be most interested!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=SVG 9-slice scaling - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/01/22/svg-9-slice-scaling" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/svg">svg</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/scaling">scaling</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-01-22-svg-9-slice-scaling.html.md" target="_blank">Edit this content</a></div><div><div title="SVG 9-slice scaling"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">A basic jQuery examination - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="A basic jQuery examination - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2013/10/11/a-basic-jquery-examination/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2013/10/11/a-basic-jquery-examination/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">A basic jQuery examination</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2013/10/11</div><span class="markdown__markdown-render___9BIqe"><p>An email I sent to iiNet earlier this evening. It bounced: <code>Sorry, no mailbox here by that name. (#5.1.1)</code>&#160;; so posting it here instead!</p>
+
+<p><hr><p>Hi there,</p></p>
+<p>Thought I would give you a heads up on a bug I found on your site.</p>
+
+<p>My BoB2 modem stopped working earlier this evening - it appears to
+have done a factory reset of itself without me asking it to.</p>
+
+<p>That led me to get redirected to
+<a href="https://toolbox.iinet.net.au/cgi-bin/playpen/boblogin.cgi" target="_blank">https://toolbox.iinet.net.au/cgi-bin/playpen/boblogin.cgi</a> when I
+visited any page. I submitted the login form, as requested by the
+page, and absolutely nothing happened - no network activity.</p>
+
+<p>Thus I began to investigate, while waiting on the line for tech support.</p>
+
+<p>You will find below part of the HTML markup, and part of the main
+Javascript file that was loaded.</p>
+
+<p>HTML:</p>
+
+<pre><code>&lt;div&gt;
+    &lt;p id="username_prompt"&gt;
+        Username: &lt;input type="text" name="username" id="boblogin_username" maxlength="50" size="30"&gt;
+    &lt;/p&gt;
+    &lt;p id="password_prompt"&gt;
+        Password: &lt;input type="password" name="password" id="boblogin_password" maxlength="50" size="30"&gt;
+    &lt;/p&gt;
+    &lt;div id="boblogin_result"&gt;&lt;/div&gt;
+    &lt;p&gt;
+        &lt;input type="button" id="login_button" class="toolbox_button" value="configure"&gt;
+        &lt;br&gt;&lt;br&gt;&lt;span id="loading_image" style="display: none;"&gt;&lt;img id="loading_image" src="https://toolbox.iinet.net.au/images/Throbber.gif"&gt;&lt;/span&gt;
+    &lt;/p&gt;
+    &lt;p&gt;
+        &lt;a href="https://toolbox.iinet.net.au/cgi-bin/playpen/9pointidcheck.cgi" target="__blank"&gt;Forgot login details?&lt;/a&gt;
+    &lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>Javascript:</p>
+
+<pre><code>init = function() {
+    $('login_button').onclick = function() { checkLogin(); };
+};
+</code></pre>
+
+<p>Quickly spotted the bug - if I run:</p>
+
+<pre><code>$('login_button')
+[]
+</code></pre>
+
+<p>If I run instead:</p>
+
+<pre><code>$('#login_button')
+[&lt;input type="button" id="login_button" class="toolbox_button"
+value="configure"&gt;]
+</code></pre>
+
+<p>It thus appears that $ is jQuery, and you have simply omitted the # in
+the selector. This is required whenever selecting based on id
+attributes.</p>
+
+<p>That was the main bug, which prevented this page from working.</p>
+
+<p>Further to that, I would suggest a few more improvements.</p>
+
+<p>Again, the same function:</p>
+
+<pre><code>init = function() {
+    $('login_button').onclick = function() { checkLogin(); };
+};
+</code></pre>
+
+<p>Firstly, wrapping checkLogin in a function is extraneous, you could do instead:</p>
+
+<pre><code>$('#login_button').onclick = checkLogin;
+</code></pre>
+
+<p>&#8230; as checkLogin is itself a function.</p>
+
+<p>In idiomatic jQuery:</p>
+
+<pre><code>$('#login_button').click(checkLogin);
+</code></pre>
+
+<p>Secondly init is declared without using var, and thus pollutes the
+global scope. This is bad practice, and the init function is not the
+only offender here - all of the functions in this file do the same. On
+a relatively simple page like this, it makes little difference, but
+should it get more complex, this can cause weird side effects.
+Consider not only using var, but also placing these functions within a
+scope. A rather nice explanation:
+<a href="http://stackoverflow.com/a/13352212/194982" target="_blank">http://stackoverflow.com/a/13352212/194982</a></p>
+
+<p>Finally, this init function is invoked from the HTML markup using:</p>
+
+<pre><code>&lt;script type="text/javascript"&gt;
+    init();
+&lt;/script&gt;
+</code></pre>
+
+<p>One cannot guarantee that the contents of this script tag will be run
+after the DOM is rendered. If it so happens that this runs before the
+DOM is rendered, the selector will return an empty set, and the click
+handler will not be set on the intended button.</p>
+
+<p>Consider instead using:</p>
+
+<pre><code>$(document).ready(init);
+</code></pre>
+
+<p>&#8230; within the Javascript file. The additional benefit of this is that
+we do not need any in line scripts defined in the markup.</p>
+
+<p>Cheers,
+Brendan</p></span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=A basic jQuery examination - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2013/10/11/a-basic-jquery-examination" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/jquery">jquery</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/html5">html5</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/iinet">iinet</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/blog">blog</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/tumblrposts/2013-10-11-a-basic-jquery-examination.html" target="_blank">Edit this content</a></div><div><div title="A basic jQuery examination"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

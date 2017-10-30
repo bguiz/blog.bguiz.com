@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Migrating from Tumblr and Wordpress to Docpad - Extract and Transform - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Migrating from Tumblr and Wordpress to Docpad - Extract and Transform - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2014/07/10/migrating-from-tumblr-and-wordpress-to-docpad-extraction/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2014/07/10/migrating-from-tumblr-and-wordpress-to-docpad-extraction/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Migrating from Tumblr and Wordpress to Docpad - Extract and Transform</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2014/07/11</div><span class="markdown__markdown-render___9BIqe"><p>In the previous post, I made <a href="http://blog.bguiz.com/2014/07/08/migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation/">the case for static site generation</a>.
+Let us take a look at how to extract data from tumblr and wordpress blogs,
+and transform it for <a href="https://github.com/bevry/docpad">docpad</a>,
+a static site generator.</p>
+<h3 id="get-your-node-on">Get Your Node On</h3>
+<pre class="hljs undefined lang-undefined">mkdir blog-extract
+<span class="hljs-built_in">cd</span> blog-extract
+npm init <span class="hljs-comment">#accept all the defaults, it isnot very important</span>
+npm install --save request mkdirp moment tumblr.js
+touch index.js</pre><p>Edit <code>index.js</code>, and add the following:</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> url = <span class="hljs-built_in">require</span>(<span class="hljs-string">'url'</span>);
+<span class="hljs-keyword">var</span> path  = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> mkdirp = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mkdirp'</span>);
+<span class="hljs-keyword">var</span> moment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'moment'</span>);
+<span class="hljs-keyword">var</span> request = <span class="hljs-built_in">require</span>(<span class="hljs-string">'request'</span>);
+<span class="hljs-keyword">var</span> tumblr = <span class="hljs-built_in">require</span>(<span class="hljs-string">'tumblr.js'</span>);</pre><p>Now we have a shiny new NodeJs project ready to go,
+with batteries (dependencies) included.</p>
+<h3 id="wordpress-posts-api">Wordpress Posts API</h3>
+<p>Wordpress exposes a JSON API that allows you to extract your posts.
+There is almost no set up required, as no form or authentication is required.</p>
+<p>In order to get our posts, we can follow
+<a href="https://developer.wordpress.com/docs/api/1/get/sites/%24site/posts/">these instructions</a>.</p>
+<h4 id="extract-and-transform">Extract and transform</h4>
+<p>With the API documentation in hand, we can now write some code to automate that -
+we certainly do not want to be issuing multiple <code>wget</code> or <code>curl</code> calls,
+and then copying the results from them into new files by hand .
+I would do that for maybe a couple of posts,
+but since I am dealing with about 80 posts here,
+and that is certainly going to be too time consuming of an endeavour!</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-keyword">var</span> pos, step, total;
+
+<span class="hljs-keyword">var</span> wordpressSite = <span class="hljs-string">'yourblogname.wordpress.com'</span>; <span class="hljs-comment">// replace with your own</span>
+pos = <span class="hljs-number">0</span>;
+step = <span class="hljs-number">20</span>;
+total = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">do</span> {
+    <span class="hljs-comment">/*
+     * Here we do the queries, and be sure to set total so that it loops more than once
+     * The looping is necessary, because you cannot download all posts at once
+     * and we must paginate the requests
+     */</span>
+} <span class="hljs-keyword">while</span> (pos &lt; total);</pre><p>That is the basic run loop.
+Within the run loop, we perform the requests to the wordpress API server:</p>
+<pre class="hljs undefined lang-undefined">    <span class="hljs-keyword">var</span> reqUrl = <span class="hljs-string">'https://public-api.wordpress.com/rest/v1/sites/'</span>+wordpressSite+<span class="hljs-string">'/posts/?number='</span>+postsAtATime+<span class="hljs-string">'&amp;offset='</span>+postIdx;
+    request(reqUrl, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, resp, body</span>) </span>{
+        <span class="hljs-keyword">if</span> (err || resp.statusCode !== <span class="hljs-number">200</span>) {
+            <span class="hljs-built_in">console</span>.log(err);
+            <span class="hljs-keyword">return</span>;
+        }
+        body = <span class="hljs-built_in">JSON</span>.parse(body);
+        <span class="hljs-keyword">if</span> (body.total_posts &gt; total) {
+            <span class="hljs-comment">//set total count, should only happen the first time</span>
+            total = body.total_posts;
+        }
+        <span class="hljs-comment">//parse each of the posts in the response</span>
+        body.posts.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">post</span>) </span>{
+            <span class="hljs-comment">//transform the post into the format required by docpad</span>
+            <span class="hljs-comment">//and write to file</span>
+        });
+    });</pre><p>We can take a look at what the API response for each blog post looks like in
+<a href="https://developer.wordpress.com/docs/api/1/get/sites/%24site/posts/">these instructions</a>.</p>
+<p>The format that we need to translate to consists of two important parts:</p>
+<ul>
+<li>Directory and file name</li>
+<li>Metadata</li>
+</ul>
+<p>The third part is the post’s contents,
+but that can be copied verbatim without any transformation.</p>
+<p>For a default docpad blog configuration, this would usually be:
+<code>src/documents/posts/slug-for-this-post.html</code></p>
+<p>We get check this by looking at <code>docpad.coffee</code>,
+and inspecting <code>docpadConfig.collections.posts</code>:</p>
+<pre class="hljs undefined lang-undefined">`@getCollection(<span class="hljs-string">'documents'</span>).findAllLive({relativeDirPath: <span class="hljs-string">'posts'</span>}, [date: -1])`</pre><p>We are however, not going to put our extracted files in the <code>posts</code> folder,
+and put them in a <code>wordpressposts</code> folder instead.
+Instead we will create a separate folder for all the wordpress posts,
+and configure docpad to look there as well.
+This configuration will be covered at the end,
+so if you want to test things out right away,
+skip to the bottom of the post</p>
+<p>I am using the plugin, <code>docpad-plugin-dateurls</code>,
+so the URL paths of each of the posts is will match the default wordpress URL paths.
+Here, we want the directory and file name to follow this pattern:
+<code>src/documents/wordpressposts/YYYY-MM-DD-slug-for-post.html</code></p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> postUrl = url.parse(post.URL);
+        <span class="hljs-keyword">var</span> pathname = postUrl.pathname;
+        <span class="hljs-keyword">if</span> (pathname.charAt(pathname.length - <span class="hljs-number">1</span>) === <span class="hljs-string">'/'</span>) {
+            pathname = pathname.slice(<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>);
+        }
+        pathname = pathname.slice(<span class="hljs-number">1</span>).replace( <span class="hljs-regexp">/\//g</span> , <span class="hljs-string">'-'</span>);
+        <span class="hljs-keyword">var</span> filename = path.normalize(<span class="hljs-string">'src/documents/wordpressposts/'</span>+pathname+<span class="hljs-string">'.html'</span>);</pre><p>For the metadata, we use moment to format the date and time</p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> title = post.title &amp;&amp; post.title.replace(<span class="hljs-regexp">/"/g</span>, <span class="hljs-string">'\\"'</span>);
+        <span class="hljs-keyword">var</span> date = moment(post.date).format(<span class="hljs-string">'YYYY-MM-DD hh:mm'</span>);
+        <span class="hljs-keyword">var</span> tags = <span class="hljs-built_in">Object</span>.keys(post.tags).join(<span class="hljs-string">', '</span>);
+        <span class="hljs-keyword">var</span> contents = <span class="hljs-string">'---\n'</span>+
+            <span class="hljs-string">'layout: post\n'</span>+
+            <span class="hljs-string">'comments: true\n'</span>+
+            <span class="hljs-string">'title: '</span>+title+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'date: '</span>+date+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'original-url: '</span>+post.URL+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'dateurls-override: '</span>+postUrl.pathname+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'tags: '</span>+tags+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'---\n\n'</span>+post.content;</pre><p>Finally, write the output to file:</p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> dirname = path.dirname(filename);
+        mkdirp(dirname);
+        fs.writeFile(path.normalize(filename), contents, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+            <span class="hljs-keyword">if</span> (err) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Error'</span>, filename, err);
+                <span class="hljs-keyword">return</span>;
+            }
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Written'</span>, filename);
+        });</pre><h3 id="tumblr-posts-api">Tumblr Posts API</h3>
+<p>Tumblr is a little more involved than Wordpress,
+as in order to query any of their API,
+you will need to have a tumblr account
+(which you probably already have since you are extracting your posts from it),
+and <a href="https://www.tumblr.com/oauth/apps">register a tumblr app</a>
+to obtain an API keys.
+Copy your “OAuth Consumer Key”, and you are good to go.</p>
+<p>Once that is done, we simply need to follow
+<a href="https://www.tumblr.com/docs/en/api/v2#posts">this section</a>
+in the documents.
+The upside ofthis slightly higher complexity is that tumblr provides
+a NodeJs client library that makes it easier to call the tumblr API,
+and avoid having to deal with making raw HTTP requests,
+like we did for the Wordpress API.</p>
+<h3 id="extract-and-transform">Extract and transform</h3>
+<pre class="hljs undefined lang-undefined"><span class="hljs-keyword">var</span> tumblrSite = <span class="hljs-string">'bguiz.tumblr.com'</span>; <span class="hljs-comment">// replace with your own</span>
+<span class="hljs-keyword">var</span> client = tumblr.createClient({
+    <span class="hljs-attr">consumer_key</span>: <span class="hljs-string">'sfsdfsdfsdfjkjksjdfhkjkjhkjshdfkjhkjhskdjfhkjhkjhd'</span> <span class="hljs-comment">//replace with your own</span>
+});
+pos = <span class="hljs-number">0</span>;
+step = <span class="hljs-number">20</span>;
+total = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">do</span> {
+    <span class="hljs-comment">/*
+     * Perform the paginated requests
+     */</span>
+} <span class="hljs-keyword">while</span> (pos &lt; total);</pre><p>Performing the requests:</p>
+<pre class="hljs undefined lang-undefined">    client.posts(tumblrSite, {
+        <span class="hljs-attr">offset</span>: pos,
+        <span class="hljs-attr">limit</span>: step,
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+        <span class="hljs-keyword">if</span> (err || ! data) {
+            <span class="hljs-built_in">console</span>.log(err, data);
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-keyword">if</span> (data.total_posts &gt; total) {
+            <span class="hljs-comment">//set total count, should only happen the first time</span>
+            total = data.total_posts;
+        }
+        data.posts.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">post</span>) </span>{
+            <span class="hljs-comment">//transform the post into the format required by docpad</span>
+            <span class="hljs-comment">//and write to file</span>
+        });
+    });</pre><p>Here, we want the directory and file name to follow this pattern:
+<code>src/documents/tumblrposts/YYYY-MM-DD-slug-for-post.html</code></p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> ts = moment(post.timestamp*<span class="hljs-number">1000</span>);
+        <span class="hljs-keyword">var</span> postUrl = url.parse(post.post_url);
+        <span class="hljs-keyword">var</span> dateStr = ts.format(<span class="hljs-string">'YYYY-MM-DD hh:mm'</span>);
+        <span class="hljs-keyword">var</span> filename = <span class="hljs-string">'src/documents/tumblrposts/'</span>+ts.format(<span class="hljs-string">'YYYY-MM-DD'</span>)+
+            <span class="hljs-string">'-'</span>+postUrl.pathname.split(<span class="hljs-string">'/'</span>).slice(<span class="hljs-number">-1</span>)[<span class="hljs-number">0</span>]+<span class="hljs-string">'.html'</span>;</pre><p>For the metadata, we want to set the <code>dateurls-override</code> property.
+Note that this feature is not yet available on in <code>docpad-plugin-dateurls</code>,
+and you will need <a href="https://github.com/mgroves84/docpad-plugin-dateurls/pull/12">my patch</a>
+for this to work.
+To get this, modify <code>package.json</code> in your root folder,
+replacing  the version number of the plugin with an explicit git URI, like so:</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-string">"docpad-plugin-dateurls"</span>: <span class="hljs-string">"git+ssh://git@github.com:bguiz/docpad-plugin-dateurls.git#exclude-option"</span>,</pre><p>This tells npm to install a NodeJs package, not from the default npm repository,
+but instead by cloning a git repository.
+Unfortunately, this also means docpad will not be able to run the plugin yet,
+as <a href="https://github.com/npm/npm/issues/3055"><code>npm install</code>ing a git url does not run <code>prepublish</code></a>.
+To work around this, for now, you need to do the following:</p>
+<pre class="hljs undefined lang-undefined">npm install
+docpad run <span class="hljs-comment"># fails "Error: Cannot find module 'node_modules/docpad-plugin-dateurls/out/dateurls.plugin.js'"</span>
+<span class="hljs-built_in">cd</span> node_modules/docpad-plugin-dateurls
+cake compile &amp;&amp; cake install
+ls out <span class="hljs-comment">#you should see dateurls.plugin.js</span>
+<span class="hljs-built_in">cd</span> ../..
+docpad run <span class="hljs-comment"># success!</span></pre><p>For tumblr posts, the default URL path follows the format
+<code>/post/12345678/slug-for-this-post</code>,
+and if we migrate posts from the old blog to the new blog,
+any links, especially external ones, to the site will be broken.
+That will make for a really annoying experience for those visiting your sites,
+so it is best to preserve URLs where possible;
+hence the need to override the default URLs.</p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> title = post.title &amp;&amp; post.title.replace(<span class="hljs-regexp">/"/g</span>, <span class="hljs-string">'\\"'</span>);
+        <span class="hljs-keyword">var</span> tags = post.tags.join(<span class="hljs-string">', '</span>);
+        <span class="hljs-keyword">var</span> contents = <span class="hljs-string">'---\n'</span>+
+            <span class="hljs-string">'layout: post\n'</span>+
+            <span class="hljs-string">'comments: true\n'</span>+
+            <span class="hljs-string">'title: '</span>+title+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'date: '</span>+dateStr+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'original-url: '</span>+post.post_url+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'dateurls-override: '</span>+postUrl.pathname+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'tags: '</span>+tags+<span class="hljs-string">'\n'</span>+
+            <span class="hljs-string">'---\n\n'</span>+post.body;</pre><p>Finally, write the output to file:</p>
+<pre class="hljs undefined lang-undefined">        <span class="hljs-keyword">var</span> dirname = path.dirname(filename);
+        mkdirp(dirname);
+        fs.writeFile(path.normalize(filename), contents, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+            <span class="hljs-keyword">if</span> (err) {
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Error'</span>, filename, err);
+                <span class="hljs-keyword">return</span>;
+            }
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Written'</span>, filename);
+        });</pre><h3 id="docpad-configuration-changes">Docpad Configuration Changes</h3>
+<p>We edit <code>docpad.coffee</code>, in the root directory of the docpad project.
+Modify <code>docpadConfig.collections.posts</code> to look like this instead.</p>
+<pre class="hljs undefined lang-undefined">@getCollection(<span class="hljs-string">'documents'</span>).findAllLive({<span class="hljs-attr">relativeDirPath</span>: {<span class="hljs-string">'$in'</span> : [<span class="hljs-string">'docpadposts'</span>, <span class="hljs-string">'tumblrposts'</span>, <span class="hljs-string">'wordpressposts'</span>]}}, [date: <span class="hljs-number">-1</span>])</pre><p>All the wordpress posts should be in <code>src/documents/wordpressposts</code>,
+tumblr posts in <code>src/documents/tumblrposts</code>.
+When writing any new docpad posts save them in <code>src/documents/docpadposts</code>.</p>
+<p>If you have any <code>docpadConfig.environments</code> configured,
+be sure to modify each of their <code>collections.posts</code> accordingly too.</p>
+<p>That is all there is to do for now.
+Execute <code>docpad run</code>, and visit the newly extracted blog in a browser!</p>
+<h3 id="where-to-from-here-">Where to from here?</h3>
+<p>One task in blog extraction, that we have not covered here, is that of any
+static assets, such as images, that may have been hosted on your previous blogs.
+Most notably, images.
+If you have hosted these on CDNs, they will continue to work.
+Otherwise, you will need to extract them too.</p>
+<p>Another extraction task that we have not covered are links between posts.
+Since we have preserved the path for each post’s URL here,
+this should not pose a problem.</p>
+<p>The solution to both of these involves parsing the URLs in each post’s content,
+be it <code>href</code> attributes in <code>&lt;a&gt;</code> tags,
+or <code>src</code> attributes in <code>&lt;img&gt;</code> tags,
+and download and save them too.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Migrating from Tumblr and Wordpress to Docpad - Extract and Transform - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2014/07/10/migrating-from-tumblr-and-wordpress-to-docpad-extraction" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/blog">blog</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/tumblr">tumblr</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/wordpress">wordpress</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/docpad">docpad</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/static site generation">static site generation</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/coffeescript">coffeescript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/markdown">markdown</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/nodejs">nodejs</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2014-07-10-migrating-from-tumblr-and-wordpress-to-docpad-extraction.html.md" target="_blank">Edit this content</a></div><div><div title="Migrating from Tumblr and Wordpress to Docpad - Extract and Transform"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Automatically publish documentation using Autodocs - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Automatically publish documentation using Autodocs - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/05/02/autodocs-publish-documentation-automatically/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/05/02/autodocs-publish-documentation-automatically/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Automatically publish documentation using Autodocs</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/05/02</div><span class="markdown__markdown-render___9BIqe"><p>I have been working on a NodeJs module quite diligently over the past couple of weeks,
+and I have finally cut a release that I am satisfied with releasing for wider use.</p>
+<p><a href="https://github.com/bguiz/autodocs/"><img src="https://nodei.co/npm/autodocs.png" alt="NPM"></a></p>
+<p><a href="https://travis-ci.org/bguiz/autodocs"><img src="https://travis-ci.org/bguiz/autodocs.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/r/bguiz/autodocs?branch=master"><img src="https://coveralls.io/repos/bguiz/autodocs/badge.svg?branch=master" alt="Coverage Status"></a></p>
+<p>Install it as a development dependency</p>
+<pre class="hljs bash lang-bash">npm install --save-dev autodocs</pre><p>… and then add an <code>autodocs</code> hook to the <code>scripts</code> section of <code>package.json</code>:</p>
+<pre class="hljs json lang-json">"scripts": {
+  "autodocs": "node ./node_modules/autodocs"
+}</pre><p>… and then invoke the <code>autodocs</code> hook in <code>.travis.yml</code></p>
+<pre class="hljs yaml lang-yaml">after_success:
+- npm run autodocs</pre><p>Finally configure <code>autodocs</code> by specifying environment variables,
+also in <code>.travis.yml</code>.
+The only compulsory one is <code>GH_TOKEN</code>,
+a Github access token,
+which you will need to obtain from Github,
+and then encrypt using Travis.</p>
+<p>Note that <code>autodocs</code> does not generate any documentation itself -
+it is designed to <strong>publish</strong> documentation from a continuous integration server.
+It expects there to be a hook named <code>generatedocs</code> the <code>scripts</code> section of <code>package.json</code>.</p>
+<p>That’s all.
+Commit and push to your <code>master</code> branch,
+and you should get your documentation published to:</p>
+<p><code>http://GH_USER.github.io/GH_REPO/api/VERSION</code></p>
+<h2 id="documentation">Documentation</h2>
+<p>There are quite a few options that you can configure.</p>
+<p>For example, you can set it up such that:</p>
+<ul>
+<li>the URL it publishes to is differrent,</li>
+<li>it publishes to a different repository,</li>
+<li>it publishes when a different branch, e.g. <code>develop</code> is pushed instead</li>
+<li>it publishes when a release is cut - a tag is pushed</li>
+</ul>
+<p>For these, and more options, see <code>autodocs</code>‘ own documentation,
+which, you guessed it, is published by <code>autodocs</code> itself.</p>
+<p><a href="http://bguiz.github.io/autodocs/api/latest/"><code>autodocs</code> documentation</a></p>
+<h2 id="roadmap">Roadmap</h2>
+<p>At the moment, <code>autodocs</code> only supports on CI environment - Travis -
+and one publishing environment - Github Pages.
+Other CI environments and publishing environments can also be supported.</p>
+<p>These, and other issues, can be found at
+<a href="https://github.com/bguiz/autodocs/labels/roadmap"><code>autodocs</code> roadmap</a></p>
+<p>Contributions are most welcome!</p>
+<blockquote class="twitter-tweet" lang="en">
+  <p lang="en" dir="ltr">
+    autodocs - automatically publish docs for <a href="https://twitter.com/hashtag/nodejs?src=hash">#nodejs</a> modules on <a href="https://twitter.com/github">@github</a> pages from <a href="https://twitter.com/travisci">@travisci</a> <a href="https://t.co/aWIS8QWiCA">https://t.co/aWIS8QWiCA</a> <a href="http://t.co/kEaVHwvHPr">pic.twitter.com/kEaVHwvHPr</a></p>&mdash; Brendan Graetz (@bguiz) <a href="https://twitter.com/bguiz/status/594331457272709120">May 2, 2015</a>
+  </p>
+</blockquote>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Automatically publish documentation using Autodocs - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/05/02/autodocs-publish-documentation-automatically" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/opensource">opensource</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/nodejs">nodejs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/publish">publish</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/documentation">documentation</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-05-02-autodocs-publish-documentation-automatically.html.md" target="_blank">Edit this content</a></div><div><div title="Automatically publish documentation using Autodocs"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">AngularJs vs EmberJs - A Comparison - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="AngularJs vs EmberJs - A Comparison - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2014/11/08/angularjs-emberjs-compare/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2014/11/08/angularjs-emberjs-compare/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">AngularJs vs EmberJs - A Comparison</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2014/11/08</div><span class="markdown__markdown-render___9BIqe"><p>So you want to build a single page web application (SPA),
+and you want to pick a framework to do it with.
+There are plethora of them out there -
+<a href="http://todomvc.com/">TodoMVC</a> lists 15 “pure Javascript” implementations,
+and a total of over 60 MV* frameworks.
+How do you confidently pick from them all?</p>
+<p>Most would start by reading blog posts and various reviews online,
+but that only gets you so far,
+as the majority of them are written by someone who belongs to
+one camp or the other,
+and quite often roots very strongly for their chosen framework.
+It was quite hard to find any objective opinions.</p>
+<h2 id="the-book">The Book</h2>
+<p>Faced with this task myself,
+I began to collect opinions from both sides,
+and filter out the vitriol.
+More importantly, I tried out and built prototype applications with them.
+In light of time, I only did this for two frameworks:
+AngularJs and EmberJs.</p>
+<p>I have assembled what I have learned into a short book,
+which you can
+<a href="http://angularjs-emberjs-compare.bguiz.com/">read online</a>,
+or <a href="https://leanpub.com/angularjs-emberjs-compare/">read as an ebook</a>.</p>
+<p><img src="https://s3.amazonaws.com/titlepages.leanpub.com/angularjs-emberjs-compare/large?1415362544" alt="AngularJs vs EmberJs on Leanpub"></p>
+<h2 id="do-you-actually-need-a-spa-">Do you actually need a SPA?</h2>
+<p>The first thing you will need to do is decide whether you really need an MVC framework.
+This boils down to two questions:</p>
+<ul>
+<li>Do you want “single page”, or do you want “application”?</li>
+<li>Do you want a presentation layer, or do you want the full structure of models, views, and controllers?</li>
+</ul>
+<p>If what you are building can be more accurately described as an app
+than a website, then sure, a SPA framework such as AngularJs or EmberJs is apt.
+Otherwise, it is probably overkill.
+For example while you can use AngularJs/EmberJs to create a blog,
+you are probably better off with a simpler framework or library.</p>
+<p>If you wish for Javascript to mostly just do the presentation logic -
+views and templating -
+you are probably better off with a framework like Famo.us or ReactJs,
+as they focus on that exclusively.</p>
+<h2 id="which-spa-is-best-">Which SPA is best?</h2>
+<p>Looking online on this topic, most posts fit one of these two categories:</p>
+<ul>
+<li>Framework X is the best framework because it has these features</li>
+<li>Framework Y is the lousiest framework because it has these problems</li>
+</ul>
+<p>The latter type is even even less helpful when they focus on edge cases,
+which you are bound to run into in <em>any</em> framework.</p>
+<p>Reading these articles might give you some perspective on each framework,
+but what is lacking is detailed a side-by-side comparison of the parts of each framework.
+This is precisely what <a href="https://leanpub.com/angularjs-emberjs-compare/" title="AngularJs vs EmberJs - a comparison">my book</a> does.</p>
+<p>However, in this post, we will skip that,
+and get into the guts of how to make that decision right away.
+The implied premise of this is that there is <strong>no best framework</strong>,
+but there most certainly <em>is</em> a <strong>best framework for your particular app</strong>.</p>
+<p>Here are some questions you may want to mull over when picking a framework.</p>
+<h3 id="1-what-do-you-like-or-dislike-about-the-syntax-">1. What do you like or dislike about the syntax?</h3>
+<p>Most of the time, you will be writing code.
+Therefore <strong>syntax matters</strong> a lot.
+Examine the sample code for a router, a model, a view, a controller, and a component.
+Can you see yourself writing in this style,
+and do you have a preference for one style over the other?</p>
+<p>I feel that it is important to familiarise yourself with what the code looks like
+before picking a framework, not only because you will be writing it,
+but also because it gives you a glimpse into higher order functionality
+from the get go.</p>
+<p>For example, you might look at AngularJs’ router definition syntax and
+compare it to EmberJs’ router definition syntax;
+and infer that in AngularJs all routes are flat,
+whereas in EmberJs routes can be hierarchical.
+Some further research might indicate that hierarchical routes are indeed possible
+in AngularJs, but a 3rd party library, <code>ui-router</code> is necessary.</p>
+<p>Another example might be that you compare AngularJs’ component definition syntax,
+using directives with <code>restrict</code>, <code>transclude</code>, and isolate <code>scope</code>,
+to EmberJs’ component definition syntax using <code>Ember.Component</code>.</p>
+<p>For each of these examples,
+you can think about it in the context of the app that you plan to build.
+Perhaps you already know whether your app will need hierarchical routes.
+Perhaps you already know whether a standard component will do,
+or if you need a higher degree of flexibility when defining components.</p>
+<p>All these sorts of things can, and will cross your mind,
+simply by familiarising yourself with the syntax when writing
+code using each framework.</p>
+<h3 id="2-what-kind-of-learning-curve-do-you-want-">2. What kind of learning curve do you want?</h3>
+<ul>
+<li>If you prefer an easy learning curve up front, and do not mind a steep learning curve later on, then AngularJs</li>
+<li>If you prefer a steep learning curve up front, then EmberJs</li>
+</ul>
+<p>This, of course, does not apply to every one.
+If you have prior experience with Ruby on Rails,
+then the learning curve for EmberJs is likely to not be as steep up front.
+If you have prior experience with Java,
+then concepts such as dependency injection in AngularJs are going to be familiar.</p>
+<p>This is true, not just because of familiarity or similarity in code,
+but also because of the history and philosophy of the authors,
+and what they were inspired by when they created the frameworks.</p>
+<p>One other thing that you should do,
+is to check out the <strong>documentation</strong> for each of the projects.
+Survey them for their quality:
+How easy it is to find information about something,
+and how complete the documentation is.
+My opinion is that both of them have rather solid documentation -
+at least they do now -
+but many others have complained about their shortcomings,
+so make up your own mind when you take a look.</p>
+<h3 id="3-what-else-do-you-need-to-learn-or-use-to-become-proficient-">3. What else do you need to learn or use to become proficient?</h3>
+<p>In addition to the framework itself,
+you will also need to learn how to use other libraries or tools,
+in order to develop your app.
+You do not <strong>necessarily need to</strong> use any of these,
+as both frameworks can be used in their own right.
+However, in practice, when developing a serious app,
+this is what most developers use.
+It is, therefore, a good idea to know what these are ahead of time,
+before jumping into one or the other.</p>
+<p>With AngularJs, you will most likely need to learn:</p>
+<ul>
+<li><code>ui-router</code> (an alternative, more power router)</li>
+<li><code>gulp</code> or <code>grunt</code> (build tools)</li>
+</ul>
+<p>With EmberJs, you will most likely need to learn:</p>
+<ul>
+<li><code>ember-cli</code> (a command line utility used to scaffold and build EmberJs apps)</li>
+<li><code>broccoli</code> (a build tool)</li>
+<li><code>jQuery</code></li>
+<li><code>ember-data</code> (for models and persistence, distributed separately from the main EmberJs)</li>
+</ul>
+<p>It is evident that for EmberJs,
+there is much more to learn to use in addition to the framework itself.
+With <code>ember-cli</code> however, the flip side of learning one additional tool,
+is that it makes app development a lot more productive,
+by allowing you to scaffold part of the app quickly.
+Therefore there are pros and cons to weigh for each.</p>
+<h3 id="3-how-complex-is-your-app-">3. How complex is your app?</h3>
+<ul>
+<li>Creating simple apps is easier to do with AngularJs than it is to do with EmberJs.</li>
+<li>Conversely, creating complex apps is easier to do with EmberJs than it is to do with AngularJs.</li>
+</ul>
+<p>This stems from something that occurs under the hood in each framework,
+that you most likely will not encounter when beginning with either framework.</p>
+<p>Both frameworks are able to update their views
+when their models change, and update their models when their views change.
+This is two-way binding.
+However, both of them use different means to listen for changes on models.
+Until <code>Object.observe()</code> lands in the next version of ECMAScript,
+it is not possible to listen for changes on Javascript objects.</p>
+<p>Ember solves this by requiring all models to be wrapped in <code>Ember.Object</code>,
+and use accessors (<code>get</code> and <code>set</code>) to view and manipulate those properties,
+attaching the event listeners to the accessor methods.
+AngularJs allows you to use regular Javascript objects as models,
+but it keeps a copy of every model,
+and checks for differences at a regular interval (within its digest cycle)
+between the model, and the previous copy of it.</p>
+<p>EmberJs’ approach results in more verbose syntax when manipulating models,
+but performance does not take a hit as models become more numerous or complex.
+AngularJs’ approach has nicer syntax when manipulating models,
+but <strong>performance takes a hit</strong> as models become more numerous and complex.</p>
+<p>The problem with AngularJs described above is mitigable,
+however, it is not easy to do so correctly,
+as it requires some very in-depth understanding of how the internals of AngularJs work.
+Thus, when picking a framework, it would be pertinent to lay out the
+wire frames for each of the screens in the app,
+and estimate the size and complexity of the models required to be displayed on each screen.
+If your models exceed 2000 pieces of information
+(this is only rough number, from Misko Hevery),
+your choices are:</p>
+<ul>
+<li>Either choose EmberJs, or</li>
+<li>become familiar with advanced dirty-checking avoidance techniques in AngularJs.</li>
+</ul>
+<p>I have previously written in detail about
+<a href="http://blog.bguiz.com/post/57373805814/accessors-vs-dirty-checking-in-javascript-frameworks/">accessors vs dirty checking</a>.</p>
+<h3 id="4-do-you-agree-with-the-philosophy-of-the-framework-">4. Do you agree with the philosophy of the framework?</h3>
+<p>This is quite a fundamental question,
+and yet, largely a matter of personal preference.</p>
+<p>AngularJs is an extremely flexible, and unopinionated framework.
+Take, for example, that it provides six different ways to define a service on a module
+(one of which is confusingly named “Service”).
+This, and many other instances of an abundance of choice,
+means that there are <strong>many different ways to accomplish the same task</strong>,
+and thus developers tend to go about doing things in different ways.</p>
+<p>EmberJs, on the other hand, is a stark contrast to this,
+in that it is extremely opinionated.
+In most things, EmberJs explicitly defines <strong>the one correct way to do something</strong>,
+and everything else that you try simply will not work properly.
+A great example of this is the naming conventions imposed by the framework -
+if you name your controllers something other than what is expected,
+the controller is simply ignored!
+While this is a major stumbling block when first starting out with EmberJs,
+it also ensures that most developers stick to doing things in the one prescribed way.</p>
+<p>This boils down to the level of abstraction.
+Those who prefer AngularJs tend to be those who prefer a lower-level framework,
+as it affords them more flexibility, and is closer to the metal.
+Those who prefer EmberJs tend to be those who prefer a higher-level framework,
+as they prefer the consistency and ease of collaboration that comes with a lack of flexibility.</p>
+<h3 id="5-do-you-like-where-the-framework-is-heading-">5. Do you like where the framework is heading?</h3>
+<p>Both AngularJs and EmberJs are in their 1.x versions.
+Their authors have recently released their vision for their 2.0 versions.</p>
+<p>In summary, EmberJs looks like it is going to be quite stable in its transition
+from 1.x to 2.0, with very few breaking changes.
+AngularJs, on the other hand looks like it is going to be a complete rewrite,
+and the transition going from 1.x to 2.0 is going to be a painful one for most developers,
+with many breaking changes.</p>
+<h2 id="round-up">Round up</h2>
+<p>So which should you pick?
+Answer the questions above, and you will know which on you prefer.
+If you are still undecided, select one or two screens from your app,
+and develop them using both frameworks,
+keeping these questions in mind,
+and then decide!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=AngularJs vs EmberJs - A Comparison - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2014/11/08/angularjs-emberjs-compare" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/angularjs">angularjs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/emberjs">emberjs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2014-11-08-angularjs-emberjs-compare.html.md" target="_blank">Edit this content</a></div><div><div title="AngularJs vs EmberJs - A Comparison"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

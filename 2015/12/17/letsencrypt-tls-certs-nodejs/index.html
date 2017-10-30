@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Let&#x27;s Encrypt TLS certificates for NodeJs servers - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Let&#x27;s Encrypt TLS certificates for NodeJs servers - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/12/17/letsencrypt-tls-certs-nodejs/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/12/17/letsencrypt-tls-certs-nodejs/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Let&#x27;s Encrypt TLS certificates for NodeJs servers</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/12/17</div><span class="markdown__markdown-render___9BIqe"><p>Let’s Encrypt is the new certificate authority in town,
+enabling developers to generate their own TLS certificates -
+which are necessary for running servers over HTTPS -
+and it just went into public beta a week or so ago.</p>
+<p>By default it is all set up and ready to go for Apache servers.
+However, for other varieties of servers -
+NodeJs included -
+a little more leg work is involved.
+That’s what this post looks at.
+Parts of it are specific to NodeJs,
+with the remainder are applicable to any other platform.</p>
+<p>We’ll cover the following steps:</p>
+<ol>
+<li>Install Let’s Encrypt</li>
+<li>Initialise a NodeJs project</li>
+<li>Serving HTTP + HTTPS</li>
+<li>Authorisation challenge</li>
+<li>Respond to the authorisation challenge</li>
+<li>Update TLS certs shell script</li>
+<li>Set up npm run scripts</li>
+<li><code>cron</code> job to automate cert renewal</li>
+</ol>
+<h2 id="install-let-s-encrypt">Install Let’s Encrypt</h2>
+<p>First, ensure that Let’s Encrypt is installed,
+and is available on your <code>PATH</code>:</p>
+<pre class="hljs bash lang-bash">mkdir -p <span class="hljs-string">"<span class="hljs-variable">${HOME}</span>/code/"</span>
+git <span class="hljs-built_in">clone</span> https://github.com/letsencrypt/letsencrypt <span class="hljs-string">"<span class="hljs-variable">${HOME}</span>/code/letsencrypt"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'export PATH="${PATH}:${HOME}/code/letsencrypt"'</span> &gt;&gt; <span class="hljs-string">"<span class="hljs-variable">${HOME}</span>/.bashrc"</span></pre><h2 id="initialise-a-nodejs-project">Initialise a NodeJs project</h2>
+<p>Next create a new project folder (or use an existing one)
+for your NodeJs server:</p>
+<pre class="hljs bash lang-bash">mkdir -p <span class="hljs-string">"<span class="hljs-variable">${HOME}</span>/code/project"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-string">"<span class="hljs-variable">${HOME}</span>/code/project"</span>
+npm init
+<span class="hljs-comment"># create your NodeJs server as you normally would</span>
+touch ./update-tls-cerificates.sh
+chmod u+x update-tls-certificates.sh</pre><h2 id="serving-http-https">Serving HTTP + HTTPS</h2>
+<p>Feel free to use your own implementation.</p>
+<p>For the sake of completeness,
+here is a sample implementation in <code>koa</code>.
+(If you wish to serve over HTTPS only,
+just remove the HTTP parts)</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-comment">// index.js</span>
+<span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>);
+<span class="hljs-keyword">var</span> https = <span class="hljs-built_in">require</span>(<span class="hljs-string">'https'</span>);
+
+<span class="hljs-keyword">var</span> koa = <span class="hljs-built_in">require</span>(<span class="hljs-string">'koa'</span>);
+<span class="hljs-keyword">var</span> server = koa();
+
+<span class="hljs-comment">// add main routes</span>
+
+<span class="hljs-comment">// the following routes are for the authorisation challenges</span>
+<span class="hljs-comment">// ... we'll come back to this shortly</span>
+<span class="hljs-keyword">var</span> acmeRouter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./acme-router.js'</span>);
+server
+  .use(acmeRouter.routes())
+  .use(acmeRouter.allowedMethods());
+
+<span class="hljs-keyword">var</span> config = {
+  <span class="hljs-attr">domain</span>: <span class="hljs-string">'example.com'</span>,
+  <span class="hljs-attr">http</span>: {
+    <span class="hljs-attr">port</span>: <span class="hljs-number">8989</span>,
+  },
+  <span class="hljs-attr">https</span>: {
+    <span class="hljs-attr">port</span>: <span class="hljs-number">7979</span>,
+    <span class="hljs-attr">options</span>: {
+      <span class="hljs-attr">key</span>: fs.readFileSync(path.resolve(process.cwd(), <span class="hljs-string">'certs/privkey.pem'</span>), <span class="hljs-string">'utf8'</span>).toString(),
+      <span class="hljs-attr">cert</span>: fs.readFileSync(path.resolve(process.cwd(), <span class="hljs-string">'certs/fullchain.pem'</span>), <span class="hljs-string">'utf8'</span>).toString(),
+    },
+  },
+};
+
+<span class="hljs-keyword">let</span> serverCallback = server.callback();
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">var</span> httpServer = http.createServer(serverCallback);
+  httpServer
+    .listen(config.http.port, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+      <span class="hljs-keyword">if</span> (!!err) {
+        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'HTTP server FAIL: '</span>, err, (err &amp;&amp; err.stack));
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`HTTP  server OK: http://<span class="hljs-subst">${config.domain}</span>:<span class="hljs-subst">${config.http.port}</span>`</span>);
+      }
+    });
+}
+<span class="hljs-keyword">catch</span> (ex) {
+  <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'Failed to start HTTP server\n'</span>, ex, (ex &amp;&amp; ex.stack));
+}
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">var</span> httpsServer = https.createServer(config.https.options, serverCallback);
+  httpsServer
+    .listen(config.https.port, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+      <span class="hljs-keyword">if</span> (!!err) {
+        <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'HTTPS server FAIL: '</span>, err, (err &amp;&amp; err.stack));
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`HTTPS server OK: http://<span class="hljs-subst">${config.domain}</span>:<span class="hljs-subst">${config.https.port}</span>`</span>);
+      }
+    });
+}
+<span class="hljs-keyword">catch</span> (ex) {
+  <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'Failed to start HTTPS server\n'</span>, ex, (ex &amp;&amp; ex.stack));
+}
+
+<span class="hljs-built_in">module</span>.exports = server;</pre><h2 id="authorisation-challenge">Authorisation challenge</h2>
+<p>Let’s Encrypt provides several different authorisation mechanisms
+for certificate renewal.
+Essentially you have to prove that you own the current certificate
+in order to be allowed to renew it.
+If your server is NodeJs (or anything other than Apache),
+you have 3 options:</p>
+<ul>
+<li><code>manual</code> - not scriptable, you have to do it by hand each time</li>
+<li><code>standalone</code> - scriptable, but requires your server to be down for a certain amount of time</li>
+<li><code>webroot</code> - scriptable, and you can keep your server running</li>
+</ul>
+<p>We’re going to pick the latter option, <code>webroot</code>,
+because it is both scriptable,
+and allows for zero server downtime during cert generation.
+The <code>webroot</code> option requires a <code>webroot-path</code> directory to be specified.
+If it doesn’t exist, it will be created -
+but this is not a good idea,
+because the file permissions will be of the root user,
+creating problems later on.
+We’ll pre-empt this by creating the folder ourselves.
+We also create an empty file in there
+so that a version control system like <code>git</code> keeps the folder when cloning it.</p>
+<pre class="hljs bash lang-bash">mkdir -p certs/webroot/.well-known/acme-challenge/
+touch certs/webroot/.well-known/acme-challenge/.gitkeep</pre><h2 id="respond-to-the-authorisation-challenge">Respond to the authorisation challenge</h2>
+<p>The <code>letsencrypt</code> command line client will use your current certificates
+and generate a temporary authorisation token,
+and place it in the <code>webroot-path</code> that we just created above.
+The Let’s Encrypt Certificate Authority server will then
+make a HTTP request to your server at this path:
+<code>/.well-known/acme-challenge/$SOME_CHALLENGE_HASH</code></p>
+<p>(substituting <code>$SOME_CHALLENGE_HASH</code> with an actual hash of course.)</p>
+<p>Thus we need to add a new route to serve up static files from this folder
+when such a path is requested.
+This is a fairly common thing for web servers to do,
+so, again, feel free to use your own implementation.
+For the sake of completeness however,
+here’s one implementation using <code>koa</code>.</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-comment">// acme-router.js</span>
+<span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">let</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">let</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+
+<span class="hljs-keyword">let</span> koaRouter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'koa-router'</span>);
+
+<span class="hljs-keyword">let</span> router = koaRouter({});
+
+<span class="hljs-comment">// point to the middleware we wish to serve</span>
+router
+  .get(
+    <span class="hljs-string">'getWellKnownAcmeChallenge'</span>,
+    <span class="hljs-string">'/.well-known/acme-challenge/:challengeHash'</span>,
+    getWellKnownAcmeChallengeRoute);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> *<span class="hljs-title">getWellKnownAcmeChallengeRoute</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">let</span> key = <span class="hljs-keyword">this</span>.params.challengeHash;
+    <span class="hljs-keyword">let</span> val = <span class="hljs-keyword">yield</span> getAcmeChallengeData(key);
+    <span class="hljs-keyword">this</span>.response.type = <span class="hljs-string">'text/plain'</span>;
+    <span class="hljs-keyword">this</span>.response.body = <span class="hljs-string">`<span class="hljs-subst">${val}</span>`</span>;
+    <span class="hljs-keyword">this</span>.response.status = <span class="hljs-number">200</span>;
+  }
+  <span class="hljs-keyword">catch</span> (ex) {
+    <span class="hljs-built_in">console</span>.error(<span class="hljs-string">`Error: <span class="hljs-subst">${ex}</span>`</span>);
+    <span class="hljs-built_in">console</span>.error(ex.stack);
+    <span class="hljs-keyword">this</span>.response.body = {
+      <span class="hljs-attr">error</span>: <span class="hljs-string">'Failed to obtain challenge hash'</span>,
+    };
+    <span class="hljs-keyword">this</span>.response.status = <span class="hljs-number">500</span>;
+  }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getAcmeChallengeData</span>(<span class="hljs-params">key</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+    <span class="hljs-keyword">let</span> challengeFilePath = path.resolve(process.cwd(), <span class="hljs-string">`certs/webroot/.well-known/acme-challenge/<span class="hljs-subst">${key}</span>`</span>);
+    fs.readFile(challengeFilePath, <span class="hljs-string">'utf8'</span>, (err, data) =&gt; {
+      <span class="hljs-keyword">if</span> (!!err || !data) {
+        <span class="hljs-keyword">return</span> reject(<span class="hljs-string">`No challenge for key <span class="hljs-subst">${key}</span>`</span>);
+      }
+      val = data.toString();
+      <span class="hljs-keyword">return</span> resolve(val);
+    });
+  });
+}
+
+<span class="hljs-built_in">module</span>.exports = router;</pre><h2 id="update-tls-certs-shell-script">Update TLS certs shell script</h2>
+<p>We are now set up for renewing certificates,
+and next we shall automate that,
+so that you can fire-and-forget -
+and focus on something other than busywork!</p>
+<p>We start by creating a shell script
+that takes in two parameters,
+first the domain,
+and second the email address that should
+be associated with the certificates for this domain.</p>
+<p>First, it calls <code>letsencrypt-auto</code> to generate a new certificate,
+or renew an existing one,
+using the <code>webroot</code> authorisation method that we have prepared previously.</p>
+<p>Second, it takes the generated keys and copies them into the <code>certs</code> folder,</p>
+<p>Third, and finally, it executes the <code>refreshcerts</code> run script
+in your NodeJs module for your server.</p>
+<pre class="hljs bash lang-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># update-tls-cerificates.sh</span>
+<span class="hljs-comment"># bguiz @ 20151215</span>
+<span class="hljs-comment"># Thanks: https://community.letsencrypt.org/t/node-js-configuration/5175/4</span>
+
+DOMAIN=<span class="hljs-variable">${1}</span>
+EMAIL=<span class="hljs-variable">${2}</span>
+SERVERDIR=<span class="hljs-string">"<span class="hljs-variable">$( cd "$( dirname "${BASH_SOURCE[0]}" )</span>"</span> &amp;&amp; <span class="hljs-built_in">pwd</span> )<span class="hljs-string">"
+USERNAME="</span>$( id -u -n )<span class="hljs-string">"
+GROUPNAME="</span>$( id -g -n )<span class="hljs-string">"
+
+if [ -z "</span><span class="hljs-variable">${DOMAIN}</span><span class="hljs-string">" ]; then
+    echo "</span>DOMAIN must be specified<span class="hljs-string">"
+    exit 1
+fi
+if [ -z "</span><span class="hljs-variable">${EMAIL}</span><span class="hljs-string">" ]; then
+    echo "</span>EMAIL must be specified<span class="hljs-string">"
+    exit 1
+fi
+
+# generate keys
+cd <span class="hljs-variable">${SERVERDIR}</span>
+sudo chown -hR "</span><span class="hljs-variable">${USERNAME}</span>:<span class="hljs-variable">${GROUPNAME}</span><span class="hljs-string">" certs
+letsencrypt-auto certonly \
+  --webroot \
+  --webroot-path "</span><span class="hljs-variable">${SERVERDIR}</span>/certs/webroot/<span class="hljs-string">" \
+  --domain "</span><span class="hljs-variable">${DOMAIN}</span><span class="hljs-string">" \
+  --email "</span><span class="hljs-variable">${EMAIL}</span><span class="hljs-string">" \
+  --server "</span>https://acme-v01.api.letsencrypt.org/directory<span class="hljs-string">" \
+  --renew-by-default \
+  --agree-tos
+
+# copy keys
+cd <span class="hljs-variable">${SERVERDIR}</span>
+rm -f certs/{cert,chain,fullchain,privkey}.pem
+sudo cp /etc/letsencrypt/live/<span class="hljs-variable">${DOMAIN}</span>/{cert,chain,fullchain,privkey}.pem certs/
+sudo chown -hR "</span><span class="hljs-variable">${USERNAME}</span>:<span class="hljs-variable">${GROUPNAME}</span><span class="hljs-string">" certs
+
+# restart server (so that new keys are used)
+cd <span class="hljs-variable">${SERVERDIR}</span>
+npm run refreshcerts</span></pre><h2 id="set-up-npm-run-scripts">Set up npm run scripts</h2>
+<p>In your <code>package.json</code> file for your NodeJs server,
+we need to put in a <code>refreshcerts</code> script.</p>
+<pre class="hljs json lang-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"refreshcerts"</span>: <span class="hljs-string">"# do something here that tells server to use the new certificates"</span>
+  }
+}</pre><h2 id="-cron-job-to-automate-cert-renewal"><code>cron</code> job to automate cert renewal</h2>
+<p>The final piece of the puzzle is to set up a <code>cron</code> job
+to invoke the shell script that renews your certificates,
+and tells your server to refresh them.
+Let’s Encrypt’s certificates expire every 90 days,
+and therefore you should renew them at least as often as that.
+They recommend doing so once per month.</p>
+<pre class="hljs bash lang-bash">sudo crontab -e</pre><p>In the text editor, add the following line:</p>
+<pre class="hljs undefined lang-undefined"><span class="hljs-number">0</span> <span class="hljs-number">0</span> <span class="hljs-number">15</span> * * <span class="hljs-regexp">/home/u</span>ser/code/project/update-tls-certificates.sh <span class="hljs-string">"example.com"</span> <span class="hljs-string">"admin@example.com"</span></pre><p>This will run our update script on the 15th of every month -
+change it to match what you want.</p>
+<h2 id="fin">Fin</h2>
+<p>That’s all there is to to it!</p>
+<p>If you want to take this further,
+you can consider adding additional things to this routine,
+such as emailing yourself whenever a certificate is renewed
+(successfully or unsuccessfully).</p>
+<p>Many thanks Jonne Haß from the Let’s Encrypt community forums
+for patiently helping me to troubleshoot the problems I encountered along the way.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Let&#x27;s Encrypt TLS certificates for NodeJs servers - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/12/17/letsencrypt-tls-certs-nodejs" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/nodejs">nodejs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/tls">tls</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-12-17-letsencrypt-tls-certs-nodejs.html.md" target="_blank">Edit this content</a></div><div><div title="Let&#x27;s Encrypt TLS certificates for NodeJs servers"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

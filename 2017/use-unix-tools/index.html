@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Use UNIX tools - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Use UNIX tools - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/use-unix-tools/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/por-que-no-los-dos-page000009.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/use-unix-tools/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Use UNIX tools</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/01/27</div><img src="/images/posts/por-que-no-los-dos-page000009.png" alt="Use UNIX tools" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><p>It has been a while since my last post…
+So I thought I might combat the inertia with a fun project:</p>
+<p>Presenting:
+<a href="https://github.com/bguiz/video2flipbook">video2flipbook</a></p>
+<p>What it does:
+Downloads a video, splits it up into frames, and assembles those frames back into printable pages -
+which you can then print, cut, and finally glue -
+and <em>voila</em> a flip book of your favourite video!</p>
+<p>Best of all, it does all of that using just one
+<a href="https://github.com/bguiz/video2flipbook/blob/develop/video2flipbook.sh">simple shell script</a>.</p>
+<h2 id="not-my-idea">Not my idea</h2>
+<p>I cannot lay claim to the ingenuity behind this idea:
+<a href="https://www.reddit.com/r/videos/comments/5pvu1m/i_wrote_a_program_to_turn_an_animated_gif_into_a">This one</a>
+comes right out of the hive mind of Reddit.</p>
+<p>I quickly found that the author of that post had his
+<a href="https://github.com/stupotmcdoodlepip/Print-A-Gif">code on github</a>,
+which I promptly checked out,
+and I discovered that he had the binary executable of
+<a href="https://github.com/stupotmcdoodlepip/Print-A-Gif/blob/master/Print-A-Gif/Print-A-Gif/bin/Release/magick.exe">ImageMagick</a>
+included within his project.</p>
+<h2 id="reinventing-the-wheel-">Reinventing the wheel?</h2>
+<p><img src="https://c1.staticflickr.com/7/6011/5964727769_0a003f9edc_b.jpg" alt="Reinventing the wheel"></p>
+<p>Why rewrite something that already exists?
+If there are tools out there that already get the job done reasonably well,
+then just use them.
+If one strings a bunch of them different tools together,
+one can create novel ideas with very little effort.</p>
+<p>In fact, this is articulated in the
+<a href="https://ia802701.us.archive.org/12/items/bstj57-6-1899/bstj57-6-1899_text.pdf">UNIX philosophy</a></p>
+<blockquote>
+<p>(i) Make each program do one thing well. To do a new job,
+build afresh rather than complicate old programs by adding new “features.”</p>
+<p>(ii) Expect the output of every program to become the input to
+another, as yet unknown, program. Don’t clutter output
+with extraneous information. Avoid stringently columnar or
+binary input formats. Don’t insist on interactive input.</p>
+<p>(iii) Design and build software, even operating systems, to be
+tried early, ideally within weeks. Don’t hesitate to throw
+away the clumsy parts and rebuild them.</p>
+<p>(iv) Use tools in preference to unskilled help to lighten a
+programming task, even if you have to detour to build the
+tools and expect to throw some of them out after you’ve
+finished using them.</p>
+</blockquote>
+<p>(Douglas McIlroy, Bell Labs, 1978)</p>
+<h2 id="prescription">Prescription</h2>
+<p>Write small independent programs,
+designed such that each of them can receive input from the others’ output.</p>
+<p>If there already is a small independent program which
+does this already, then better yet,
+the task at hand becomes much simpler:
+Take the outputs of each of these programs and feed them as inputs into the next one.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Use UNIX tools - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/use-unix-tools" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/bash">bash</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/unix">unix</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-01-use-unix-tools.md" target="_blank">Edit this content</a></div><div><div title="Use UNIX tools"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

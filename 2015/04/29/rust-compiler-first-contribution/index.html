@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">First contribution to Rust Compiler - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="First contribution to Rust Compiler - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2015/04/29/rust-compiler-first-contribution/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2015/04/29/rust-compiler-first-contribution/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">First contribution to Rust Compiler</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2015/04/30</div><span class="markdown__markdown-render___9BIqe"><p>I made my first contribution to the Rust compiler yesterday evening!</p>
+<p><img src="/images/posts/rust-logo.svg" alt="Rust logo"></p>
+<p>The learning curve was quite steep,
+so I started with something relatively simple -
+adding a detailed error message for one of the errors thrown by the compiler.</p>
+<p>If only for my own future reference,
+I detail the entire process below:
+Compiling –&gt; Verification –&gt; Submission –&gt; Acceptance –&gt; CI</p>
+<h2 id="compiling">Compiling</h2>
+<p>Compiling <code>rustc</code> for the first time:</p>
+<pre class="hljs bash lang-bash">git <span class="hljs-built_in">clone</span> https://github.com/rust-lang/rust.git
+<span class="hljs-built_in">cd</span> rust/
+./configure
+make -j 4
+sudo make install</pre><p>Now edit some source code to add the new feature or fix the bug.</p>
+<h3 id="re-compiling">Re-compiling</h3>
+<p>After making some changes:</p>
+<pre class="hljs bash lang-bash">make -j 4 rustc-stage1
+<span class="hljs-built_in">export</span> PATH=$( <span class="hljs-built_in">pwd</span> )/<span class="hljs-variable">${PLATFORM}</span>/stage1/bin:<span class="hljs-variable">$PATH</span>
+<span class="hljs-built_in">export</span> LD_LIBRARY_PATH=$( <span class="hljs-built_in">pwd</span> )/<span class="hljs-variable">${PLATFORM}</span>/stage1/lib
+<span class="hljs-built_in">which</span> rustc
+rustc --version</pre><p>(The value of <code>${PLATFORM}</code> should be obtained from the build output, e.g.
+<code>x86_64-linux-gnu</code> or <code>x86_64-apple-darwin</code>)</p>
+<p>Instead of compiling the entire project all over again,
+which will take extremely long,
+simply compiling one of the compile targets (<code>rustc-stage1</code>),
+and adding the relevant output files to the executable and library paths
+is a much quicker alternative.</p>
+<h2 id="verifying-the-fix">Verifying the fix</h2>
+<p>In my case, the change was to add the detailed explanation message for
+a particular error message.
+To test this, run the <code>--explain</code> command:</p>
+<pre class="hljs bash lang-bash">rustc --explain E0265</pre><p>Which should output the following;</p>
+<pre>
+  This error indicates that a constant references itself.
+  All constants need to resolve to a value in an acyclic manner.
+
+  For example, neither of the following can be sensibly compiled:
+
+  ```
+  const X: u32 = X;
+  ```
+
+  ```
+  const X: u32 = Y;
+  const Y: u32 = X;
+  ```
+</pre>
+
+<h2 id="submitting-the-patch">Submitting the patch</h2>
+<p>Once the patch is OK,
+fork the repository on github,
+commit and push to your fork on a new branch,
+and then submit a pull request for your patch.</p>
+<p><a href="https://github.com/rust-lang/rust#fork-destination-box">Fork the repository on github</a></p>
+<p>Switch the remotes such that the <code>upstream</code> points to the <code>rust-lang</code> organisation’s repository,
+and the <code>origin</code> points to the your forked copy of the repository.</p>
+<pre class="hljs bash lang-bash">git remote add upstream git@github.com:rust-lang/rust.git
+git remote remove origin
+git remote add origin git@github.com:<span class="hljs-variable">${GH_USER}</span>/rust.git</pre><p>Commit and push:</p>
+<pre class="hljs bash lang-bash">git checkout -b <span class="hljs-variable">${SOME_BRANCH_NAME}</span>
+git add src/
+git commit
+<span class="hljs-comment"># Enter a commit message</span>
+git push origin <span class="hljs-variable">${SOME_BRANCH_NAME}</span></pre><p><a href="https://github.com/rust-lang/rust">Visit the main repository on github again</a>,
+and click on the link for “compare and create pull request”.</p>
+<p>This results in a pull request:
+<a href="https://github.com/rust-lang/rust/pull/24894">github.com/rust-lang/rust/pull/24894</a></p>
+<h2 id="patch-acceptance-and-continuous-integration">Patch acceptance and Continuous Integration</h2>
+<p>Someone from the core team or reviewers team for Rust
+will get assigned to review the pull request,
+and if it passes their review, they will add a comment like this:</p>
+<blockquote>
+<p>@bors: r+ <code>${COMMIT_HASH}</code></p>
+</blockquote>
+<p>This triggers the Bors Github bot,
+and the patch is added to the Homu build queue.
+Visit the build queue, and find your patch on the list:</p>
+<p><a href="http://buildbot.rust-lang.org/homu/queue/rust">buildbot.rust-lang.org/homu/queue/rust</a></p>
+<p>Note that you will find that the project contains a
+<a href="https://github.com/rust-lang/rust/blob/master/.travis.yml"><code>.travis.yml</code> file</a>.
+This led me to believe, initially,
+that Rust uses Travis as its continuous integration system.
+However, it only uses Travis for <code>make tidy</code>,
+which is essentially a linting task.
+I assume that this is because compiling rust takes a lot longer than
+the maximum of forty minutes per build allowed by Travis.
+The actual CI infrastructure for Rust consists of a couple of Github bots</p>
+<ul>
+<li><a href="https://github.com/rust-highfive">rust-highfive</a>
+and <a href="https://github.com/bors">bors</a> -
+and their own CI server - <a href="https://github.com/barosl/homu">Homu</a>.</li>
+</ul>
+<h2 id="experience">Experience</h2>
+<p>As mentioned earlier, it was an extremely steep learning curve.</p>
+<p>It takes <strong>extremely long</strong> to compile the project from scratch.
+Even just the <code>rustc-stage1</code> target, takes ages.
+This is quite a big inhibitor for further contributions,
+as one would have to have access to an extremely powerful build machine
+in order to attain a reasonable amount of productivity developing Rust itself.
+If possible, I would like this to change.
+Perhaps break the project up into several smaller ones,
+and make it possible just to recompile the ones that changed.</p>
+<p>This problem spills over to the build queue as well.
+It took just under two days for my patch to get compiled and tested
+by the continuous integration system,
+and get merged in.</p>
+<p>Luckily I had a couple of experienced guys to guide me -
+thanks to <a href="https://github.com/michaelsproul">Michael</a>
+and <a href="https://github.com/huonw">Huon</a>
+for walking me through the innards of <code>librustc</code> and <code>libsyntax</code>!</p>
+<h2 id="now-your-turn-">Now your turn!</h2>
+<p>If you are interested to get your contributions on,
+<a href="https://github.com/rust-lang/rust/issues/24407">this issue</a>
+is a good place to start.</p>
+<p>At first I attempted to fix
+<a href="https://github.com/rust-lang/rust/issues/24889">this one</a>,
+however, it was beyond my current Rust skills,
+so I have had to let that be.
+Double points to anyone who tackles that!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=First contribution to Rust Compiler - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2015/04/29/rust-compiler-first-contribution" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/rust">rust</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/opensource">opensource</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2015-04-29-rust-compiler-first-contribution.html.md" target="_blank">Edit this content</a></div><div><div title="First contribution to Rust Compiler"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

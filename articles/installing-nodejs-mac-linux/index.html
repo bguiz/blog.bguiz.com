@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Installing NodeJs on Mac and Linux - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Installing NodeJs on Mac and Linux - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/articles/installing-nodejs-mac-linux/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/articles/installing-nodejs-mac-linux/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-article" class="page page-article"><noscript></noscript><h1 id="page-title" class="article-page__page-title___1GRM3">Installing NodeJs on Mac and Linux</h1><div id="page-body" class="page-body"><div class="article-page__article-date___otwe1"></div><span class="markdown__markdown-render___9BIqe"><p>So you have tried the
+<a href="https://github.com/joyent/node/wiki/Installation">official install instructions</a>
+for installing NodeJs, but you are running into problems with the installation.</p>
+<h2 id="installation-problems">Installation Problems</h2>
+<p>For the Windows platform, NodeJs allows you to choose the directory in which to install the platform, so you will not face any issues.</p>
+<p>For Linux and Mac, there is an issue,
+because the installer defaults to <code>/usr/local</code> or <code>/usr/lib</code>,
+which are directories that require <code>sudo</code> access to write files to.</p>
+<p>Thus, whenever you do a global installation of a node module,
+it attempts to install it in a subdirectory which requires <code>sudo</code> access.</p>
+<h3 id="-eaccess-"><code>EACCESS</code></h3>
+<p>When the NodeJs platform is installation in a directory that requires <code>sudo access</code>,
+any global installs will result in a bunch of errors of type <code>EACCESS</code>,
+which you will see output to your terminal.</p>
+<p>A rookie mistake, upon seeing these, would be to ignore them,
+and simply repeat your previous global installation command,
+this time with the <code>sudo</code> command in front of it.
+After all, after the error messages,
+this is precisely what the suggested fix is.</p>
+<p>This will appear to work at first, as the installation will succeed.
+However, it sets you up for inevitable failure down the road,
+as sooner or later the need to use <code>sudo</code> will <strong>spread</strong> -
+to pretty much <strong>all</strong> NodeJs related activities,
+and you might find that unless you start your IDE using <code>sudo</code>,
+your projects cannot build.
+Now you are in over your head!</p>
+<h2 id="solutions">Solutions</h2>
+<h3 id="compile-from-source">Compile from source</h3>
+<p>If you are the sort who is unfazed when dealing with C compilers,
+and are a command line whiz, then this is <em>the</em> option for you.
+Chances are, however, if you fall into this category,
+you would have defaulted to this route anyway -
+instead of getting stuck and reading this article!</p>
+<h3 id="homewbrew">homewbrew</h3>
+<p>If you are on Mac, and you already have <a href="http://brew.sh/">homebrew</a> installed,
+then you can simply do:</p>
+<pre class="hljs bash lang-bash">brew install node</pre><p>… to install the latest version of NodeJs.</p>
+<h3 id="nvm">NVM</h3>
+<p>For everyone else, there is Node Version Manager.</p>
+<p>In a nutshell, what NVM does is to install the NodeJs platform
+in a subdirectory of your user home directory,
+by compiling from source -
+taking care of all the required steps.
+It then sets up symbolic links and
+various environment variables to ensure that it can run.
+It also allows you to install multiple versions of NodeJs side by side,
+and switch between them rather effortlessly.</p>
+<p>The main thing that we care about in all of this, however,
+is simply the fact that NVM is the easiest way to install the NodeJs platform
+in a directory that does not require <code>sudo</code> access.</p>
+<h2 id="installing-nvm">Installing NVM</h2>
+<p>Project page: <a href="https://github.com/creationix/nvm">https://github.com/creationix/nvm</a></p>
+<ul>
+<li>Open a terminal.</li>
+<li>Mac only:<ul>
+<li>Enter the following command: <code>touch ~/.profile</code></li>
+<li>This creates an empty file in your home directory if it is not already present,
+and is a prerequisite to installing NVM</li>
+</ul>
+</li>
+<li>Linux only:<ul>
+<li>If you are using Linux, this not required,
+because a <code>~/.bashrc</code> file is used instead,
+and would already exist by default.</li>
+<li>If, however, you are using a different shell than <code>bash</code>,
+such as <code>zsh</code> or <code>ksh</code>,
+ensure that the appropriate terminal start script contains
+<code>source ~/.nvm/nvm.sh</code>.</li>
+</ul>
+</li>
+<li>Follow the “Install Script”
+<a href="https://github.com/creationix/nvm#install-script">instructions</a></li>
+<li>Now close the terminal, and open a new one<ul>
+<li>This is done to ensure that the environment variables
+are set up correctly in the new shell</li>
+</ul>
+</li>
+</ul>
+<h3 id="installing-a-default-nodejs">Installing a default NodeJs</h3>
+<ul>
+<li>In the terminal, enter the following commands:<ul>
+<li><code>nvm install 0.10</code></li>
+<li><code>nvm alias default 0.10</code></li>
+<li><code>nvm use default</code></li>
+</ul>
+</li>
+<li>You may choose any version you like:
+Instead of <code>0.10</code>, you could choose <code>0.11</code> or <code>0.12</code>, or any specific patch number!</li>
+<li>now close the terminal, and reopen it.</li>
+<li>if you enter: <code>node -v</code><ul>
+<li>you should see something similar to: <code>v0.10.29</code></li>
+<li>if you see something else like: <code>node: command not found</code><ul>
+<li>something has gone wrong with your nvm installation,
+go back and check you step</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>That’s all!</p>
+<h3 id="look-ma-no-sudo-">Look ma, no <code>sudo</code>!</h3>
+<p>Now whenever you do a global installation,
+you need not use <code>sudo</code>,
+because NodeJs is installed in a subdirectory of your home directory,
+which doesn’t require <code>sudo</code> access to write files.</p>
+<pre class="hljs bash lang-bash">npm install --global npm</pre><p>This should install <code>npm</code> in the global <code>node_modules</code> directory,
+without a hitch.</p>
+<h4 id="caveat">Caveat</h4>
+<p>If you have previously installed NodeJs using another method,
+and have used <code>sudo npm ...</code> commands before,
+you might still run into problems,
+where global installations without <code>sudo</code> continue to fail.</p>
+<p>The first action you should take, to overcome this, is to find where
+the previous installation was located and delete it.</p>
+<p>The second action you should take, is to find a directory in your home directory,
+named <code>.npm</code>, and ensure that the <code>root</code> user does not own any of those files.
+The following command should help you with that.</p>
+<pre class="hljs bash lang-bash">sudo chown -R $( whomami ) ~/.npm</pre><h2 id="conclusion">Conclusion</h2>
+<p>If you are using Linux or Mac,
+install NodeJs using NVM to save yourself from a lot of headaches!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Installing NodeJs on Mac and Linux - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/articles/installing-nodejs-mac-linux" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/nodejs">nodejs</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/mac">mac</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/linux">linux</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/sudo">sudo</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/articles/installing-nodejs-mac-linux.html.md" target="_blank">Edit this content</a></div><div><div title="Installing NodeJs on Mac and Linux"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

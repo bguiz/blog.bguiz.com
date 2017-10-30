@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Deploying python iView on Windows - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Deploying python iView on Windows - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2010/04/01/deploying-python-iview-on-windows/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2010/04/01/deploying-python-iview-on-windows/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Deploying python iView on Windows</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2010/04/01</div><span class="markdown__markdown-render___9BIqe"><p>I have recently been getting rather annoyed with the streaming problems with ABC&#8217;s iView. It started with intermittent cut outs, and then soon degraded to really bad lags and even audio and video getting out of sync, and playing at half or quarter speed. In a nutshell, it became unwatchable. I complained to the support of my ISP, <a href="http://iinet.net.au">iiNet</a>, however they did not help &#8211; and maybe it isn&#8217;t entirely their fault either. Since streaming was broken, I thought why not buffer the entire program at a time instead, at least until iiNet and ABC fix their servers.</p>
+<p>At first I used Yanksy&#8217;s <a href="http://bit.ly/9ZGRhd">iViewFox</a>. However it ran incredibly slowly. So I decided to get Jeremy Visser&#8217;s <a href="http://bit.ly/9EohCw">python iView</a> instead. The problem with that is that while python is theoretically cross platform, it is extremely hard to get working on a non-Linux, non-Mac box, and especially so when the application in question has multiple 3rd party dependencies. Judging from the <a href="http://bit.ly/9EohCw">comments on Jeremy&#8217;s blog</a>, I think no one has managed to get it working on Windows yet, so I am posting a how-to for the benefit of those whose primary machine is a Windows box. Note that this requires your to install nine pieces of software in total to get working, and you need to edit environment variables, etc, so it can take a while.</p>
+<p>Full instructions after the jump. Enjoy.</p>
+<hr />
+<p>&nbsp;</p>
+<p>Download and install the following software. The order in which they are installed is somewhat important as some are dependencies of the others.<br />
+For each I have provided a link to both the developer&#8217;s page, plus a direct one to the distribution file. I have specified version numbers because not all versions play nice with each other &#8211; for example if your version of python is different, you will need to get different distributions of the python libraries.<br />
+Some software does not come with an executable installer and will actually involve manual installation that includes building the software. To do this, you will have to open up a command prompt, change directories to the location where the files are downloaded or uncompressed to, and enter the command lines detailed.<br />
+Note that special care has been taken to avoid folder or file names containing spaces &#8211; I use a <code>programs</code> folder instead of using the default <code>Program Files</code>.</p>
+<ol>
+<li>- Python<br />
+<a href="http://www.python.org/download/releases/2.6.4/">http://www.python.org/download/releases/2.6.4/</a><br />
+2.6.4: <a href="http://www.python.org/ftp/python/2.6.4/python-2.6.4.msi">http://www.python.org/ftp/python/2.6.4/python-2.6.4.msi</a><br />
+Path should be automatically set, check it anyway</li>
+<li>- Bazaar<br />
+<a href="http://wiki.bazaar.canonical.com/WindowsDownloads">http://wiki.bazaar.canonical.com/WindowsDownloads</a><br />
+2.1.0-2 <a href="http://launchpad.net/bzr/2.1/2.1.0/+download/bzr-2.1.0-2-setup.exe">http://launchpad.net/bzr/2.1/2.1.0/+download/bzr-2.1.0-2-setup.exe</a><br />
+Add bazaar to path<br />
+Path should be automatically set, check anyway</li>
+<li>- PyGTK group<br />
+<a href="http://www.pygtk.org/downloads.html">http://www.pygtk.org/downloads.html</a></p>
+<ul>
+<li>&#8211; PyCairo<br />
+<a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pycairo/1.8/1.8.6">http://ftp.gnome.org/pub/GNOME/binaries/win32/pycairo/1.8/1.8.6</a><br />
+1.8.6 <a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pycairo/1.8/pycairo-1.8.6.win32-py2.6.exe">http://ftp.gnome.org/pub/GNOME/binaries/win32/pycairo/1.8/pycairo-1.8.6.win32-py2.6.exe</a></li>
+<li>&#8211;PyGObject<br />
+<a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pygobject/2.20/2.20.0">http://ftp.gnome.org/pub/GNOME/binaries/win32/pygobject/2.20/2.20.0</a><br />
+2.20.0 <a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pygobject/2.20/pygobject-2.20.0.win32-py2.6.exe">http://ftp.gnome.org/pub/GNOME/binaries/win32/pygobject/2.20/pygobject-2.20.0.win32-py2.6.exe</a></li>
+<li>&#8211;PyGTK<br />
+<a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.16/">http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.16/</a><br />
+2.16.0 <a href="http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.16/pygtk-2.16.0+glade.win32-py2.6.exe">http://ftp.gnome.org/pub/GNOME/binaries/win32/pygtk/2.16/pygtk-2.16.0+glade.win32-py2.6.exe</a></li>
+</ul>
+</li>
+<li>-GTK+<br />
+<a href="http://www.gtk.org/download-windows.html#StableRelease">http://www.gtk.org/download-windows.html#StableRelease</a><br />
+2.18 <a href="http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/2.18/gtk+-bundle_2.18.7-20100213_win32.zip">http://ftp.gnome.org/pub/gnome/binaries/win32/gtk+/2.18/gtk+-bundle_2.18.7-20100213_win32.zip</a><br />
+Simply extract folder to disk<br />
+Path must be manually set</li>
+<li>-RTMP dump<br />
+<a href="http://rtmpdump.mplayerhq.hu/download/">http://rtmpdump.mplayerhq.hu/download/</a><br />
+2.1d <a href="http://rtmpdump.mplayerhq.hu/download/rtmpdump-2.1d-windows.zip">http://rtmpdump.mplayerhq.hu/download/rtmpdump-2.1d-windows.zip</a><br />
+Simply extract the folder to disk<br />
+Path must be manually set</li>
+<li>-Beautiful Soup<br />
+<a href="http://www.crummy.com/software/BeautifulSoup/3.0.8">http://www.crummy.com/software/BeautifulSoup/3.0.8</a><br />
+3.0.8 <a href="http://www.crummy.com/software/BeautifulSoup/download/3.x/BeautifulSoup-3.0.8.tar.gz">http://www.crummy.com/software/BeautifulSoup/download/3.x/BeautifulSoup-3.0.8.tar.gz</a></p>
+<pre class="brush: powershell; title: ; notranslate" title="">
+python setup.py bdist
+dist/BeautifulSoup-3.0.8.win32.exe
+</pre>
+</li>
+<li>-Python iView<br />
+<a href="http://jeremy.visser.name/2009/08/30/python-iview/">http://jeremy.visser.name/2009/08/30/python-iview/</a><br />
+revision 341</p>
+<pre class="brush: powershell; title: ; notranslate" title="">
+cd C:\Programs
+bzr branch <a href="http://jeremy.visser.name/bzr/python-iview/python-iview">http://jeremy.visser.name/bzr/python-iview/python-iview</a>
+notepad setup.py
+REM edit to remove the slashes that precede <code>usr</code> (2X)
+python setup.py bdist
+dist/iview-0.2.win32.exe
+</pre>
+</li>
+<li>Edit the environment variable, <code>path</code> to add or update these values:
+<pre class="brush: powershell; title: ; notranslate" title="">
+C:\Programs\python264;
+C:\Programs\Bazaar;
+C:\Programs\gtk\bin;
+C:\Programs\rtmpdump-2.1d
+</pre>
+<p>These values must be added to the <code>path</code>. If they are already there, or a point to previous version, just make sure you update them to point to the new one &#8211; pointing to both is problematic. If you installed in a  different location, change accordingly.</li>
+<li>Run python iview
+<pre class="brush: powershell; title: ; notranslate" title="">
+python iview-gtk
+python iview-cli
+</pre>
+<p>These files are actually python files, not compiled executables. They may be executed directly in *nix systems because the first line is</p>
+<pre class="brush: bash; title: ; notranslate" title="">#!/usr/bin/env python</pre>
+<p>However, that obviously is not understood by Windows, so you will need to precede the name of the file with <code>python</code> to tell Windows to execute it using python.</li>
+</ol>
+<p>Voila!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Deploying python iView on Windows - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2010/04/01/deploying-python-iview-on-windows" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/build">build</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/howto">howto</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/iview">iview</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/python">python</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/rtmpdump">rtmpdump</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/windows">windows</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/wordpressposts/2010-04-01-deploying-python-iview-on-windows.html" target="_blank">Edit this content</a></div><div><div title="Deploying python iView on Windows"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

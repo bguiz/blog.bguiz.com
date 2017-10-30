@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Migrating from Tumblr and Wordpress to Docpad - Static Site Generation - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Migrating from Tumblr and Wordpress to Docpad - Static Site Generation - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2014/07/08/migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2014/07/08/migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Migrating from Tumblr and Wordpress to Docpad - Static Site Generation</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2014/07/09</div><span class="markdown__markdown-render___9BIqe"><p>I currently write my blog using <a href="http://tumblr.com">tumblr</a>,
+and previously I blogged using <a href="http://wordpress.org">wordpress</a>.
+While both of these are great platforms,
+they share common pitfalls, when it comes to giving you control over your writing.</p>
+<p>I wanted to be able to have a copy of all the assets that comprise my blog,
+in its entirety, on my hard disk, and be able to modify and publish them as I pleased.
+I also wanted to be able to include fancier things in my pages -
+like embed a Github gist, or create my own d3 visualisation,
+or, well why not take it to an extreme,
+create an AngularJs app running within one of my posts;
+and I wanted to be able to do all of these things without having to log into
+some website hosted in a far away country,
+and wait for all those bytes to fly across several oceans and back each time.</p>
+<p>Flexibility and control - that is key.</p>
+<h3 id="enter-static-site-generators">Enter Static Site Generators</h3>
+<p>For a blog, the contents are almost static.
+The server only needs to send a different response for a page,
+when that page has been modified by the author.
+The exception to this are comments,
+but with the advent of <a href="http://disqus.com">disqus</a>,
+that is no longer even a consideration.</p>
+<p>A content management system, including both tumblr and wordpress,
+builds each page upon demand, which can be an expensive operation,
+as it involves database queries, assemlby of templates, et cetera.
+Quite often, when a CMS driven site receives a lot of concurrent visitors,
+its response times start to lag noticeably.
+To work around this, it has become common practice to cache the results of
+each dynamically generated page, using tools like
+<a href="http://memcached.org/">memcached</a>.</p>
+<p>Static site generation is all about taking caching to the next level.
+The author of the site knows exactly when the previous cache needs to be invalidated -
+when they write a new post or update an existing one.
+Why not, at that point of time, generate the cache contents,
+and upload them directly to the server?
+Well, that is exactly what static site generators do;
+the static files are the cache</p>
+<h3 id="what-about-collaboration-">What about collaboration?</h3>
+<p>One of the big advantages of a CMS is that it enables collaboration.
+If everyone just logs into the same website,
+be it <code>wordpress.org</code> or <code>tumblr.com</code>,
+and made their edits on the site,
+then there is only one copy of the site,
+and therefore it is easy to manage collaboration on the contents of the site.</p>
+<p>Indeed that is a very direct and simple solution that addresses collaboration.
+We do, however, have a more sophisticated solution,
+that is already readily available:
+<a href="http://en.wikipedia.org/wiki/Distributed_revision_control">distributed version control systems</a>.
+Tools such as <a href="http://git-scm.com/">git</a> and
+<a href="http://mercurial.selenic.com/">mercurial</a>
+have solved the distributed collaboration problem in a rather elegant way.
+All collaborators get to keep a copy of the site that they are contributing to
+on their own computers, and thus get the benefits that come along with that.
+When they are done writing a post,
+they simply have to <em>push</em> their latest contributions to the <em>master</em> copy.
+There are built in mechanisms to resolve any conflicts,
+for example, if two collaborators edit the same file.</p>
+<h3 id="docpad">Docpad</h3>
+<p>After reviewing the top few <a href="http://staticsitegenerators.net/">in this humungous list</a>,
+I have decided that <a href="https://github.com/bevry/docpad">Docpad</a>
+suits my needs the best, and I should be able to hit the ground running.
+I will give it a go, and the best part is, if I do not like it,
+my data is not stuck on some server somewhere -
+it will all be on my computer,
+and easily moved to a different static site generator.</p>
+<p>In the next post, I will be tackling that very problem:
+With hosted CMSs, like tumblr and wordpress,
+getting your data out can be a little tricky;
+as can be transforming it such that it can be used in a static site generator.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Migrating from Tumblr and Wordpress to Docpad - Static Site Generation - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2014/07/08/migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/blog">blog</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/tumblr">tumblr</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/wordpress">wordpress</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/docpad">docpad</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/static site generation">static site generation</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/markdown">markdown</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/docpadposts/2014-07-08-migrating-from-tumblr-and-wordpress-to-docpad-static-site-generation.html.md" target="_blank">Edit this content</a></div><div><div title="Migrating from Tumblr and Wordpress to Docpad - Static Site Generation"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

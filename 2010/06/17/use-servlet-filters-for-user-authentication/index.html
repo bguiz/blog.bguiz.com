@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Using servlet filters for user authentication - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Using servlet filters for user authentication - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2010/06/17/use-servlet-filters-for-user-authentication/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/logo-400px.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2010/06/17/use-servlet-filters-for-user-authentication/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Using servlet filters for user authentication</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2010/06/17</div><span class="markdown__markdown-render___9BIqe"><p>When creating a Java web application that requires access restrictions on some pages, one way to do it is to include user authentication logic within each JSP, or perhaps in a JSP fragment that is included in all of these JSPs. In that code perform a redirect or forward to an access denied page.</p>
+<pre class="brush: java; title: ; notranslate" title="">
+req.getRequestDispatcher(&quot;/accessDenied.html&quot;).forward(request, response);
+</pre>
+<p>However, a Java web container is multi-threaded, and this merely spawns a new thread, and the server processes both the JSP and the page that has been forwarded to simultaneously. If one looks at the logging output from the server, or intercepts the HTTP traffic, using, for example, a packet sniffer (which are commonplace enough to exist as <a href="http://livehttpheaders.mozdev.org/" target="_blank">Firefox extensions</a>), one can see this happening live. This method therefore, clearly raises some nasty security concerns.</p>
+<p>Furthermore, from a software engineering or architectural design point of view, using a JSP as a filter violates MVC design principles, as doing so would make the JSP act as a controller as well as a view at the same time.</p>
+<p>The proper way to go about implementing restricted access to certain pages is to use filters from the Servlet API, and then configuring the web application to map select pages to these filters. This method utilises additional capability provided by web container that runs on the server. The web container constructs filter chains based on the filter mappings defined. Most crucially, these filters allow the authentication logic and consequent branching to be executed <em>prior to</em> the JSP being called;</p>
+<p>Create an abstract class <code>LoginFilter</code>.</p>
+<pre class="brush: java; title: ; notranslate" title="">
+    public abstract class LoginFilter implements javax.servlet.Filter {
+        protected ServletContext servletContext
+
+        public void init(FilterConfig filterConfig) {
+            servletContext = filterConfig.getServletContext();
+        }
+
+        public void doFilter(
+            ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+            HttpServletRequest req = (HttpServletRequest)request;
+            HttpServletResponse resp = (HttpServletResponse)response;
+
+            if (!isAuth()) {
+                resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return; //break filter chain, requested JSP/servlet will not be executed
+            }
+
+            //propagate to next element in the filter chain, ultimately JSP/ servlet gets executed
+            chain.doFilter(request, response);<br>        }
+
+        /<em>*
+         </em> logic to accept or reject access to the page, check log in status
+         <em> @return true when authentication is deemed valid
+         </em>/
+        protected abstract boolean isAuth();
+
+    }
+</pre>
+<p>Subclass the <code>LoginFilter</code> as a concrete class, <code>MemberLoginFilter</code>, by implementing the <code>isAuth</code> method. In this case add logic that determines whether a user is currently logged in. This post does not cover how this is done; in a nutshell, this would typically involve retrieving objects from the current HTTP session, and determining whether a user has logged in during the current session by comparing the values or states of these objects.</p>
+<p>Now edit the <code>web.xml</code> configuration for the web application archive (WAR), to make the web app aware of the filter and what pages it should map to.</p>
+<pre class="brush: xml; title: ; notranslate" title="">
+&lt;filter&gt;
+    &lt;description&gt;Requires user to log in as a member&lt;/description&gt;
+    &lt;filter-name&gt;MemberLoginFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;some.package.MemberLoginFilter&lt;/filter-class&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;MemberLoginFilter&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/someRestrictedPage.jsp&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;
+</pre>
+<p>Add as many filter mappings as necessary for each page that needs to have access to it restricted to logged-in members only; use file name globs to match multiple files.</p>
+<p>Also, still editing <code>web.xml</code> configuration, tell the web app how to handle access denied error messages in a more user friendly way, by adding the following node to the settings:</p>
+<pre class="brush: xml; title: ; notranslate" title="">
+&lt;error-page&gt;
+    &lt;error-code&gt;401&lt;/error-code&gt;
+    &lt;location&gt;/accessDenied.html&lt;/location&gt;
+&lt;/error-page&gt;
+</pre>
+<p>The HTTP 401 error code referenced here corresponds to <code>HttpServletResponse.SC_UNAUTHORIZED</code> in <code>LoginFilter.doFilter(..)</code>.<br />
+This completes the loop: when the filter chain is broken because <code>LoginFilter.isAuth()</code> returns false, instead of getting a garish HTTP 401, the user will see an access denied page instead, which you can edit to inlcude a user friendly message.</p>
+<p>If <code>LoginFilter.isAuth()</code> returns true, the filter chain continues execution, and assuming that there are no more filters in the filter chain, or all of the downstream filters in the filter chain pass, the requested JSP or servlet gets displayed.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Using servlet filters for user authentication - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2010/06/17/use-servlet-filters-for-user-authentication" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/authentication">authentication</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/code">code</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/filter">filter</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/http">http</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/java">java</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/java-ee">java-ee</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/jsp">jsp</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/mvc">mvc</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/security">security</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/servlet">servlet</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/wordpressposts/2010-06-17-use-servlet-filters-for-user-authentication.html" target="_blank">Edit this content</a></div><div><div title="Using servlet filters for user authentication"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

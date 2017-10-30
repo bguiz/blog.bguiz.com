@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">PostgreSql Many-to-Many with Non-relational SQL - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="PostgreSql Many-to-Many with Non-relational SQL - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/postgres-many2many-sql-non-relational/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/postgres-many2many-sql-non-relational.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/postgres-many2many-sql-non-relational/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">PostgreSql Many-to-Many with Non-relational SQL</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/02/27</div><img src="/images/posts/postgres-many2many-sql-non-relational.png" alt="PostgreSql Many-to-Many with Non-relational SQL" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><p>Many to many relationships are usually quite expensive in relational databases.
+For example, when you do a select in a purely relational database,
+you need to do <em>two</em> joins.
+When reading (<code>select</code>) from a database,
+joins are often the most expensive operation.
+Sure the cost of these can be mitigated through various optimisations,
+such as composite keys, indices on composite keys, SQL hints, et cetera;
+but are these really the only way?
+In a pure <em>relational database</em> system,
+that might be the extent of the surface area to be explored.</p>
+<p>However, PostgreSql supports some additional complex data types as well,
+akin to those found in a <em>document database</em> system
+(which overlaps with, and most times referred to as, “NoSql” database systems).
+The ones that are of particular interest are <code>Array</code>, <code>JSONB</code> array, <code>JSONB</code> object, and <code>hstore</code>.
+These complex data types can be utilised creatively to avoid multiple joins,
+or even supplanting joins altogether.</p>
+<p>The objective here is to explore:</p>
+<ul>
+<li>Whether each of these complex types opens up a new means of storing, retrieving, and updating.
+many-to-many relationships in a database</li>
+<li>Whether they can support the range of operations required.</li>
+<li>How performant they are in supporting each of the required operations.</li>
+</ul>
+<h2 id="summary-of-approaches">Summary of approaches</h2>
+<ul>
+<li>Junction table<ul>
+<li>Pure relational approach, where a <code>subject_student</code> table is created to store the relationships.</li>
+<li>This is the “classic” approach</li>
+</ul>
+</li>
+<li><code>Array</code><ul>
+<li><a href="https://www.postgresql.org/docs/9.6/static/arrays.html"><code>Array</code> data type</a></li>
+<li><a href="https://www.postgresql.org/docs/current/static/functions-array.html"><code>Array</code> functions</a></li>
+<li>Only single-dimensional arrays are considered.</li>
+</ul>
+</li>
+<li><code>JSONB</code> object and array<ul>
+<li><a href="https://www.postgresql.org/docs/9.6/static/datatype-json.html"><code>JSON</code> and <code>JSONB</code> data type</a></li>
+<li><a href="https://www.postgresql.org/docs/9.6/static/functions-json.html"><code>JSON</code> and <code>JSONB</code> functions</a></li>
+<li>In PostgreSql, JSON can be represented using either <code>JSON</code> or <code>JSONB</code> types -
+we will only be considering the latter</li>
+<li>JSON can represent complex nested documents, and so only a subset of its features are necessary</li>
+<li>Need to consider both <code>JSONB</code> arrays, as well as <code>JSONB</code> objects (where only keys are used)</li>
+</ul>
+</li>
+<li><code>hstore</code><ul>
+<li><a href="https://www.postgresql.org/docs/9.6/static/hstore.html"><code>hstore</code> data type and functions</a></li>
+<li><code>hstore</code> is a hash map data structure of key-value pairs.</li>
+<li>The consideration is that we will be using them such that only keys are used,
+in the sense that we only care whether a key has been set,
+and its value does not matter.</li>
+</ul>
+</li>
+</ul>
+<p>By reviewing the descriptions of these data types,
+and the big-O notation of the algorithmic complexities of the operations
+performed on each of these types,
+it is possible to foresee some of the challenges.
+In arrays (applying to both <code>Array</code> and <code>JSONB</code> array),
+there would be an anticipated challenge in insertion and removal of
+elements by value rather than by index.
+In <code>JSONB</code> objects, the keys need to be strings,
+therefore there could be an additional performance penalty for type conversions per operation.
+As a <code>hstore</code> is a hash map,
+it would appear ideal for the required operations,
+based on algorithmic complexity,
+however, it would have a higher constant cost overheads for memory,
+and processing overheads for hash computation and collision resolution,
+and thus might need to get to far larger data sets before
+it is able to outperform arrays.</p>
+<p>The above are all inferences, of course,
+and there are many more that we could possibly make.
+Thus there is a need for some some sample implementations
+to validate/ invalidate them.</p>
+<h2 id="implementation">Implementation</h2>
+<h3 id="entities-and-relations">Entities and Relations</h3>
+<p>For the purpose of this example, we shall model the following two entities:</p>
+<ul>
+<li>Subject</li>
+<li>Student</li>
+</ul>
+<p>Their relationship has many-to-many cardinality:</p>
+<ul>
+<li>each student may study <code>0..*</code> subjects, and</li>
+<li>each subject has <code>0..*</code> students enrolled in it.</li>
+</ul>
+<p>We shall design these entities as generic as possible -
+the minimum viable entity in order to demonstrate
+many-to-many relationship operations.
+Thus each will only have an integer <code>id</code> primary key column,
+and a string <code>name</code> column.
+Apart from this each entity may have an additional column
+for storing its relationship to the other entity.</p>
+<h3 id="database-initialisation">Database initialisation</h3>
+<p>The following assumes a PostgreSql <code>v9.6</code> installation.</p>
+<p>First create the database and a role to access it with.
+Substitute the names of each to your preference.</p>
+<pre class="hljs bash lang-bash">psql</pre><pre class="hljs sql lang-sql">drop database <span class="hljs-keyword">if</span> exists scratch;
+drop role <span class="hljs-keyword">if</span> exists scratch;
+create role scratch login encrypted password <span class="hljs-string">'scratch'</span> valid until <span class="hljs-string">'infinity'</span>;
+create database scratch <span class="hljs-keyword">with</span> encoding <span class="hljs-string">'UTF-8'</span> owner=<span class="hljs-string">'scratch'</span> connection limit=<span class="hljs-number">1</span>;
+
+-- list roles
+select * <span class="hljs-keyword">from</span> pg_catalog.pg_shadow;
+
+-- list databases
+\list
+
+\q</pre><p>Next, enable the <code>hstore</code> extension,
+which comes bundled in most PostgreSql distributions,
+by default.</p>
+<pre class="hljs bash lang-bash">sudo su <span class="hljs-variable">${USER}</span> -c \n
+  <span class="hljs-string">"psql -d scratch -c 'create extension if not exists hstore;'"</span>
+psql -d scratch -U scratch -W</pre><h3 id="junction-table-approach">Junction table approach</h3>
+<p>Set up junction tables</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- remove any existing tables</span>
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists junction_student_subject;
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists junction_student;
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists junction_subject;
+
+<span class="hljs-comment">-- create tables</span>
+<span class="hljs-title">create</span> table junction_student (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>
+    );
+<span class="hljs-title">create</span> table junction_subject (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>
+    );
+<span class="hljs-title">create</span> table junction_student_subject (
+    student_id int references junction_student(id),
+    subject_id int references junction_subject(id),
+    constraint id <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span> (student_id, subject_id)
+    );
+
+<span class="hljs-comment">-- insert a student and a subject</span>
+<span class="hljs-title">insert</span> into junction_student (name)
+    values ('student');
+<span class="hljs-title">insert</span> into junction_subject (name)
+    values ('subject');</pre><p>Read related entity via junction table</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- given a student $1, get enrolled subjects</span>
+<span class="hljs-title">select</span> sub.id <span class="hljs-keyword">as</span> sub_id, sub.name <span class="hljs-keyword">as</span> sub_name
+    from junction_student_subject stu_sub
+    join junction_subject sub on (stu_sub.subject_id = sub.id)
+    <span class="hljs-keyword">where</span> stu_sub.student_id = $<span class="hljs-number">1</span>;</pre><p>Create a new many-to-many relationship using junction table</p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, enrol student <span class="hljs-keyword">in</span> the subject
+insert into junction_student_subject (student_id, subject_id)
+    values (<span class="hljs-variable">$1</span>, <span class="hljs-variable">$2</span>);</pre><p>Delete related entity via function table</p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, unenrol student <span class="hljs-keyword">in</span> the subject
+delete from junction_student_subject
+    <span class="hljs-built_in">where</span> student_id = <span class="hljs-variable">$1</span> and subject_id = <span class="hljs-variable">$2</span>;</pre><h3 id="-jsonb-array-approach"><code>JSONB</code> array approach</h3>
+<p>Set up <code>JSONB</code> array tables</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- remove any existing tables</span>
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists jsonbarr_subject;
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists jsonbarr_student;
+
+<span class="hljs-comment">-- create tables</span>
+<span class="hljs-title">create</span> table jsonbarr_student (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    subject_ids jsonb <span class="hljs-type">DEFAULT</span> '[]'
+    );
+<span class="hljs-title">create</span> table jsonbarr_subject (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    student_ids jsonb <span class="hljs-type">DEFAULT</span> '[]'
+    );
+
+<span class="hljs-comment">-- insert a student and a subject</span>
+<span class="hljs-title">insert</span> into jsonbarr_student (name)
+    values ('student');
+<span class="hljs-title">insert</span> into jsonbarr_subject (name)
+    values ('subject');</pre><p>Read related entity via <code>JSONB</code> array</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- given a student $1, get enrolled subjects</span>
+<span class="hljs-title">select</span> sub.id <span class="hljs-keyword">as</span> sub_id, sub.name <span class="hljs-keyword">as</span> sub_name
+    from jsonbarr_subject sub
+    <span class="hljs-keyword">where</span> sub.student_ids ? '$<span class="hljs-number">1</span>';
+
+<span class="hljs-comment">-- Note that the contains (`?`) operator does not appear to work.</span></pre><p>Create a new many-to-many relationship using a <code>JSONB</code> array</p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, enrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update jsonbarr_subject as sub
+<span class="hljs-built_in">set</span> student_ids = jsonb_insert(student_ids, <span class="hljs-string">'{0}'</span>, <span class="hljs-string">'$1'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update jsonbarr_student as stu
+<span class="hljs-built_in">set</span> subject_ids = jsonb_insert(subject_ids, <span class="hljs-string">'{0}'</span>, <span class="hljs-string">'$2'</span>)
+<span class="hljs-built_in">where</span> id =  <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><p>Delete related entity via <code>JSONB</code> array</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- given a student $1 and a subject $2, unenrol student in the subject</span>
+<span class="hljs-title">begin</span> transaction;
+
+<span class="hljs-title">update</span> jsonbarr_subject <span class="hljs-keyword">as</span> sub
+<span class="hljs-comment">--- set student_ids = ???</span>
+<span class="hljs-title">where</span> sub.id = $<span class="hljs-number">2</span>;
+
+<span class="hljs-title">update</span> jsonbarr_student <span class="hljs-keyword">as</span> stu
+<span class="hljs-comment">--- set subject_ids = ???</span>
+<span class="hljs-title">where</span> stu.id = $<span class="hljs-number">1</span>;
+
+<span class="hljs-title">end</span> transaction;
+
+<span class="hljs-comment">-- Note that we did not find a way to delete elements by value from a JSONB array</span></pre><h3 id="-jsonb-object-approach"><code>JSONB</code> object approach</h3>
+<p>Set up <code>JSONB</code> object tables</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- remove any existing tables</span>
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists jsonbobj_subject;
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists jsonbobj_student;
+
+<span class="hljs-comment">-- create tables</span>
+<span class="hljs-title">create</span> table jsonbobj_student (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    subject_ids jsonb <span class="hljs-type">DEFAULT</span> '{}'
+    );
+<span class="hljs-title">create</span> table jsonbobj_subject (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    student_ids jsonb <span class="hljs-type">DEFAULT</span> '{}'
+    );
+
+<span class="hljs-comment">-- insert a student and a subject</span>
+<span class="hljs-title">insert</span> into jsonbobj_student (name)
+<span class="hljs-title">values</span> ('student');
+<span class="hljs-title">insert</span> into jsonbobj_subject (name)
+<span class="hljs-title">values</span> ('subject');</pre><p>Read related entity via <code>JSONB</code> object</p>
+<pre class="hljs sql lang-sql">-- given a student $<span class="hljs-number">1</span>, get enrolled subjects
+select sub.id <span class="hljs-keyword">as</span> sub_id, sub.name <span class="hljs-keyword">as</span> sub_name
+<span class="hljs-keyword">from</span> jsonbobj_subject sub
+where sub.student_ids ? <span class="hljs-string">'$1'</span>;</pre><p>Create a new many-to-many relationship using a JSONB object</p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, enrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update jsonbobj_subject as sub
+<span class="hljs-built_in">set</span> student_ids = jsonb_set(student_ids, <span class="hljs-string">'{$1}'</span>, <span class="hljs-string">'true'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update jsonbobj_student as sub
+<span class="hljs-built_in">set</span> subject_ids = jsonb_set(subject_ids, <span class="hljs-string">'{$2}'</span>, <span class="hljs-string">'true'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><p>Delete related entity via <code>JSONB</code> object</p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, unenrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update jsonbobj_subject as sub
+<span class="hljs-built_in">set</span> student_ids = student_ids - <span class="hljs-string">'$1'</span>
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update jsonbobj_student as stu
+<span class="hljs-built_in">set</span> subject_ids = subject_ids - <span class="hljs-string">'$2'</span>
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><h3 id="-array-approach"><code>Array</code> approach</h3>
+<p>Set up <code>Array</code> tables</p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- remove existing tables</span>
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists array_subject;
+<span class="hljs-title">drop</span> table <span class="hljs-keyword">if</span> exists array_student;
+
+<span class="hljs-comment">-- create tables</span>
+<span class="hljs-title">create</span> table array_student (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    subject_ids integer[]
+    );
+<span class="hljs-title">create</span> table array_subject (
+    id serial <span class="hljs-type">PRIMARY</span> <span class="hljs-type">KEY</span>,
+    name text <span class="hljs-type">NOT</span> <span class="hljs-type">NULL</span>,
+    student_ids integer[]
+    );
+
+<span class="hljs-comment">-- insert a student and a subject</span>
+<span class="hljs-title">insert</span> into array_student (name)
+<span class="hljs-title">values</span> ('student');
+<span class="hljs-title">insert</span> into array_subject (name)
+<span class="hljs-title">values</span> ('subject');
+
+<span class="hljs-title">select</span> * from array_student;
+<span class="hljs-title">select</span> * from array_subject;</pre><p>Read related entity via <code>Array</code></p>
+<pre class="hljs sql lang-sql"><span class="hljs-comment">-- given a student $1, get enrolled subjects</span>
+<span class="hljs-title">select</span> sub.id <span class="hljs-keyword">as</span> sub_id, sub.name <span class="hljs-keyword">as</span> sub_name
+<span class="hljs-title">from</span> array_subject sub
+<span class="hljs-title">where</span> array_position(sub.student_ids, $<span class="hljs-number">1</span>) &gt;= <span class="hljs-number">0</span>;
+
+<span class="hljs-comment">-- Note that the contains operator `@&gt;` does not appear to work here</span>
+<span class="hljs-comment">-- hence we're testing for existence using `array_position` instead</span></pre><p>Create a new many-to-many relationship using an <code>Array</code></p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, enrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update array_subject as sub
+<span class="hljs-built_in">set</span> student_ids = array_append(student_ids, <span class="hljs-variable">$1</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update array_student as stu
+<span class="hljs-built_in">set</span> subject_ids = array_append(subject_ids, <span class="hljs-variable">$2</span>)
+<span class="hljs-built_in">where</span> id=  <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><p>Delete related entity via <code>Array</code></p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, unenrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update array_subject as sub
+<span class="hljs-built_in">set</span> student_ids = array_remove(student_ids, <span class="hljs-variable">$1</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update array_student as stu
+<span class="hljs-built_in">set</span> subject_ids = array_remove(subject_ids, <span class="hljs-variable">$2</span>)
+<span class="hljs-built_in">where</span> id=  <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><h3 id="-hstore-approach"><code>hstore</code> approach</h3>
+<p>Set up <code>hstore</code> tables</p>
+<pre class="hljs bash lang-bash">sudo su <span class="hljs-variable">${USER}</span> -c <span class="hljs-string">"psql -d scratch -c 'create extension if not exists hstore;'"</span></pre><pre class="hljs sql lang-sql">-- remove existing tables
+drop table <span class="hljs-keyword">if</span> exists hstore_student;
+drop table <span class="hljs-keyword">if</span> exists hstore_subject;
+
+-- create tables
+create table hstore_student (
+    id serial PRIMARY KEY,
+    name text NOT NULL,
+    subject_ids hstore DEFAULT <span class="hljs-string">''</span>
+    );
+create table hstore_subject (
+    id serial PRIMARY KEY,
+    name text NOT NULL,
+    student_ids hstore DEFAULT <span class="hljs-string">''</span>
+    );
+
+-- insert a student <span class="hljs-keyword">and</span> a subject
+insert into hstore_student (name)
+values (<span class="hljs-string">'student'</span>);
+insert into hstore_subject (name)
+values (<span class="hljs-string">'subject'</span>);
+
+select * <span class="hljs-keyword">from</span> hstore_student;
+select * <span class="hljs-keyword">from</span> hstore_subject;</pre><p>Read related entity via <code>hstore</code></p>
+<pre class="hljs sql lang-sql">-- given a student $<span class="hljs-number">1</span>, get enrolled subjects
+select sub.id <span class="hljs-keyword">as</span> sub_id, sub.name <span class="hljs-keyword">as</span> sub_name
+<span class="hljs-keyword">from</span> hstore_subject sub
+where exist(sub.student_ids, <span class="hljs-string">'$1'</span>);</pre><p>Create a new many-to-many relationship using an <code>hstore</code></p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, enrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update hstore_subject as sub
+<span class="hljs-built_in">set</span> student_ids = student_ids || hstore(<span class="hljs-string">'$1'</span>, <span class="hljs-string">'t'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-variable">$2</span>;
+
+update hstore_student as stu
+<span class="hljs-built_in">set</span> subject_ids = subject_ids || hstore(<span class="hljs-string">'$2'</span>, <span class="hljs-string">'t'</span>)
+<span class="hljs-built_in">where</span> id=  <span class="hljs-variable">$1</span>;
+
+end transaction;</pre><p>Delete related entity via <code>hstore</code></p>
+<pre class="hljs sql lang-sql">-- given a student <span class="hljs-variable">$1</span> and a subject <span class="hljs-variable">$2</span>, unenrol student <span class="hljs-keyword">in</span> the subject
+begin transaction;
+
+update hstore_subject as sub
+<span class="hljs-built_in">set</span> student_ids = delete(student_ids, <span class="hljs-string">'$1'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-string">'$2'</span>;
+
+update hstore_student as stu
+<span class="hljs-built_in">set</span> subject_ids = delete(subject_ids, <span class="hljs-string">'$2'</span>)
+<span class="hljs-built_in">where</span> id = <span class="hljs-string">'$1'</span>;
+
+end transaction;</pre><h2 id="next-steps">Next steps</h2>
+<p>Expressing and manipulating many-to-many relationships in relational database systems
+has always been an <em>implementation pain point</em>,
+as well as a <em>performance bottleneck</em>.
+This has been an interesting exercise in exploring
+the different ways in which one can apply complex data types
+to this problem.
+Of the five different approaches considered -
+one “classic” junction table approach,
+plus four approaches using complex data types -
+four of them appear to be feasible.
+Only the <code>JSONB</code> arrays approach,
+which seemed plausible initially,
+does not appear to be implementable.
+This is a great testament to the power of PostgreSql,
+and its ability to span and leverage <em>both</em> relational
+and non-relational approaches in database management.</p>
+<p>We are not done just yet!</p>
+<p>Thus far we have merely defined the schema and queries
+for specifying many-to-many relationships using various approaches.
+The natural next step would be to explore them in more detail.
+This includes procedurally generating data sets of different sizes for each of the entities,
+including defining relationships linking the different entities together
+with various proportions of balanced and imbalanced cardinality.
+After that is done, we should consider performance aspects of the various approaches too.
+We should explore the performance optimisations
+which are feasible and appropriate for each approach;
+and also explore how adding referential integrity constraints impact performance.
+Performance needs to be measured, of course,
+which involves designing and running a benchmark.</p>
+<p>Watch this space!</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=PostgreSql Many-to-Many with Non-relational SQL - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/postgres-many2many-sql-non-relational" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/relational">relational</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-02-postgres-many2many-sql-non-relational.md" target="_blank">Edit this content</a></div><div><div title="PostgreSql Many-to-Many with Non-relational SQL"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

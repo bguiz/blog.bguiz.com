@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">JSON merge in PostgreSql - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="JSON merge in PostgreSql - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/json-merge-postgresql/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/json-merge-postgresql.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/json-merge-postgresql/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">JSON merge in PostgreSql</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/06/20</div><img src="/images/posts/json-merge-postgresql.png" alt="JSON merge in PostgreSql" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><p>PostgreSql is a relational database
+which adheres to <a href="https://en.wikipedia.org/wiki/ACID">ACID principles</a> -
+atomicity, consistency, isolation, durability -
+and supports server-side joins between multiple entities (tables).
+Interestingly, in addition to this,
+it also supports a JSON data type natively,
+and provides a <a href="https://www.postgresql.org/docs/9.6/static/functions-json.html">rich set of functions and operators</a>
+to work with its <code>jsonb</code> type.
+<sup name="post-content-location-jsonb"><a href="#post-footnote-location-jsonb">1</a></sup></p>
+<p>The support for relational and document database paradigms is a potent combination,
+as it is feasible to use PostgreSql as a
+<a href="https://en.wikipedia.org/wiki/Document-oriented_database">document database</a> -
+one of the main categories of <a href="https://en.wikipedia.org/wiki/NoSQL">NoSql databases</a>.
+A pattern for doing this is to create tables with just two columns:</p>
+<ul>
+<li>an <code>id</code> column that is the (indexed) primary key for the document, and</li>
+<li>a <code>body</code> column that is the document, and is of type <code>jsonb</code></li>
+</ul>
+<p>However, operations on such documents can be quite tricky
+in the context of relational database queries (SQL).
+One of these is that most operations are <em>upserts</em> (update-insert),
+and these operations are not very common in relational databases,
+which subscribe to the CRUD paradigm - create, read, update, delete.
+<em>Upsert</em> is a two-in-one combination of both create and update operations.
+I have previously written about
+<a href="http://blog.bguiz.com/2017/postgresql-upsert-knex#post-content-location-document-pattern-postgres"><em>upserts</em> in PostgreSql</a>,
+so check that out for a detailed example.</p>
+<h2 id="modifying-a-document">Modifying a document</h2>
+<p>Another piece of the puzzle is working out
+what the updated copy of a document should be.</p>
+<p>Say you have a document that looks like this:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> original = {
+    <span class="hljs-attr">id</span>: <span class="hljs-number">123</span>,
+    <span class="hljs-attr">body</span>: {
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'JSON merge in PostgreSql'</span>,
+        <span class="hljs-attr">stats</span>: {
+            <span class="hljs-attr">name</span>: <span class="hljs-string">'Brendan'</span>,
+        },
+    },
+};</pre><p>… and specify a delta like this:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> delta = {
+    <span class="hljs-attr">body</span>: {
+        <span class="hljs-attr">author</span>: {
+            <span class="hljs-attr">name</span>: <span class="hljs-string">'Brendan Graetz'</span>,
+        },
+    },
+};</pre><p>… and we wish to change it to become this:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> modified = {
+    <span class="hljs-attr">id</span>: <span class="hljs-number">123</span>,
+    <span class="hljs-attr">body</span>: {
+        <span class="hljs-attr">title</span>: <span class="hljs-string">'JSON merge in PostgreSql'</span>,
+        <span class="hljs-attr">author</span>: {
+            <span class="hljs-attr">name</span>: <span class="hljs-string">'Brendan Graetz'</span>,
+        },
+    },
+};</pre><p>If you have used a document database before,
+you might recognise this pattern immediately.
+For example, in MongoDb, you could accomplish this using
+<a href="https://docs.mongodb.com/manual/reference/method/db.collection.update/"><code>collection.update()</code></a>:</p>
+<pre class="hljs javascript lang-javascript">db.collection.update({ <span class="hljs-attr">_id</span>: original.id }, delta, { <span class="hljs-attr">upsert</span>: <span class="hljs-literal">true</span> });</pre><p>When using PostgreSql, in a table with an <code>id</code> primary key column,
+and a <code>body</code> document column,
+how would we go about accomplishing the same thing?</p>
+<h2 id="application-server-modifies-document-approach">Application server 💻 modifies document: ❌ approach</h2>
+<p>The first approach which comes to mind
+might be to use your application server to modify the document.
+The steps might look something like this:</p>
+<ul>
+<li>Server reads document from database</li>
+<li>Server modifies the document</li>
+<li>Server writes the modified document to the database</li>
+</ul>
+<p>This would work fine if there was only ever one user using the system at a time,
+and only one instance of this application server running.
+However, in reality, no system has the luxury of running under such assumptions.
+The problems with the above approach include:</p>
+<ul>
+<li>There are 2 round trips between the server</li>
+<li>Disk I/O needs to happen twice</li>
+<li>When multiple operations occur on the same document concurrently, the last one overwrites the first one</li>
+</ul>
+<h3 id="concurrency-race-to-last-write">Concurrency + race to last write</h3>
+<p>The first two are somewhat forgivable,
+as they are potential performance problems.
+However, the last one means that you have potentially wrong data being written to your database,
+due to some sort of race condition occurring.
+This is somewhat similar to the
+<a href="http://www.informit.com/articles/article.aspx?p=26890&amp;seqNum=3">cliched bank transaction processing scenarios</a>.
+This article goes into greater depth regarding
+<a href="https://vladmihalcea.com/2014/09/14/a-beginners-guide-to-database-locking-and-the-lost-update-phenomena/">lost update scenarios</a>.
+A brief summary of this would be:</p>
+<ul>
+<li>There an <code>account</code> entity that has the following fields: <code>id: 123, balance: 100</code></li>
+<li>This particular account happens to receive a credit of <code>20</code><ul>
+<li>Database query <code>select balance from user where id= 123;</code> returns <code>100</code></li>
+<li>Application server works out <code>100 + 20 = 120</code></li>
+<li>Database query <code>update user set balance = 120 where id = 123;</code></li>
+</ul>
+</li>
+<li>The same account also receives a debit of <code>10</code><ul>
+<li>Database query <code>select balance from user where id= 123;</code> returns <code>120</code></li>
+<li>Application server works out <code>100 - 10 = 110</code></li>
+<li>Database query <code>update user set balance = 110 where id = 123;</code></li>
+</ul>
+</li>
+</ul>
+<p>This approach works fine, except when both the credit and the debit come through at exactly the same time.
+If both <code>select</code> statements are executed before either <code>update</code> statement,
+we have a problem, because tboh select statements would return <code>100</code>,
+and thherefore one of the <code>update</code> statements would attempt to set balance to <code>120</code> and <code>90</code> respectively,
+neither of which are correct.</p>
+<p>There are two ways to solve this problem:</p>
+<ul>
+<li>Block updates to entity by other instances of application server until done<ul>
+<li>Use this when updates to the entity are complex,
+and it makes the most sense to do this on the application server.</li>
+<li>In PostgreSql this can be achieved through
+row-level locking,
+<code>serializable</code> transactions, or
+optimistic locking.
+<a href="https://blog.2ndquadrant.com/postgresql-anti-patterns-read-modify-write-cycles/">Detailed explanation here.</a></li>
+</ul>
+</li>
+<li>Move update logic to the database<ul>
+<li>Use this when updates to the entity are simple,
+and can be composed out of functions and operators available on the database</li>
+</ul>
+</li>
+</ul>
+<p>An example of moving the update logic to the application server,
+continuing with the same account balance example above:</p>
+<ul>
+<li>There an <code>account</code> entity that has the following fields: <code>id: 123, balance: 100</code></li>
+<li>This particular account happens to receive a credit of <code>20</code><ul>
+<li>Database query <code>update user set balance = balance + 20 where id = 123;</code></li>
+</ul>
+</li>
+<li>The same account also receives a debit of <code>10</code><ul>
+<li>Database query <code>update user set balance = balance - 10 where id = 123;</code></li>
+</ul>
+</li>
+</ul>
+<p>Much cleaner!
+More importantly, the balance will be correct, even if both statments occur at the same time.</p>
+<p>The logic for merging JSON can feasibly be moved to the database,
+and that is the next approach that we will take a look at.
+After all, when working with documents,
+we can still adhere to the same principles that we would for relational data.</p>
+<h2 id="database-modifies-document-approach">Database 💾 modifies document: ✔️ approach</h2>
+<p>All of the problems identified above are rooted in having the application server
+perform the modification of the document.
+Thankfully PostgreSql has a sufficiently full-featured set of operators that allows one to update JSON documents,
+plus the ability to define and execute <a href="https://www.postgresql.org/docs/9.6/static/sql-createfunction.html">functions</a>
+on the database itself.
+Since these functions run within the database,
+the database manages the context of its execution.
+Therefore it is able to continue providing its ACID principle guarantees.</p>
+<p>In addition to fixing the problems identified earlier,
+it also has a few other benefits:</p>
+<ul>
+<li>More efficient by being compiled ahead of time</li>
+<li>As functions are defined in a central place,
+this lessens the chance of errors stemming from
+varied statements in different parts of the application server.</li>
+</ul>
+<p>Next, we shall take a look at defining such a function
+that is used to deep merge one JSON document into another.</p>
+<h2 id="recursive-merge">Recursive merge</h2>
+<p>We start by defining a PostgreSql function.
+It is named <code>jsonb_merge_recurse</code>, and takes in two parameters.
+Both of the parameters are of type
+<a href="https://www.postgresql.org/docs/9.6/static/datatype-json.html"><code>jsonb</code></a>,
+where the left one is the <code>original</code> document,
+and the right one is the <code>delta</code> document,
+and its return value is the <code>modified</code> document.</p>
+<p>We set the language to <code>sql</code>,
+as it is possible to do do this purely using PostgreSql
+<a href="https://www.postgresql.org/docs/9.6/static/functions-json.html">JSON functions</a>.
+We have the option of using a user-defined procedural language -
+for example, Javascript via <a href="https://github.com/plv8/plv8/blob/master/doc/plv8.md">PLv8</a> -
+if we wanted to, however, that is an exercise for another time!</p>
+<pre class="hljs sql lang-sql">create or replace <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">jsonb_merge_recurse</span>(<span class="hljs-params">orig jsonb, delta jsonb</span>)
+<span class="hljs-title">returns</span> <span class="hljs-title">jsonb</span> <span class="hljs-title">language</span> <span class="hljs-title">sql</span> <span class="hljs-title">as</span> <span class="hljs-title">$$</span>
+    /* ... */
+<span class="hljs-title">$$</span>;</span></pre><p>Between the pair of <code>$$</code> delimiting the start and end of the function -
+as we are using the <code>sql</code> language -
+we use a <code>select</code> statement.
+The result obtained from this select statement will be the return value of this function.
+The <code>from</code> and <code>full join</code> clauses of the select statement here
+have the effect of iterating through the outermost level of keys of the JSON object,
+and joining on them when these keys are the same - <code>on keyOrig = keyDelta</code>.
+The values corresponding to these keys are extracted as well - <code>jsonb_each()</code>.</p>
+<pre class="hljs sql lang-sql">select
+    <span class="hljs-comment">/* ... */</span>
+<span class="hljs-keyword">from</span> jsonb_each(orig) e1(keyOrig, valOrig)
+full join jsonb_each(delta) e2(keyDelta, valDelta) on keyOrig = keyDelta</pre><p>Next, we use the following functions:</p>
+<ul>
+<li><a href="https://www.postgresql.org/docs/9.6/static/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL"><code>coalesce()</code></a>
+returns the <em>first</em> of its arguments that is not <code>null</code>, or <code>null</code> when all arguments are <code>null</code>.</li>
+<li><a href="https://www.postgresql.org/docs/9.6/static/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE"><code>jsonb_object_agg()</code></a>
+aggregates key-value pairs as a JSON object</li>
+</ul>
+<p>Here <code>coalesce()</code> is used to use <code>keyOrig</code> when present, otherwise <code>keyDelta</code> is used,
+and then <code>jsonb_object_agg</code> is used to create a <code>jsonb</code> object
+whose key is either <code>keyOrig</code> or <code>keyDelta</code> (as obtained from <code>coalesce()</code>),
+and whose value comes from the result of the <code>case</code> statement.</p>
+<p>Since this function needs to employ recursion,
+we will also define the recursive case.
+This will occur when both values are themselves objects,
+and therefore we need to drill down one level deeper.</p>
+<pre class="hljs sql lang-sql">jsonb_object_agg(
+    coalesce(keyOrig, keyDelta),
+    <span class="hljs-keyword">case</span>
+        <span class="hljs-comment">/* ... */</span>
+        <span class="hljs-keyword">else</span> jsonb_merge_recurse(valOrig, valDelta)
+    end
+)</pre><p>Next, we have the non-recursive cases.
+When either value is <code>null</code>, we use the other one.
+Otherwise, when either value is <em>not</em> an object,
+we use the delta value -
+as the intent is for the original values to be
+overridden by the delta values.</p>
+<pre class="hljs sql lang-sql">when valOrig isnull <span class="hljs-keyword">then</span> valDelta
+when valDelta isnull <span class="hljs-keyword">then</span> valOrig
+when (jsonb_typeof(valOrig) &lt;&gt; <span class="hljs-string">'object'</span> or jsonb_typeof(valDelta) &lt;&gt; <span class="hljs-string">'object'</span>) <span class="hljs-keyword">then</span> valDelta</pre><p>The <code>case</code> statement can be summarised with the following table:</p>
+<table>
+<thead>
+<tr>
+<th>condition</th>
+<th>valOrig</th>
+<th>valDelta</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>valOrig</code> is null</td>
+<td>null</td>
+<td>primitive or object</td>
+<td><code>valDelta</code></td>
+</tr>
+<tr>
+<td><code>valDelta</code> is null</td>
+<td>primitive or object</td>
+<td>null</td>
+<td><code>valOrig</code></td>
+</tr>
+<tr>
+<td>either <code>valOrig</code> or <code>valDelta</code> are primitives</td>
+<td>primitive or object</td>
+<td>primitive or object</td>
+<td><code>valDelta</code></td>
+</tr>
+<tr>
+<td>both <code>valOrig</code> and <code>valDelta</code> are objects</td>
+<td>object</td>
+<td>object</td>
+<td>(recur)</td>
+</tr>
+</tbody>
+</table>
+<p>Assembling the above snippets together,
+we have the full function:</p>
+<pre class="hljs sql lang-sql">create or replace <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">jsonb_merge_recurse</span>(<span class="hljs-params">orig jsonb, delta jsonb</span>)
+<span class="hljs-title">returns</span> <span class="hljs-title">jsonb</span> <span class="hljs-title">language</span> <span class="hljs-title">sql</span> <span class="hljs-title">as</span> <span class="hljs-title">$$</span>
+    <span class="hljs-title">select</span>
+        <span class="hljs-title">jsonb_object_agg</span>(<span class="hljs-params">
+            coalesce(keyOrig, keyDelta</span>),
+            <span class="hljs-title">case</span>
+                <span class="hljs-title">when</span> <span class="hljs-title">valOrig</span> <span class="hljs-title">isnull</span> <span class="hljs-title">then</span> <span class="hljs-title">valDelta</span>
+                <span class="hljs-title">when</span> <span class="hljs-title">valDelta</span> <span class="hljs-title">isnull</span> <span class="hljs-title">then</span> <span class="hljs-title">valOrig</span>
+                <span class="hljs-title">when</span> (<span class="hljs-params">jsonb_typeof(valOrig</span>) &lt;&gt; '<span class="hljs-title">object</span>' <span class="hljs-title">or</span> <span class="hljs-title">jsonb_typeof</span>(<span class="hljs-params">valDelta</span>) &lt;&gt; '<span class="hljs-title">object</span>') <span class="hljs-title">then</span> <span class="hljs-title">valDelta</span>
+                <span class="hljs-title">else</span> <span class="hljs-title">jsonb_merge_recurse</span>(<span class="hljs-params">valOrig, valDelta</span>)
+            <span class="hljs-title">end</span>
+        )
+    <span class="hljs-title">from</span> <span class="hljs-title">jsonb_each</span>(<span class="hljs-params">orig</span>) <span class="hljs-title">e1</span>(<span class="hljs-params">keyOrig, valOrig</span>)
+    <span class="hljs-title">full</span> <span class="hljs-title">join</span> <span class="hljs-title">jsonb_each</span>(<span class="hljs-params">delta</span>) <span class="hljs-title">e2</span>(<span class="hljs-params">keyDelta, valDelta</span>) <span class="hljs-title">on</span> <span class="hljs-title">keyOrig</span> = <span class="hljs-title">keyDelta</span>
+<span class="hljs-title">$$</span>;</span></pre><h2 id="limitations">Limitations</h2>
+<p>Note that this will allow deep merging of any object into any other object,
+so long as we treat arrays as primitives.
+Of course, in some cases, we would want to do some special things with arrays.
+For example if the first value is an array, and the second is a primitive,
+we could append the primitive to the end of the array.
+However these cases can be quite varied,
+and these use cases would be better suited to having separate functions
+specific to array manipulation.</p>
+<h2 id="thanks">Thanks</h2>
+<p>Thanks to <a href="https://twitter.com/andy_snow">Andrew</a> and <a href="https://twitter.com/sir_tilbrook">Mitch</a>
+for their helpful pointers and feedback on earlier drafts of this post.</p>
+<h2 id="footnotes">Footnotes</h2>
+<p><sup name="post-content-location-jsonb"><a href="#post-footnote-location-jsonb">1</a></sup></p>
+<p><b name="post-footnote-location-jsonb">5</b>
+PostgreSql actually has two different data types that can be used to represent JSON:
+<code>json</code> and <code>jsonb</code>.
+These are <a href="https://www.postgresql.org/docs/9.6/static/datatype-json.html">“almost identical”</a>,
+however, one should use <code>jsonb</code> by default, and only use <code>json</code> for legacy reasons.
+Practically, <code>jsonb</code> is much more efficient as it is stored on disk in binary format,
+whereas <code>json</code> is stored in plain text format.
+The code in this article has only been tested against <code>jsonb</code>,
+and may not work with <code>json</code> -
+Let me know if you happen to try this out,
+I would be interested in the results!
+<a href="#post-content-location-jsonb">↩</a></p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=JSON merge in PostgreSql - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/json-merge-postgresql" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/postgres">postgres</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/sql">sql</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/json">json</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/document">document</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-06-json-merge-postgresql.md" target="_blank">Edit this content</a></div><div><div title="JSON merge in PostgreSql"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>

@@ -92,6 +92,13 @@ generateData(options)
     data.props.presentations = [
       {
         meta: {
+          url: '/presentations/hackathons-company/',
+          title: 'Hackathons at ${YOUR_COMPANY}',
+          subtitle: 'Using hackathons to drive knowledge sharing',
+        },
+      },
+      {
+        meta: {
           url: '/presentations/caffeinated-jester/',
           title: 'The Caffeinated Jester',
           subtitle: 'Migrating from Mocha to Jest',

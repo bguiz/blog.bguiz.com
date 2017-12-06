@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html id="html" class="html">
+  <head lang="en_GB">
+  <meta charset="utf-8" />
+  <title data-react-helmet="true">Dependency injection in Javascript - Brendan Graetz</title>
+  <meta data-react-helmet="true" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/><meta data-react-helmet="true" name="og:ttl" content="600"/><meta data-react-helmet="true" name="og:site_name" content="Brendan Graetz"/><meta data-react-helmet="true" name="og:description" content="The blog that Brendan writes"/><meta data-react-helmet="true" name="og:locale" content="en_GB"/><meta data-react-helmet="true" name="og:title" content="Dependency injection in Javascript - Brendan Graetz"/><meta data-react-helmet="true" name="og:url" content="http://blog.bguiz.com/2017/dependency-injection-javascript/"/><meta data-react-helmet="true" name="og:image" content="http://blog.bguiz.com/images/posts/dependency-injection-in-javascript.png"/><meta data-react-helmet="true" name="og:type" content="article"/>
+  <link data-react-helmet="true" rel="canonical" content="http://blog.bguiz.com/2017/dependency-injection-javascript/"/>
+</head>
+  <body>
+    <div id="outlet" class="outlet">
+      <div id="root-page" class="root-page"><noscript></noscript><div id="navbar" class="navbar__navbar___3unxB"><ul id="navbar-list" class="navbar__navbar-list___33l7N"><li class="navbar__navbar-item___bZsgu"><a class="fa fa-home" title="Brendan Graetz" href="/"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-files-o" title="Archives" href="/archives"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-television" title="Presentations" href="/presentations"></a></li><li class="navbar__navbar-item___bZsgu"><a class="fa fa-book" title="Books" href="/books"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://twitter.com/bguiz" class="fa fa-twitter" title="@bguiz on Twitter"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://github.com/bguiz" class="fa fa-github" title="bguiz on github"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://stackoverflow.com/users/194982/bguiz" class="fa fa-stack-overflow" title="bguiz on stackoverflow"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://linkedin.com/in/brendangraetz/" class="fa fa-linkedin" title="Brendan Graetz on LinkedIn"></a></li><li class="navbar__navbar-item___bZsgu"><a href="http://reddit.com/u/bguiz" class="fa fa-reddit-alien" title="/u/bguiz on Reddit"></a></li><li class="navbar__navbar-item___bZsgu"><a href="https://plus.google.com/112370545733832378774?rel=author" class="fa fa-google-plus" title="@bguiz on Google+"></a></li></ul></div><div id="root-content" class="root-content"><div id="page-post" class="page page-post"><noscript></noscript><h1 id="page-title" class="page-title post-page__page-title___2KPKG">Dependency injection in Javascript</h1><div id="page-body" class="page-body"><div class="post-page__post-date___3HkPG">2017/10/31</div><img src="/images/posts/dependency-injection-in-javascript.png" alt="Dependency injection in Javascript" id="post-headImage" class="post-page__post-headImage___1lBxm"/><span class="markdown__markdown-render___9BIqe"><p>Dependency injection is a software engineering concept/pattern,
+which can have many different implementations,
+moreso in Javascript due to the language’s inherent flexibility.
+This post will first demonstrate a particular implementation
+of dependency injection in Javascript with code examples,
+and subsequently follow on with a discussion of dependency injection itself,
+using these code examples.</p>
+<h2 id="why-inject-">Why inject?</h2>
+<p>Well designed software is often composed of multiple modules.
+This means that some modules need to depend on other modules in order to function.
+The “default” pattern is to have each module explicitly declare the other modules
+that it depends upon.
+However, this can result in very strong coupling between said modules;
+and this is often mitigated by having each module declare the <em>interface</em>
+of its dependencies, rather than reference a concrete implementation.</p>
+<p>Dependency injection flips this approach on its head,
+where one module simply exposes a means for the modules that it depends on
+to <em>inject</em> themselves.
+This makes it such that the module does not need to change its own implementation
+when the implementation of its dependencies change.
+This opens the door to many forms of flexibility,
+the main one being that the control over what the dependencies are,
+can be set by the user of the module, rather than the module itself.
+This makes it easier for multiple implementations of dependency modules,
+to be substituted in as required,
+including stubs and mocks during testing.</p>
+<h2 id="a-technique">A technique</h2>
+<p>This dependency injection technique consists of
+a <strong>factory function</strong> and an <strong>implementation function</strong> per module.</p>
+<h3 id="module-factory">Module factory</h3>
+<p>A factory function creates a new instance of the module,
+accepting parameters for inputs used in instantiation.
+It is a software engineering pattern in its own right.
+When it is used in dependency injection,
+the inputs are expected to be dependencies.
+An example factory function would look like this:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">MyModuleFactory</span>(<span class="hljs-params">{
+    InternalModule,
+    ExternalModule,
+}</span>) </span>{
+    <span class="hljs-comment">// throw an error if any dependency is missing</span>
+    <span class="hljs-keyword">if</span> (!InternalModule) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Missing dependency: InternalModule'</span>);
+    }
+    <span class="hljs-keyword">if</span> (!ExternalModule) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Missing dependency: ExternalModule'</span>);
+    }
+
+    <span class="hljs-keyword">const</span> state = {}; <span class="hljs-comment">// private to MyModule instance</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">init</span>(<span class="hljs-params">{
+        optionA,
+        optionB,
+    }</span>) </span>{
+        <span class="hljs-comment">// perform configuration tasks using options</span>
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">myMethodA</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-comment">// any state changes within this module should register within `state`</span>
+        <span class="hljs-comment">// by directly modifying `state`, or calling internal methods,</span>
+        <span class="hljs-comment">// which may or may not be exposed.</span>
+
+        <span class="hljs-comment">// any state changes outside of this module should occur within the</span>
+        <span class="hljs-comment">// injected dependencies, by calling a method it exposes.</span>
+    }
+
+    <span class="hljs-keyword">return</span>  {
+        init,
+        myMethodA,
+    }; <span class="hljs-comment">// public in MyModuleInstance</span>
+}</pre><p>How this works:</p>
+<ul>
+<li>The factory function accepts an object of dependencies,
+where each key is the name of a dependency that it requires.<ul>
+<li>The use of parameter object destructuring here is intended to
+look akin to named parameters.</li>
+</ul>
+</li>
+<li>It checks whether any dependencies are missing,
+and if so, throws an error.</li>
+<li>It returns an object,
+where each key is the name of member functions that should be exposed.<ul>
+<li>An <code>init</code> function that accepts an options object is expected, at minimum.</li>
+</ul>
+</li>
+<li>Any state is encapsulated within the function,
+and is not exposed via the return object, and thus remains private.</li>
+</ul>
+<p>Note that the dependencies passed into the factory function can be anything,
+and it is up to the implementor of the factory function to define the requisite
+behaviour expected of the dependencies injected into it:</p>
+<ul>
+<li>They may be Javascript/ NodeJs globals
+(e.g. <code>setTimeout</code>), or</li>
+<li>required built-in or 3rd-party modules
+(e.g. <code>require(&#39;fs&#39;)</code> or <code>require(&#39;express&#39;)</code>), or</li>
+<li>required internal modules conforming to the same dependency injection pattern
+(e.g. <code>require(&#39;./my-other-module.js&#39;)</code>).</li>
+<li>They may also be either used as exported
+(e.g. <code>require(&#39;workshopper-exercise&#39;)</code>), or</li>
+<li>used as invoked/ instantiated
+(e.g. <code>require(&#39;./my-other-module.js&#39;).impl({})({})</code>).</li>
+</ul>
+<h3 id="module-implementation">Module implementation</h3>
+<p>The factory function is all that is necessary for this
+dependency injection technique.
+However, this baseline is not very convenient,
+as it would require much ceremony
+each time one instantiates a module defined in this way.
+Thus, for convenience, an <strong>implementation function</strong> is also provided.</p>
+<p>An example implementation function would look like this:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">MyModuleImplementation</span>(<span class="hljs-params">dependencies</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">options = {}</span>) =&gt;</span> {
+        dependencies.ExternalModule =
+            depenencies.ExternalModule || <span class="hljs-keyword">new</span> <span class="hljs-built_in">require</span>(<span class="hljs-string">'external-module'</span>)();
+        dependencies.InternalModule =
+            dependencies.InternalModule ||
+            <span class="hljs-built_in">require</span>(<span class="hljs-string">'./internal-module.js'</span>).implementation(dependencies)({
+                <span class="hljs-comment">// options to pass to internal module</span>
+            });
+        <span class="hljs-keyword">const</span> myModuleInstance = MyModuleFactory(dependencies);
+        myModuleInstance.init(options);
+        <span class="hljs-keyword">return</span> myModuleInstance;
+    }
+}</pre><p>How this works:</p>
+<ul>
+<li>The implementation function takes in a non-optional dependencies object,
+just like the factory function takes in.</li>
+<li>The implementation function returns a function that takes in an optional options object.</li>
+<li>Thus to create an instance of this module, the invocation would be:
+<code>const myModuleInstance = MyModuleImplementation(dependencies)(options);</code></li>
+<li>The implementation function is a wrapper around the factory function,
+with two key differences:<ul>
+<li>If there are any dependencies that are not defined,
+a default implementation is added</li>
+<li>The instance returned from the factory function automatically has its
+<code>init()</code> function called with the options passed in.</li>
+</ul>
+</li>
+<li>The implementation function thus serves a second purpose, as a “live definition”
+of the requirements of the dependencies which should be passed in the factory function.</li>
+<li>The dependencies may be passed on to any other modules which may need them,
+as seen above in the default implementation for <code>InternalModule</code>.<ul>
+<li>They may be passed as-is when we want to share dependencies,
+which is handy when the dependency module is internal (from the same library).</li>
+<li>They may be passed as a subset, or not passed at all in other cases,
+which is handy when the dependency module is external (from another library).</li>
+</ul>
+</li>
+</ul>
+<h3 id="module-exports">Module exports</h3>
+<p>The module would need to export its factory function <strong>and</strong>
+its implementation function.</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-built_in">module</span>.exports = MyModuleFactory;
+<span class="hljs-built_in">module</span>.exports.implementation = MyModuleImplementation;</pre><p>Thanks to Javascript’s extraordinary flexibility,
+we can set the implementation function as a property of
+the factory function (without altering the behaviour of either).
+This makes for convenient usage:</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-comment">// When we wish to use the implementation function for convenient instantiation,</span>
+<span class="hljs-comment">// using default implementations for all dependencies</span>
+<span class="hljs-keyword">const</span> myModuleInstance = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my-module.js'</span>)({})({
+    <span class="hljs-attr">optionA</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">optionB</span>: <span class="hljs-number">123</span>,
+});</pre><pre class="hljs javascript lang-javascript"><span class="hljs-comment">// When we wish to use the factory function directly,</span>
+<span class="hljs-comment">// explicitly specifying all dependencies</span>
+<span class="hljs-keyword">const</span> myModuleInstance = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my-module.js'</span>)({
+    <span class="hljs-attr">InternalModule</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'some-alternative-implementation'</span>),
+    <span class="hljs-attr">ExternalModule</span>: <span class="hljs-built_in">require</span>(<span class="hljs-string">'external-module/something-else'</span>)(),
+})
+myModuleInstance.init({
+    <span class="hljs-attr">optionA</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">optionB</span>: <span class="hljs-number">123</span>,
+});</pre><h2 id="dependency-injection">Dependency injection</h2>
+<p>Dependency injection is one manner of
+<strong>inversion of control</strong> where module lookup is contextualised -
+in this case by the factory function.
+It allows, therefore, decoupling through layered abstractions.
+Software architecture theories aside,
+this results in two interesting practical applications:
+<strong>Swappable dependencies</strong> and <strong>complete mocking</strong>.</p>
+<h3 id="swappable-dependencies">Swappable dependencies</h3>
+<p>With dependency injection,
+each module accepts dependencies that are passed into its factory function.
+Whether a dependency is acceptable is determined by whether it is capable of
+performing the actions required of it (instead of its actual type).
+This, coupled with loose types in Javascript,
+makes it possible to do duck typing
+(if it walks like a duck, and quacks like a duck, it must be a duck.)</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">MyModuleFactory</span>(<span class="hljs-params">{
+    Print
+}</span>) </span>{
+    doSomething(x) {
+        <span class="hljs-comment">// do stuff</span>
+        Print(<span class="hljs-string">'something done'</span>, x);
+    }
+    <span class="hljs-comment">/*...*/</span>
+}</pre><p>The above factory function takes in a depdendency named <code>Print</code>,
+which it calls with a variable number of arguments
+that it wishes to output.</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> generalInstance = MyModuleFactory({
+    <span class="hljs-attr">Print</span>: <span class="hljs-built_in">console</span>.log,
+});</pre><p>The default implementation of <code>Print</code> is simply an alias to <code>console.log</code>.</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> nodejsOnlyInstance = MyModuleFactory({
+    <span class="hljs-attr">Print</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) </span>{
+        process.stdout.write(<span class="hljs-string">`<span class="hljs-subst">${<span class="hljs-built_in">Date</span>.now()}</span> <span class="hljs-subst">${util.format.apply(<span class="hljs-literal">undefined</span>, args)}</span>\n`</span>);
+    },
+});</pre><p>However, further along, someone might want a different implementation
+for every line that was printed,
+and come up with this implementation.</p>
+<pre class="hljs javascript lang-javascript"><span class="hljs-keyword">const</span> logInstance = MyModuleFactory({
+    <span class="hljs-attr">Print</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">...args</span>) </span>{
+        fs.appendFile(logFilePath, <span class="hljs-string">`<span class="hljs-subst">${<span class="hljs-built_in">Date</span>.now()}</span> <span class="hljs-subst">${util.format.apply(<span class="hljs-literal">undefined</span>, args)}</span>\n`</span>);
+    }
+});</pre><p>Even further along, someone might decide to repurpose
+the <code>Print</code> completely for logging instead,
+and use yet another alternative implementation.</p>
+<p>All three implementations of <code>Print</code> have defined their external interfaces
+indentically (a single function which accepts any number of parameters),
+thus satisfying the duck typing requirement.
+However, what they do internally varies significantly from one to the next.
+Of note here, is that <code>MyModuleFactory</code> only needs to care about the
+external parts of the dependencies,
+and does not need to care about their internals at all.</p>
+<h3 id="complete-mocking">Complete mocking</h3>
+<p>Once we attain dependencies that are swappable,
+it is possible to acheive a completely different,
+and more <strong>powerful</strong> form of mocking.
+This is especially useful, in the context of Javascript,
+when it comes to globals.</p>
+<p>The most “notorious” offenders amongst these are the time-related globals,
+such as <code>setTimeout</code>, <code>setInterval</code>, etc.
+These functions are rather difficut to mock or stub.
+There are even quite a number of mocking libraries published on <code>npm</code>
+specifically dedicated to solving this problem.
+Each one of them has its own set of quirks due to the techniques it uses,
+or its implementation details.
+Additionally each one has its own API,
+which the developer must learn,
+and are quite often very different from the API of the global functions
+that they help to mock.
+The result of this are numerous solutions that almost work,
+but fall short of the mark.</p>
+<p>Using dependency injection, however,
+one can completely side step the need to even use a 3rd-party library,
+and simply inject an alternative,
+whose API corresponds exactly with the thing being mocked,
+but whose implementation is tailored to the test being run.</p>
+<pre class="hljs javascript lang-javascript">it(<span class="hljs-string">'should get result from doSomething after 500ms'</span>, () =&gt; {
+    <span class="hljs-keyword">let</span> waitTimer;
+    <span class="hljs-keyword">let</span> timer;
+    <span class="hljs-keyword">let</span> waitFn;
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mockSetTimeout</span>(<span class="hljs-params">fn, time</span>) </span>{
+        waitFn = fn;
+        waitTimer = time;
+        timer = <span class="hljs-number">0</span>;
+    }
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mockTick</span>(<span class="hljs-params">time</span>) </span>{
+        timer += time;
+        <span class="hljs-keyword">if</span> (timer &gt;= waitForTimer) {
+            waitFn();
+        }
+    }
+    <span class="hljs-keyword">const</span> myTimeInstance = MyTimeModule.impl({
+        <span class="hljs-attr">setTimeout</span>: mockSetTimeout,
+    })({});
+    <span class="hljs-keyword">const</span> doSomethingHasCalledBack = <span class="hljs-literal">false</span>;
+    myTimeInstance.doSomething(<span class="hljs-function">(<span class="hljs-params">err, result</span>) =&gt;</span> {
+        doSomethingHasCalledBack = <span class="hljs-literal">true</span>;
+    });
+    mockTick(<span class="hljs-number">200</span>);
+    <span class="hljs-comment">// assert `doSomethingHasCalledBack` equals `false`</span>
+    mockTick(<span class="hljs-number">300</span>);
+    <span class="hljs-comment">// assert `doSomethingHasCalledBack` equals `true`</span>
+});</pre><p>The above shows a concise example of mocking <code>setTimeout</code>,
+where the developer would only need to learn <code>setTimeout</code>‘s API,
+and would <em>not</em> need to learn any test/ mocking library’s API
+(because no 3rd-party library was necessary to begin with).
+This form of mocking is more <strong>complete</strong> than
+the form of mocking that be acheived via a 3rd-party library because
+it would acts as a gateway and thus allows you to interact with the mock
+only in the predefined ways that it anticipates and caters for;
+whereas by injecting mocks directly,
+you have complete control over defining the mock’s behaviour.</p>
+<h2 id="credits">Credits</h2>
+<p>Thanks to <a href="https://github.com/indieisaconcept">@indieisaconcept</a>
+for explaining the
+<a href="https://github.com/newscorpaus/implementation"><code>_implementation</code> technique</a>,
+and his feedback on this dependency injection technique.</p>
+<p>Thanks to <a href="https://baharestani.com/">Daniel Baharestani</a>
+for his comprehensive feedback about dependency injection in general.
+He has a <a href="https://baharestani.com/book/">book on dependency injection in .NET</a>,
+which you should check out too.</p>
+<p>Dependency injection is certainly not a new concept,
+and certainly comes in many different flavours.
+The techniques described here are very much inspired by prior art,
+including <code>_implementation</code>,
+the <a href="https://github.com/umdjs/umd">Universal Module Definition technique</a>
+and <a href="https://github.com/requirejs/requirejs"><code>require.js</code></a>.
+The use of ES6 object destructuring for named parameters was inspired by
+Python’s <a href="https://www.digitalocean.com/community/tutorials/how-to-use-args-and-kwargs-in-python-3"><code>kwargs</code></a>.</p>
+</span></div><div id="page-footer" class="page-footer"><div class="share-buttons__share-buttons___3c-nq"><ul class="share-buttons__share-items___35ozf"><li class="share-buttons__share-item___10u_7"><a href="mailto:?subject=Dependency injection in Javascript - Brendan Graetz&amp;amp;body=http://blog.bguiz.com/2017/dependency-injection-javascript" class="share-buttons__share-button-email___3ktqW share-buttons__share-button___36_MO"><span class="fa fa-envelope"></span><div class="share-count"> </div></a></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--facebook share-buttons__share-button-facebook___uSKF_ share-buttons__share-button___36_MO"><span class="fa fa-facebook"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--twitter share-buttons__share-button-twitter___3vZWS share-buttons__share-button___36_MO"><span class="fa fa-twitter"></span><div class="share-count"> </div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--googlePlus share-buttons__share-button-google-plus___1OUuW share-buttons__share-button___36_MO"><span class="fa fa-google-plus"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li><li class="share-buttons__share-item___10u_7"><div role="button" tabindex="0" class="SocialMediaShareButton SocialMediaShareButton--linkedin share-buttons__share-button-linkedin___2EwnF share-buttons__share-button___36_MO"><span class="fa fa-linkedin"></span><div class="SocialMediaShareCount share-count"><span class="share-count-inner">&nbsp;</span></div></div></li></ul></div><div><span>Tagged in:</span><ul class="post-tags__tags-list___3m4XD"><li class="post-tags__tags-item___3xlEk"><a href="/tags/javascript">javascript</a></li><li class="post-tags__tags-item___3xlEk"><a href="/tags/dependency injection">dependency injection</a></li></ul></div><div><a href="https://github.com/bguiz/blog.bguiz.com/blob/develop/src/documents/reactpubposts/2017-10-dependency-injection-javascript.md" target="_blank">Edit this content</a></div><div><div title="Dependency injection in Javascript"><div id="disqus_thread"></div><noscript><span>Please enable JavaScript to view the<a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></span></noscript><a href="http://disqus.com" class="dsq-brlink">blog comments powered by<span class="logo-disqus">Disqus</span></a></div></div></div></div></div><div id="footprofile" class="foot-profile__footprofile___23hoj"><div class="foot-profile__footprofile-logo___3JA-e"><img src="/images/logo-100px.png" alt="Brendan Graetz"/></div><div class="foot-profile__footprofile-links___3U9KR"><ul class="foot-profile__footer-links___2SYBF"><li class="foot-profile__footer-item___22yBd"><a title="Brendan Graetz" href="/"><span class="fa fa-home foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Brendan Graetz</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Archives" href="/archives"><span class="fa fa-files-o foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Archives</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Presentations" href="/presentations"><span class="fa fa-television foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Presentations</span></a></li><li class="foot-profile__footer-item___22yBd"><a title="Books" href="/books"><span class="fa fa-book foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Books</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://twitter.com/bguiz" title="@bguiz on Twitter"><span class="fa fa-twitter foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">@bguiz</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://github.com/bguiz" title="bguiz on github"><span class="fa fa-github foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Github</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://stackoverflow.com/users/194982/bguiz" title="bguiz on stackoverflow"><span class="fa fa-stack-overflow foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Stackoverflow</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://linkedin.com/in/brendangraetz/" title="Brendan Graetz on LinkedIn"><span class="fa fa-linkedin foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">LinkedIn</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="http://reddit.com/u/bguiz" title="/u/bguiz on Reddit"><span class="fa fa-reddit-alien foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">Reddit</span></a></li><li class="foot-profile__footer-item___22yBd"><a href="https://plus.google.com/112370545733832378774?rel=author" title="@bguiz on Google+"><span class="fa fa-google-plus foot-profile__footer-link-icon___11CDs"></span><span class="foot-profile__footer-link-text___1slED">+bguiz.com</span></a></li></ul></div><div class="foot-profile__clear___1vNYP"></div></div><div id="footbar" class="footbar__footbar___2dhrz"><p class="footbar__footbar-text___Rc4dT">Copyright © 2008-present Brendan Graetz</p></div></div>
+    </div>
+    
+<link rel="stylesheet" type="text/css" href="/app.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/3rd-party/highlight-js/css/dracula.css">
+<script type="text/javascript" src="/bundle.js"></script>
+  </body>
+</html>
